@@ -499,8 +499,14 @@ public class AdminCandidatController {
     public String envoyerInvitationsTest2(@PathVariable Long offreId, 
                                          RedirectAttributes redirectAttributes) {
         try {
-            test2Service.envoyerInvitationsTest2(offreId);
-            redirectAttributes.addFlashAttribute("success", "Invitations Test 2 envoyées avec succès!");
+            int invitationsEnvoyees = test2Service.envoyerInvitationsTest2(offreId);
+            if (invitationsEnvoyees > 0) {
+                redirectAttributes.addFlashAttribute("success", 
+                    invitationsEnvoyees + " invitation(s) Test 2 envoyée(s) avec succès!");
+            } else {
+                redirectAttributes.addFlashAttribute("info", 
+                    "Aucune nouvelle invitation envoyée. Tous les candidats éligibles ont déjà reçu une invitation Test 2.");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erreur lors de l'envoi des invitations: " + e.getMessage());
         }
