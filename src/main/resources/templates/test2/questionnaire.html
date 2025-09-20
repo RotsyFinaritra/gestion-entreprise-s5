@@ -188,7 +188,7 @@
                                             <div class="reponse-content">
                                                 <div class="d-flex align-items-start">
                                                     <span class="reponse-letter me-3" 
-                                                          th:text="${iterStat.index < 4} ? ${'ABCD'[iterStat.index]} : ${iterStat.index + 1}">A</span>
+                                                          th:text="${#strings.substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ', iterStat.index, iterStat.index + 1)}">A</span>
                                                     <span th:text="${reponse.choix}" class="flex-grow-1">Réponse</span>
                                                 </div>
                                             </div>
