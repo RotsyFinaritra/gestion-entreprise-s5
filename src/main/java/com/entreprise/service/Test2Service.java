@@ -49,7 +49,7 @@ public class Test2Service {
     @Autowired
     private StatusCandidatRepository statusCandidatRepository;
 
-    public void envoyerInvitationsTest2(Long offreId) {
+    public int envoyerInvitationsTest2(Long offreId) {
         System.out.println("=== ENVOI INVITATIONS TEST 2 ===");
         System.out.println("Offre ID: " + offreId);
         
@@ -61,10 +61,25 @@ public class Test2Service {
         
         System.out.println("Candidats trouvés qui ont passé Test 1: " + candidatsPasseTest1.size());
         
-        // Envoyer un email à chaque candidat
+        int invitationsEnvoyees = 0;
+        
+        // Envoyer un email à chaque candidat (seulement s'il n'a pas déjà été invité)
         for (Candidat candidat : candidatsPasseTest1) {
+            // Vérifier si le candidat a déjà reçu une invitation Test 2
+            boolean dejaInvite = candidat.getStatusCandidats().stream()
+                .anyMatch(sc -> sc.getStatus().getNom().equals("Invité Test 2") ||
+                               sc.getStatus().getNom().equals("Test 2 Terminé") ||
+                               sc.getStatus().getNom().equals("Pass Test 2") ||
+                               sc.getStatus().getNom().equals("Echec Test 2"));
+            
+            if (dejaInvite) {
+                System.out.println("Candidat " + candidat.getPrenom() + " " + candidat.getNom() + " a déjà reçu une invitation Test 2 - IGNORÉ");
+                continue;
+            }
+            
             System.out.println("Envoi email à: " + candidat.getPrenom() + " " + candidat.getNom());
             emailService.envoyerLienTest2(candidat);
+            invitationsEnvoyees++;
             
             // Créer le statut "Invité Test 2"
             Status statusInviteTest2 = statusService.findByNom("Invité Test 2")
@@ -89,8 +104,10 @@ public class Test2Service {
             System.out.println("========================================");
         }
         
-        System.out.println("Invitations Test 2 terminées pour " + candidatsPasseTest1.size() + " candidat(s)");
+        System.out.println("Invitations Test 2 terminées - " + invitationsEnvoyees + " nouvelles invitations envoyées sur " + candidatsPasseTest1.size() + " candidat(s) éligibles");
         System.out.println("================================");
+        
+        return invitationsEnvoyees;
     }
     
     public List<Question> getQuestionsForCandidat(Long candidatId) {
