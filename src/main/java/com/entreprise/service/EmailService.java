@@ -66,6 +66,31 @@ public class EmailService {
         }
     }
     
+    public void envoyerEmail(String destinataire, String sujet, String contenu) {
+        try {
+            System.out.println("=== ENVOI EMAIL GENERIQUE ===");
+            System.out.println("Destinataire: " + destinataire);
+            System.out.println("Sujet: " + sujet);
+            System.out.println("Mode mail: " + (fromEmail != null ? "REAL" : "MOCK"));
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(destinataire);
+            message.setSubject(sujet);
+            message.setText(contenu);
+            
+            System.out.println("Contenu email préparé, envoi en cours...");
+            mailSender.send(message);
+            
+            System.out.println("Email envoyé avec succès à : " + destinataire);
+            System.out.println("=========================");
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'envoi de l'email à " + destinataire + " : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
     private String generateToken(Candidat candidat) {
         // Génère un token simple basé sur l'ID du candidat et un timestamp
         // En production, utiliser un système plus sécurisé comme JWT

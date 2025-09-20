@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Candidats Admis - Planification Entretiens</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .admis-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .candidate-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .candidate-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .planification-form {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .creneau-input {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .creneau-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .entretien-card {
+            border-left: 4px solid #007bff;
+        }
+        
+        .entretien-card.programme {
+            border-left-color: #ffc107;
+        }
+        
+        .entretien-card.confirme {
+            border-left-color: #28a745;
+        }
+        
+        .entretien-card.termine {
+            border-left-color: #6c757d;
+        }
+        
+        .entretien-card.annule {
+            border-left-color: #dc3545;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .badge-admis {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Candidats</a></li>
+                <li class="breadcrumb-item"><a th:href="@{'/admin/candidats/by-offre/' + ${offre.idOffre}}" class="text-decoration-none">Offre</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Candidats Admis</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="admis-header text-center">
+            <h1><i class="fas fa-user-check me-3"></i>Candidats Admis - Planification Entretiens</h1>
+            <p class="lead mb-0" th:text="'Offre: ' + ${offre.poste.nom} + ' (ID: ' + ${offre.idOffre} + ')'">Offre</p>
+            <p class="mb-0" th:if="${offre.mission}" th:text="${offre.mission}">Mission</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${successMessage}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${warningMessage}">Attention</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="container-fluid">
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-success" th:text="${candidatsAdmis.size()}">0</h3>
+                        <small class="text-muted">Candidats Admis</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-primary" th:text="${statistiquesEntretiens.total}">0</h3>
+                        <small class="text-muted">Entretiens Total</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-warning" th:text="${statistiquesEntretiens.programmes}">0</h3>
+                        <small class="text-muted">Programmés</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-success" th:text="${statistiquesEntretiens.confirmes}">0</h3>
+                        <small class="text-muted">Confirmés</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des candidats admis -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Liste des Candidats Admis
+                                <span class="badge badge-admis ms-2" th:text="${candidatsAdmis.size()} + ' candidat(s)'">0</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div th:if="${candidatsAdmis.isEmpty()}" class="text-center py-5">
+                                <i class="fas fa-user-times display-1 text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucun candidat admis</h5>
+                                <p class="text-muted">Il n'y a pas encore de candidats admis (Pass Test 2) pour cette offre.</p>
+                                <a th:href="@{'/admin/candidats/classement/' + ${offre.idOffre}}" class="btn btn-primary">
+                                    <i class="fas fa-trophy me-2"></i>Voir le classement Test 2
+                                </a>
+                            </div>
+                            
+                            <div th:unless="${candidatsAdmis.isEmpty()}">
+                                <div th:each="candidat, iterStat : ${candidatsAdmis}" class="candidate-card card m-3">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-1" th:text="${candidat.prenom} + ' ' + ${candidat.nom}">Nom Candidat</h6>
+                                                <small class="text-muted" th:text="${candidat.email}">email@example.com</small>
+                                            </div>
+                                            <div class="col-md-2 text-center">
+                                                <span class="badge bg-success">Admis</span>
+                                            </div>
+                                            <div class="col-md-2 text-center">
+                                                <span th:if="${agesMap.containsKey(candidat.idCandidat)}" 
+                                                      th:text="${agesMap.get(candidat.idCandidat)} + ' ans'">25 ans</span>
+                                                <span th:unless="${agesMap.containsKey(candidat.idCandidat)}" 
+                                                      class="text-muted">N/A</span>
+                                            </div>
+                                            <div class="col-md-2 text-end">
+                                                <a th:href="@{'/admin/candidats/detail/' + ${candidat.idCandidat}}" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire de planification -->
+                <div class="col-lg-4">
+                    <div class="card" th:unless="${candidatsAdmis.isEmpty()}">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Planifier les Entretiens
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{'/admin/candidats/planifier-entretiens/' + ${offre.idOffre}}" method="post" id="planificationForm">
+                                
+                                <!-- Durée d'entretien -->
+                                <div class="mb-3">
+                                    <label for="dureeEntretien" class="form-label"><strong>Durée d'un entretien (minutes):</strong></label>
+                                    <input type="number" class="form-control" id="dureeEntretien" name="dureeEntretien" 
+                                           min="15" max="120" value="30" required>
+                                    <div class="form-text">Durée recommandée: 30-60 minutes</div>
+                                </div>
+
+                                <!-- Date de début -->
+                                <div class="mb-3">
+                                    <label for="dateDebut" class="form-label"><strong>Date de début des entretiens:</strong></label>
+                                    <input type="date" class="form-control" id="dateDebut" name="dateDebut" required>
+                                    <div class="form-text">À partir de quelle date commencer</div>
+                                </div>
+
+                                <!-- Créneaux horaires -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Créneaux horaires par jour:</strong></label>
+                                    <div id="creneauxContainer">
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control creneau-input" name="heuresJour" 
+                                                   placeholder="Ex: 8h-12h" pattern="[0-9]{1,2}[h:]?[0-9]{0,2}-[0-9]{1,2}[h:]?[0-9]{0,2}" required>
+                                            <button type="button" class="btn btn-outline-danger" onclick="supprimerCreneau(this)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control creneau-input" name="heuresJour" 
+                                                   placeholder="Ex: 13h-17h" pattern="[0-9]{1,2}[h:]?[0-9]{0,2}-[0-9]{1,2}[h:]?[0-9]{0,2}">
+                                            <button type="button" class="btn btn-outline-danger" onclick="supprimerCreneau(this)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="ajouterCreneau()">
+                                        <i class="fas fa-plus me-1"></i>Ajouter un créneau
+                                    </button>
+                                    <div class="form-text">Format: 8h-12h ou 08:00-12:00</div>
+                                </div>
+
+                                <!-- Intervalle entre entretiens -->
+                                <div class="mb-3">
+                                    <label for="intervalleMinutes" class="form-label"><strong>Intervalle entre entretiens (minutes):</strong></label>
+                                    <input type="number" class="form-control" id="intervalleMinutes" name="intervalleMinutes" 
+                                           min="0" max="60" value="15" required>
+                                    <div class="form-text">Temps de pause entre chaque entretien</div>
+                                </div>
+
+                                <!-- Jours fériés -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Jours fériés/fermés (optionnel):</strong></label>
+                                    <div id="joursFeriesContainer">
+                                        <input type="date" class="form-control mb-2" name="joursFeries" placeholder="Date à éviter">
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ajouterJourFerie()">
+                                        <i class="fas fa-plus me-1"></i>Ajouter une date
+                                    </button>
+                                    <div class="form-text">Dates où aucun entretien ne sera planifié</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-gradient w-100" onclick="return confirmerPlanification()">
+                                    <i class="fas fa-calendar-check me-2"></i>Planifier les Entretiens
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entretiens existants -->
+            <div th:unless="${entretiensExistants.isEmpty()}" class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar me-2"></i>Entretiens Planifiés
+                                <span class="badge bg-primary ms-2" th:text="${entretiensExistants.size()}">0</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div th:each="entretien : ${entretiensExistants}" class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card entretien-card" th:classappend="${entretien.statut}">
+                                        <div class="card-body">
+                                            <h6 class="card-title" th:text="${entretien.candidat.prenom} + ' ' + ${entretien.candidat.nom}">
+                                                Nom Candidat
+                                            </h6>
+                                            <p class="card-text">
+                                                <i class="fas fa-calendar me-2"></i>
+                                                <span th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy HH:mm')}">
+                                                    01/01/2024 10:00
+                                                </span>
+                                            </p>
+                                            <p class="card-text">
+                                                <i class="fas fa-clock me-2"></i>
+                                                <span th:text="${entretien.dureeEntretien} + ' minutes'">30 minutes</span>
+                                            </p>
+                                            <p class="card-text">
+                                                <span class="badge" 
+                                                      th:classappend="${entretien.statut == 'programmé'} ? 'bg-warning' : 
+                                                                      (${entretien.statut == 'confirmé'} ? 'bg-success' : 
+                                                                      (${entretien.statut == 'terminé'} ? 'bg-secondary' : 'bg-danger'))"
+                                                      th:text="${entretien.statut}">
+                                                    programmé
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Définir la date minimum à aujourd'hui
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateDebut').setAttribute('min', today);
+            document.getElementById('dateDebut').value = today;
+            
+            // Définir minimum pour jours fériés aussi
+            const joursFeries = document.querySelectorAll('input[name="joursFeries"]');
+            joursFeries.forEach(input => {
+                input.setAttribute('min', today);
+            });
+        });
+
+        function ajouterCreneau() {
+            const container = document.getElementById('creneauxContainer');
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <input type="text" class="form-control creneau-input" name="heuresJour" 
+                       placeholder="Ex: 14h-18h" pattern="[0-9]{1,2}[h:]?[0-9]{0,2}-[0-9]{1,2}[h:]?[0-9]{0,2}">
+                <button type="button" class="btn btn-outline-danger" onclick="supprimerCreneau(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function supprimerCreneau(button) {
+            const container = document.getElementById('creneauxContainer');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                alert('Vous devez conserver au moins un créneau horaire.');
+            }
+        }
+
+        function ajouterJourFerie() {
+            const container = document.getElementById('joursFeriesContainer');
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'form-control mb-2';
+            input.name = 'joursFeries';
+            input.placeholder = 'Date à éviter';
+            
+            const today = new Date().toISOString().split('T')[0];
+            input.setAttribute('min', today);
+            
+            container.appendChild(input);
+        }
+
+        function confirmerPlanification() {
+            const candidats = parseInt(document.querySelector('.badge-admis').textContent);
+            const duree = document.getElementById('dureeEntretien').value;
+            const dateDebut = document.getElementById('dateDebut').value;
+            
+            return confirm(`Êtes-vous sûr de vouloir planifier les entretiens pour ${candidats} candidat(s) ?\n\n` +
+                          `Durée: ${duree} minutes par entretien\n` +
+                          `À partir du: ${dateDebut}\n\n` +
+                          `Les invitations seront envoyées automatiquement par email.`);
+        }
+    </script>
+</body>
+</html>
