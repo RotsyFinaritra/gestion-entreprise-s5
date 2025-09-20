@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/test2")
@@ -97,6 +98,8 @@ public class Test2Controller {
         Map<Question, List<ReponseQuestion>> questionsReponses = new HashMap<>();
         for (Question question : questions) {
             List<ReponseQuestion> reponses = reponseQuestionRepository.findByQuestion(question);
+            // Mélanger l'ordre des réponses pour éviter que les bonnes réponses soient toujours en première position
+            Collections.shuffle(reponses);
             questionsReponses.put(question, reponses);
         }
         
