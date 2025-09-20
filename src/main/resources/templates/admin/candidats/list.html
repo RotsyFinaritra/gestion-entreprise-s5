@@ -90,7 +90,9 @@
                         <div th:each="entry : ${candidatsParOffre}" class="col-lg-6 col-xl-4 mb-4">
                             <div class="card border-0 shadow-sm h-100">
                                 <div class="card-header bg-gradient-primary text-white">
-                                    <h6 class="mb-0" th:text="${entry.key}">Nom du Poste</h6>
+                                    <h6 class="mb-1" th:text="${entry.key}">Nom du Poste</h6>
+                                    <small class="text-white-50" th:if="${entry.value.size() > 0 and entry.value[0].offre.datePublication != null}"
+                                           th:text="'Publié le ' + ${#temporals.format(entry.value[0].offre.datePublication, 'dd/MM/yyyy')}">Publié le 01/01/2024</small>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -98,18 +100,26 @@
                                             <span th:text="${#lists.size(entry.value)}">0</span> candidat(s)
                                         </span>
                                         <div th:if="${entry.value.size() > 0}">
-                                            <span class="small text-muted">Âge requis: </span>
-                                            <span class="badge bg-info text-dark" 
-                                                  th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax != null}"
-                                                  th:text="${entry.value[0].offre.ageMin + '-' + entry.value[0].offre.ageMax + ' ans'}">24-45 ans</span>
-                                            <span class="badge bg-info text-dark" 
-                                                  th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax == null}"
-                                                  th:text="${entry.value[0].offre.ageMin + '+ ans'}">24+ ans</span>
-                                            <span class="badge bg-info text-dark" 
-                                                  th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax != null}"
-                                                  th:text="'Moins de ' + ${entry.value[0].offre.ageMax + ' ans'}">Moins de 45 ans</span>
-                                            <span class="badge bg-secondary" 
-                                                  th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax == null}">Non défini</span>
+                                            <div class="text-end">
+                                                <div class="mb-1">
+                                                    <span class="small text-muted">Âge requis: </span>
+                                                    <span class="badge bg-info text-dark" 
+                                                          th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax != null}"
+                                                          th:text="${entry.value[0].offre.ageMin + '-' + entry.value[0].offre.ageMax + ' ans'}">24-45 ans</span>
+                                                    <span class="badge bg-info text-dark" 
+                                                          th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax == null}"
+                                                          th:text="${entry.value[0].offre.ageMin + '+ ans'}">24+ ans</span>
+                                                    <span class="badge bg-info text-dark" 
+                                                          th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax != null}"
+                                                          th:text="'Moins de ' + ${entry.value[0].offre.ageMax + ' ans'}">Moins de 45 ans</span>
+                                                    <span class="badge bg-secondary" 
+                                                          th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax == null}">Non défini</span>
+                                                </div>
+                                                <div th:if="${entry.value[0].offre.nbrPersonne != null}">
+                                                    <span class="small text-muted">Postes: </span>
+                                                    <span class="badge bg-success" th:text="${entry.value[0].offre.nbrPersonne}">1</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     

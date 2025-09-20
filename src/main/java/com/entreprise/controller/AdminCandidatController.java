@@ -5,11 +5,13 @@ import com.entreprise.model.Formation;
 import com.entreprise.model.Status;
 import com.entreprise.model.StatusCandidat;
 import com.entreprise.model.ReponseCandidat;
+import com.entreprise.model.Offre;
 import com.entreprise.service.CandidatService;
 import com.entreprise.service.StatusService;
 import com.entreprise.service.StatusCandidatService;
 import com.entreprise.service.Test2Service;
 import com.entreprise.service.UserService;
+import com.entreprise.service.OffreService;
 import com.entreprise.repository.ReponseCandidatRepository;
 import com.entreprise.repository.StatusCandidatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +25,6 @@ import java.time.LocalDate;
 import java.time.Period;
 
 import jakarta.servlet.http.HttpSession;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
@@ -54,6 +54,9 @@ public class AdminCandidatController {
     private UserService userService;
     
     @Autowired
+    private OffreService offreService;
+    
+    @Autowired
     private ReponseCandidatRepository reponseCandidatRepository;
     
     @Autowired
@@ -76,12 +79,18 @@ public class AdminCandidatController {
                 c -> Period.between(c.getDateNaissance(), LocalDate.now()).getYears()
             ));
         
-        // Regrouper les candidats par offre
+        // Regrouper les candidats par offre (et non par poste)
         Map<String, List<Candidat>> candidatsParOffre = candidats.stream()
             .filter(c -> c.getOffre() != null)
-            .collect(Collectors.groupingBy(c -> 
-                c.getOffre().getPoste() != null ? c.getOffre().getPoste().getNom() : "Poste non défini"
-            ));
+            .collect(Collectors.groupingBy(c -> {
+                String posteNom = c.getOffre().getPoste() != null ? c.getOffre().getPoste().getNom() : "Poste non défini";
+                String mission = c.getOffre().getMission() != null && !c.getOffre().getMission().trim().isEmpty() 
+                    ? " - " + (c.getOffre().getMission().length() > 50 
+                        ? c.getOffre().getMission().substring(0, 50) + "..." 
+                        : c.getOffre().getMission())
+                    : "";
+                return posteNom + mission + " (ID: " + c.getOffre().getIdOffre() + ")";
+            }));
         
         // Vérifier pour chaque offre si le premier test a été effectué
         Map<Long, Boolean> premierTestEffectueParOffre = candidats.stream()
@@ -761,6 +770,133 @@ public class AdminCandidatController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erreur lors du chargement des détails: " + e.getMessage());
             return "redirect:/admin/candidats";
+        }
+    }
+    
+    @GetMapping("/classement/{offreId}")
+    public String afficherClassementTest2ParOffre(@PathVariable Long offreId, 
+                                                Model model, 
+                                                HttpSession session, 
+                                                RedirectAttributes redirectAttributes) {
+        if (!userService.isAdmin(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent accéder à cette page");
+            return "redirect:/login";
+        }
+        
+        try {
+            System.out.println("=== PAGE CLASSEMENT TEST 2 POUR OFFRE " + offreId + " ===");
+            
+            // Récupérer l'offre
+            Offre offre = offreService.findById(offreId).orElse(null);
+            if (offre == null) {
+                redirectAttributes.addFlashAttribute("error", "Offre introuvable");
+                return "redirect:/admin/candidats";
+            }
+            
+            // Récupérer tous les candidats de cette offre ayant fait le Test 2
+            List<String> statutsTest2 = Arrays.asList("Test 2 Terminé", "Pass Test 2", "Echec Test 2");
+            List<Candidat> candidatsTest2 = new ArrayList<>();
+            Map<Long, String> statutsActuels = new HashMap<>();
+            
+            for (String nomStatut : statutsTest2) {
+                Status status = statusService.findByNom(nomStatut).orElse(null);
+                if (status != null) {
+                    List<StatusCandidat> statusCandidats = statusCandidatRepository.findByStatusIdStatus(status.getIdStatus());
+                    for (StatusCandidat sc : statusCandidats) {
+                        Candidat candidat = sc.getCandidat();
+                        // Filtrer uniquement les candidats de cette offre
+                        if (candidat.getOffre() != null && candidat.getOffre().getIdOffre().equals(offreId)) {
+                            if (!candidatsTest2.contains(candidat)) {
+                                candidatsTest2.add(candidat);
+                            }
+                            // Garder le statut le plus récent pour chaque candidat
+                            String statutActuel = statutsActuels.get(candidat.getIdCandidat());
+                            if (statutActuel == null) {
+                                statutsActuels.put(candidat.getIdCandidat(), nomStatut);
+                            } else {
+                                // Prioriser Pass Test 2 et Echec Test 2 sur Test 2 Terminé
+                                if ("Test 2 Terminé".equals(statutActuel) && 
+                                    ("Pass Test 2".equals(nomStatut) || "Echec Test 2".equals(nomStatut))) {
+                                    statutsActuels.put(candidat.getIdCandidat(), nomStatut);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            System.out.println("Nombre de candidats Test 2 pour l'offre " + offreId + ": " + candidatsTest2.size());
+            
+            // Créer la liste des résultats
+            List<Map<String, Object>> resultats = new ArrayList<>();
+            
+            for (Candidat candidat : candidatsTest2) {
+                Map<String, Object> resultatComplet = test2Service.getResultatCompletTest2(candidat);
+                resultatComplet.put("candidat", candidat);
+                resultatComplet.put("statutActuel", statutsActuels.get(candidat.getIdCandidat()));
+                resultats.add(resultatComplet);
+            }
+            
+            // Trier les candidats par note décroissante
+            resultats.sort((r1, r2) -> {
+                Double note1 = (Double) r1.get("noteSur20");
+                Double note2 = (Double) r2.get("noteSur20");
+                return Double.compare(note2, note1);
+            });
+            
+            // Ajouter le rang
+            for (int i = 0; i < resultats.size(); i++) {
+                resultats.get(i).put("rang", i + 1);
+            }
+            
+            // Calculer des statistiques pour cette offre
+            List<Double> notes = resultats.stream()
+                .map(r -> (Double) r.get("noteSur20"))
+                .collect(Collectors.toList());
+                
+            if (!notes.isEmpty()) {
+                double moyenneOffre = notes.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                double noteMax = notes.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                double noteMin = notes.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+                
+                model.addAttribute("moyenneOffre", Math.round(moyenneOffre * 100.0) / 100.0);
+                model.addAttribute("noteMax", noteMax);
+                model.addAttribute("noteMin", noteMin);
+            }
+            
+            // Calculer les statistiques pour le template
+            long totalCandidats = candidatsTest2.size();
+            long termine = statutsActuels.values().stream().mapToLong(s -> "Test 2 Terminé".equals(s) ? 1 : 0).sum();
+            long admis = statutsActuels.values().stream().mapToLong(s -> "Pass Test 2".equals(s) ? 1 : 0).sum();
+            long refuses = statutsActuels.values().stream().mapToLong(s -> "Echec Test 2".equals(s) ? 1 : 0).sum();
+            
+            Map<String, Long> statistiques = new HashMap<>();
+            statistiques.put("totalCandidats", totalCandidats);
+            statistiques.put("termine", termine);
+            statistiques.put("admis", admis);
+            statistiques.put("refuses", refuses);
+            
+            // Calculer les âges des candidats
+            Map<Long, Integer> agesMap = candidatsTest2.stream()
+                .filter(c -> c.getDateNaissance() != null)
+                .collect(Collectors.toMap(
+                    Candidat::getIdCandidat,
+                    c -> Period.between(c.getDateNaissance(), LocalDate.now()).getYears()
+                ));
+            
+            model.addAttribute("offre", offre);
+            model.addAttribute("resultats", resultats);
+            model.addAttribute("statistiques", statistiques);
+            model.addAttribute("agesMap", agesMap);
+            model.addAttribute("nombreCandidats", candidatsTest2.size());
+            
+            return "admin/candidats/classement-test2-offre";
+            
+        } catch (Exception e) {
+            System.err.println("Erreur classement Test 2 par offre: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Erreur lors du calcul du classement: " + e.getMessage());
+            return "redirect:/admin/candidats/by-offre/" + offreId;
         }
     }
 }
