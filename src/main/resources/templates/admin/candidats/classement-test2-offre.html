@@ -94,6 +94,34 @@
             </div>
         </div>
 
+        <!-- Bouton Planification Entretiens -->
+        <div class="card mb-4" th:if="${statistiques.admis > 0}">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check-fill me-2"></i>
+                    Planification des Entretiens
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <strong th:text="${statistiques.admis}">0</strong> candidat(s) admis pour cette offre sont prêts pour les entretiens.
+                    Cliquez ci-dessous pour planifier automatiquement leurs entretiens.
+                </p>
+                
+                <div class="d-flex gap-2">
+                    <a th:href="@{'/admin/candidats/admis/' + ${offre.idOffre}}" 
+                       class="btn btn-success btn-lg">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Planifier les Entretiens
+                    </a>
+                    <span class="badge bg-info align-self-center ms-3" th:if="${statistiques.admis > 0}">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Planification automatique avec envoi d'emails
+                    </span>
+                </div>
+            </div>
+        </div>
+
         <!-- Section Traitement des Admissions -->
         <div class="card mb-4" th:if="${statistiques != null and statistiques.termine > 0}">
             <div class="card-header bg-warning text-dark">

@@ -6,12 +6,14 @@ import com.entreprise.model.Status;
 import com.entreprise.model.StatusCandidat;
 import com.entreprise.model.ReponseCandidat;
 import com.entreprise.model.Offre;
+import com.entreprise.model.Entretien;
 import com.entreprise.service.CandidatService;
 import com.entreprise.service.StatusService;
 import com.entreprise.service.StatusCandidatService;
 import com.entreprise.service.Test2Service;
 import com.entreprise.service.UserService;
 import com.entreprise.service.OffreService;
+import com.entreprise.service.EntretienService;
 import com.entreprise.repository.ReponseCandidatRepository;
 import com.entreprise.repository.StatusCandidatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,9 @@ public class AdminCandidatController {
     
     @Autowired
     private OffreService offreService;
+    
+    @Autowired
+    private EntretienService entretienService;
     
     @Autowired
     private ReponseCandidatRepository reponseCandidatRepository;
@@ -735,44 +740,6 @@ public class AdminCandidatController {
         return "redirect:/admin/candidats/classement-test2";
     }
     
-    @PostMapping("/traiter-admissions-offre/{offreId}")
-    public String traiterAdmissionsParOffre(@PathVariable Long offreId,
-                                           @RequestParam String critere,
-                                           @RequestParam(required = false) Double noteMinimum,
-                                           @RequestParam(required = false) Integer nombreCandidats,
-                                           HttpSession session,
-                                           RedirectAttributes redirectAttributes) {
-        if (!userService.isAdmin(session)) {
-            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent effectuer cette action");
-            return "redirect:/login";
-        }
-        
-        try {
-            System.out.println("=== TRAITEMENT ADMISSIONS POUR OFFRE " + offreId + " ===");
-            System.out.println("Critère: " + critere);
-            System.out.println("Note minimum: " + noteMinimum);
-            System.out.println("Nombre candidats: " + nombreCandidats);
-            
-            // Utiliser une nouvelle méthode du service qui traite seulement une offre
-            int candidatsTraites = test2Service.traiterAdmissionsTest2ParOffre(offreId, critere, noteMinimum, nombreCandidats);
-            
-            if (candidatsTraites > 0) {
-                redirectAttributes.addFlashAttribute("success", 
-                    candidatsTraites + " candidat(s) traité(s) avec succès pour cette offre !");
-            } else {
-                redirectAttributes.addFlashAttribute("info", 
-                    "Aucun candidat à traiter selon les critères spécifiés.");
-            }
-            
-        } catch (Exception e) {
-            System.err.println("Erreur traitement admissions offre: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("error", 
-                "Erreur lors du traitement des admissions: " + e.getMessage());
-        }
-        
-        return "redirect:/admin/candidats/classement/" + offreId;
-    }
-    
     @GetMapping("/detail-test2/{id}")
     public String detailTest2Candidat(@PathVariable Long id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         if (!userService.isAdmin(session)) {
@@ -942,5 +909,169 @@ public class AdminCandidatController {
             redirectAttributes.addFlashAttribute("error", "Erreur lors du calcul du classement: " + e.getMessage());
             return "redirect:/admin/candidats/by-offre/" + offreId;
         }
+    }
+
+    /**
+     * Afficher les candidats admis par offre pour planification entretiens
+     */
+    @GetMapping("/admis/{offreId}")
+    public String afficherCandidatsAdmisParOffre(@PathVariable Long offreId, 
+                                                Model model, 
+                                                HttpSession session, 
+                                                RedirectAttributes redirectAttributes) {
+        if (!userService.isAdmin(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent accéder à cette page");
+            return "redirect:/login";
+        }
+
+        try {
+            System.out.println("=== PAGE CANDIDATS ADMIS OFFRE " + offreId + " ===");
+
+            // Récupérer l'offre
+            Offre offre = offreService.findById(offreId).orElse(null);
+            if (offre == null) {
+                redirectAttributes.addFlashAttribute("error", "Offre introuvable");
+                return "redirect:/admin/candidats";
+            }
+
+            // Récupérer tous les candidats admis (Pass Test 2) pour cette offre
+            List<Candidat> candidatsAdmis = candidatService.findByOffreId(offreId).stream()
+                .filter(c -> c.getStatusCandidats().stream()
+                    .anyMatch(sc -> "Pass Test 2".equals(sc.getStatus().getNom())))
+                .collect(Collectors.toList());
+
+            System.out.println("Candidats admis trouvés: " + candidatsAdmis.size());
+
+            // Calculer les âges des candidats
+            Map<Long, Integer> agesMap = candidatsAdmis.stream()
+                .filter(c -> c.getDateNaissance() != null)
+                .collect(Collectors.toMap(
+                    Candidat::getIdCandidat,
+                    c -> Period.between(c.getDateNaissance(), LocalDate.now()).getYears()
+                ));
+
+            // Vérifier s'il y a déjà des entretiens planifiés
+            List<Entretien> entretiensExistants = entretienService.findByOffreId(offreId);
+            Map<String, Object> statistiquesEntretiens = entretienService.getStatistiquesEntretiens(offreId);
+
+            model.addAttribute("offre", offre);
+            model.addAttribute("candidatsAdmis", candidatsAdmis);
+            model.addAttribute("agesMap", agesMap);
+            model.addAttribute("entretiensExistants", entretiensExistants);
+            model.addAttribute("statistiquesEntretiens", statistiquesEntretiens);
+            model.addAttribute("activeSection", "admin-candidats");
+
+            return "admin/candidats/admis-offre";
+
+        } catch (Exception e) {
+            System.err.println("Erreur candidats admis par offre: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Erreur lors du chargement: " + e.getMessage());
+            return "redirect:/admin/candidats/by-offre/" + offreId;
+        }
+    }
+
+    /**
+     * Planifier les entretiens pour une offre
+     */
+    @PostMapping("/planifier-entretiens/{offreId}")
+    public String planifierEntretiens(@PathVariable Long offreId,
+                                    @RequestParam Integer dureeEntretien,
+                                    @RequestParam String dateDebut,
+                                    @RequestParam List<String> heuresJour,
+                                    @RequestParam Integer intervalleMinutes,
+                                    @RequestParam(required = false) List<String> joursFeries,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        
+        if (!userService.isAdmin(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent effectuer cette action");
+            return "redirect:/login";
+        }
+
+        try {
+            System.out.println("=== PLANIFICATION ENTRETIENS ===");
+            System.out.println("Offre ID: " + offreId);
+            System.out.println("Durée: " + dureeEntretien + " minutes");
+            System.out.println("Date début: " + dateDebut);
+            System.out.println("Heures jour: " + heuresJour);
+            System.out.println("Intervalle: " + intervalleMinutes + " minutes");
+            System.out.println("Jours fériés: " + joursFeries);
+
+            LocalDate dateDebutParsed = LocalDate.parse(dateDebut);
+            List<LocalDate> joursFerriesParsed = new ArrayList<>();
+            
+            if (joursFeries != null) {
+                for (String dateFeriee : joursFeries) {
+                    if (dateFeriee != null && !dateFeriee.trim().isEmpty()) {
+                        try {
+                            joursFerriesParsed.add(LocalDate.parse(dateFeriee));
+                        } catch (Exception e) {
+                            System.err.println("Erreur parsing date fériée: " + dateFeriee);
+                        }
+                    }
+                }
+            }
+
+            // Planifier les entretiens
+            List<Entretien> entretiensPlannifies = entretienService.planifierEntretiens(
+                offreId, dureeEntretien, dateDebutParsed, heuresJour, 
+                intervalleMinutes, joursFerriesParsed);
+
+            if (!entretiensPlannifies.isEmpty()) {
+                // Envoyer les invitations par email
+                entretienService.envoyerInvitationsEntretiens(entretiensPlannifies);
+                
+                redirectAttributes.addFlashAttribute("successMessage", 
+                    entretiensPlannifies.size() + " entretien(s) planifié(s) et invitation(s) envoyée(s) avec succès !");
+            } else {
+                redirectAttributes.addFlashAttribute("warningMessage", 
+                    "Aucun entretien n'a pu être planifié. Vérifiez les candidats admis.");
+            }
+
+        } catch (Exception e) {
+            System.err.println("Erreur planification entretiens: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Erreur lors de la planification des entretiens: " + e.getMessage());
+        }
+
+        return "redirect:/admin/candidats/admis/" + offreId;
+    }
+
+    /**
+     * Traiter les admissions par offre (nouvelle méthode)
+     */
+    @PostMapping("/traiter-admissions-offre/{offreId}")
+    public String traiterAdmissionsParOffre(@PathVariable Long offreId,
+                                          @RequestParam String critere,
+                                          @RequestParam(required = false) Double noteMinimum,
+                                          @RequestParam(required = false) Integer nombreCandidats,
+                                          HttpSession session,
+                                          RedirectAttributes redirectAttributes) {
+        if (!userService.isAdmin(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent effectuer cette action");
+            return "redirect:/login";
+        }
+
+        try {
+            System.out.println("=== TRAITEMENT ADMISSIONS PAR OFFRE ===");
+            System.out.println("Offre ID: " + offreId);
+            System.out.println("Critère: " + critere);
+            System.out.println("Note minimum: " + noteMinimum);
+            System.out.println("Nombre candidats: " + nombreCandidats);
+
+            int candidatsTraites = test2Service.traiterAdmissionsTest2ParOffre(offreId, critere, noteMinimum, nombreCandidats);
+
+            redirectAttributes.addFlashAttribute("successMessage", 
+                candidatsTraites + " candidat(s) traité(s) avec succès pour cette offre !");
+
+        } catch (Exception e) {
+            System.err.println("Erreur traitement admissions par offre: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Erreur lors du traitement des admissions: " + e.getMessage());
+        }
+
+        return "redirect:/admin/candidats/classement/" + offreId;
     }
 }
