@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title>Relations Poste-Compétence - Gestion Entreprise</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-link-45deg me-2"></i>
+                Relations Poste-Compétence
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="/poste-competances/new" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouvelle Relation
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${posteCompetances.empty}" class="text-center py-5">
+                    <i class="bi bi-link-45deg display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune relation poste-compétence trouvée</h5>
+                    <p class="text-muted mb-4">Commencez par associer des compétences aux postes</p>
+                    <a href="/poste-competances/new" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer une relation
+                    </a>
+                </div>
+
+                <div th:unless="${posteCompetances.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Poste</th>
+                                <th>Compétence</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="posteCompetance : ${posteCompetances}">
+                                <td th:text="${posteCompetance.idPosteCompetance}">1</td>
+                                <td>
+                                    <span class="badge bg-info me-2">
+                                        <i class="bi bi-briefcase"></i>
+                                    </span>
+                                    <a th:href="@{/poste-competances/by-poste/{id}(id=${posteCompetance.poste?.idPoste})}"
+                                        class="text-decoration-none fw-bold"
+                                        th:text="${posteCompetance.poste?.nom}">Développeur</a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success me-2">
+                                        <i class="bi bi-star-fill"></i>
+                                    </span>
+                                    <a th:href="@{/poste-competances/by-competance/{id}(id=${posteCompetance.competance?.idCompetance})}"
+                                        class="text-decoration-none fw-bold"
+                                        th:text="${posteCompetance.competance?.nom}">Java</a>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/poste-competances/edit/{id}(id=${posteCompetance.idPosteCompetance})}"
+                                            class="btn btn-sm btn-outline-warning" title="Modifier">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form
+                                            th:action="@{/poste-competances/delete/{id}(id=${posteCompetance.idPosteCompetance})}"
+                                            method="post" style="display: inline;"
+                                            onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation ?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

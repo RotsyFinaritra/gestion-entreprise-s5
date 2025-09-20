@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Gestion Poste-Formation - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-link me-2"></i>
+                                <span th:if="${posteFormation.idPosteFormation == null}">Associer Formation à un Poste</span>
+                                <span th:if="${posteFormation.idPosteFormation != null}">Modifier Association Poste-Formation</span>
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/poste_formation/save}" method="post" th:object="${posteFormation}">
+                                <input type="hidden" th:field="*{idPosteFormation}">
+                            
+                            <div class="mb-3">
+                                <label for="poste" class="form-label">
+                                    <i class="fas fa-briefcase me-1"></i>Poste *
+                                </label>
+                                <select class="form-select" th:field="*{poste}" id="poste" required>
+                                    <option value="">Sélectionnez un poste</option>
+                                    <option th:each="p : ${postes}" 
+                                            th:value="${p.idPoste}" 
+                                            th:text="${p.nom}"></option>
+                                </select>
+                                <div class="form-text">Choisissez le poste à associer</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="formation" class="form-label">
+                                    <i class="fas fa-graduation-cap me-1"></i>Formation *
+                                </label>
+                                <select class="form-select" th:field="*{formation}" id="formation" required>
+                                    <option value="">Sélectionnez une formation</option>
+                                    <option th:each="f : ${formations}" 
+                                            th:value="${f.idFormation}" 
+                                            th:text="${f.nom}"></option>
+                                </select>
+                                <div class="form-text">Choisissez la formation requise pour ce poste</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="niveau" class="form-label">
+                                    <i class="fas fa-star me-1"></i>Niveau de Priorité
+                                </label>
+                                <select class="form-select" th:field="*{niveau}" id="niveau">
+                                    <option value="">Niveau optionnel</option>
+                                    <option value="Requis">Requis</option>
+                                    <option value="Recommandé">Recommandé</option>
+                                    <option value="Optionnel">Optionnel</option>
+                                </select>
+                                <div class="form-text">Indiquez l'importance de cette formation pour le poste</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">
+                                    <i class="fas fa-info-circle me-1"></i>Description
+                                </label>
+                                <textarea class="form-control" th:field="*{description}" id="description" 
+                                          rows="3" placeholder="Description optionnelle de la relation..."></textarea>
+                                <div class="form-text">Ajoutez des détails sur pourquoi cette formation est liée à ce poste</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="/admin/poste_formation/list" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Retour
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>
+                                    <span th:if="${posteFormation.idPosteFormation == null}">Créer Association</span>
+                                    <span th:if="${posteFormation.idPosteFormation != null}">Modifier Association</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Validation pour éviter les doublons
+            document.getElementById('poste').addEventListener('change', checkDuplicate);
+            document.getElementById('formation').addEventListener('change', checkDuplicate);
+            
+            function checkDuplicate() {
+                const posteId = document.getElementById('poste').value;
+                const formationId = document.getElementById('formation').value;
+                
+                if (posteId && formationId) {
+                    // Vous pouvez ajouter ici une vérification AJAX pour éviter les doublons
+                    console.log('Vérification: Poste ' + posteId + ' + Formation ' + formationId);
+                }
+            }
+            
+            // Animation pour les sélections
+            document.querySelectorAll('.form-select').forEach(select => {
+                select.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                select.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+        </script>
+        
+        <style>
+            .focused {
+                transform: scale(1.02);
+                transition: transform 0.2s ease;
+            }
+            
+            .card {
+                border-radius: 15px;
+            }
+            
+            .form-select:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            }
+            
+            .btn {
+                border-radius: 8px;
+            }
+        </style>
+    </div>
+</body>
+</html>

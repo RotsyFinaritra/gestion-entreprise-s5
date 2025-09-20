@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${formation.idFormation} ? 'Modifier une Formation - Gestion Entreprise' : 'Nouvelle Formation - Gestion Entreprise'"></title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="mb-4">
+            <h2 th:if="${formation.idFormation}">
+                <i class="bi bi-pencil me-2"></i>
+                Modifier la Formation
+            </h2>
+            <h2 th:unless="${formation.idFormation}">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Formation
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="/formations">Formations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" 
+                        th:text="${formation.idFormation} ? 'Modifier' : 'Nouveau'"></li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/formations}" th:object="${formation}" method="post">
+                            <input type="hidden" th:field="*{idFormation}">
+
+                            <div class="mb-3">
+                                <label for="nom" class="form-label">
+                                    <i class="bi bi-mortarboard me-1"></i>
+                                    Nom de la formation
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nom" 
+                                       th:field="*{nom}" 
+                                       placeholder="Entrez le nom de la formation" 
+                                       required>
+                                <div class="form-text">
+                                    Exemple: Licence Informatique, Master en Gestion, Ingénieur Civil, etc.
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/formations" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Retour
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${formation.idFormation} ? 'Modifier' : 'Créer'"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

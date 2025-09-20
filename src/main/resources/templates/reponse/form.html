@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${reponse.idReponseQuestion != null ? 'Modifier la Réponse' : 'Nouvelle Réponse'} + ' - Gestion Entreprise'">Nouvelle Réponse - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-chat-dots me-2"></i>
+                <span th:text="${reponse.idReponseQuestion != null ? 'Modifier la Réponse' : 'Nouvelle Réponse'}">Nouvelle Réponse</span>
+            </h2>
+            <a href="/reponses" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-form me-2"></i>
+                            Informations de la Réponse
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/reponses}" th:object="${reponse}" method="post">
+                            <input type="hidden" th:field="*{idReponseQuestion}">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="question" class="form-label">
+                                            <i class="bi bi-question-circle me-1"></i>
+                                            Question Associée *
+                                        </label>
+                                        <select class="form-select" 
+                                                id="question" 
+                                                th:field="*{question}"
+                                                required>
+                                            <option value="">Sélectionner une question</option>
+                                            <option th:each="question : ${questions}"
+                                                    th:value="${question.idQuestion}"
+                                                    th:text="${#strings.abbreviate(question.enonce, 60)}"
+                                                    th:selected="${reponse.question != null and reponse.question.idQuestion == question.idQuestion}">
+                                                Qu'est-ce que Java ?
+                                            </option>
+                                        </select>
+                                        <div class="form-text">
+                                            Choisissez la question à laquelle cette réponse correspond
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="valeur" class="form-label">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Type de Réponse
+                                        </label>
+                                        <select class="form-select" 
+                                                id="valeur" 
+                                                th:field="*{valeur}"
+                                                required>
+                                            <option value="">Sélectionner le type</option>
+                                            <option value="true" th:selected="${reponse.valeur == true}">
+                                                <span class="badge bg-success">Réponse Correcte</span>
+                                            </option>
+                                            <option value="false" th:selected="${reponse.valeur == false}">
+                                                <span class="badge bg-danger">Réponse Incorrecte</span>
+                                            </option>
+                                        </select>
+                                        <div class="form-text">
+                                            Indiquez si cette réponse est correcte ou non
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="choix" class="form-label">
+                                    <i class="bi bi-chat-quote me-1"></i>
+                                    Texte de la Réponse *
+                                </label>
+                                <textarea class="form-control" 
+                                          id="choix" 
+                                          th:field="*{choix}" 
+                                          rows="3"
+                                          placeholder="Saisissez le choix de réponse..."
+                                          required></textarea>
+                                <div class="form-text">
+                                    Rédigez le texte du choix de réponse de manière claire
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/reponses" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-dark">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${reponse.idReponseQuestion != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('question').focus();
+                
+                // Auto-resize textarea
+                const textarea = document.getElementById('choix');
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+
+                // Style dynamique pour le select de type
+                const selectValeur = document.getElementById('valeur');
+                selectValeur.addEventListener('change', function() {
+                    if (this.value === 'true') {
+                        this.className = 'form-select text-success';
+                    } else if (this.value === 'false') {
+                        this.className = 'form-select text-danger';
+                    } else {
+                        this.className = 'form-select';
+                    }
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

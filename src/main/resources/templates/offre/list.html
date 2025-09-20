@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Liste des Offres d'emploi - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-file-text me-2"></i>
+                Liste des Offres d'emploi
+            </h2>
+            <a href="/offres/new" class="btn btn-dark">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Offre
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${offres.empty}" class="text-center py-5">
+                    <i class="bi bi-file-text display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune offre trouvée</h5>
+                    <p class="text-muted mb-4">Commencez par publier votre première offre d'emploi</p>
+                    <a href="/offres/new" class="btn btn-dark">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer une offre
+                    </a>
+                </div>
+
+                <div th:unless="${offres.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Poste</th>
+                                <th>Formation Requise</th>
+                                <th>Localisation</th>
+                                <th>Âge</th>
+                                <th>Nb Personnes</th>
+                                <th>Date Publication</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="offre : ${offres}">
+                                <td th:text="${offre.idOffre}">1</td>
+                                <td>
+                                    <div>
+                                        <strong th:text="${offre.poste != null ? offre.poste.nom : 'Poste non défini'}">Développeur Web</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="${#strings.abbreviate(offre.mission, 50)}" th:if="${offre.mission != null}">Développement d'applications web...</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${offre.formation != null}" class="badge bg-secondary" th:text="${offre.formation.nom}">Bac+5</span>
+                                    <span th:unless="${offre.formation != null}" class="text-muted">Non spécifiée</span>
+                                </td>
+                                <td>
+                                    <span th:if="${offre.local != null}" th:text="${offre.local.nom}">Paris</span>
+                                    <span th:unless="${offre.local != null}" class="text-muted">Non spécifié</span>
+                                </td>
+                                <td>
+                                    <span th:if="${offre.ageMin != null and offre.ageMax != null}" 
+                                          th:text="${offre.ageMin + '-' + offre.ageMax + ' ans'}">25-35 ans</span>
+                                    <span th:if="${offre.ageMin != null and offre.ageMax == null}" 
+                                          th:text="${offre.ageMin + '+ ans'}">25+ ans</span>
+                                    <span th:if="${offre.ageMin == null and offre.ageMax != null}" 
+                                          th:text="'Moins de ' + ${offre.ageMax + ' ans'}">Moins de 35 ans</span>
+                                    <span th:if="${offre.ageMin == null and offre.ageMax == null}" class="text-muted">Non défini</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary" th:text="${offre.nbrPersonne != null ? offre.nbrPersonne : '?'}">1</span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}" th:if="${offre.datePublication != null}">01/01/2024</span>
+                                    <span th:unless="${offre.datePublication != null}" class="text-muted">Non publiée</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/offres/edit/{id}(id=${offre.idOffre})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/offres/delete/{id}(id=${offre.idOffre})}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

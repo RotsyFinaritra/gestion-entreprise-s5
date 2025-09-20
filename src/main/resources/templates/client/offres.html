@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{client_layout :: html}">
+
+<head>
+    <title>Offres d'emploi - Portail Emploi</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- En-tête de la page -->
+        <section class="bg-light py-4 offres">
+            <div class="backImg">
+                <img src="/back.gif" alt="">
+            </div>
+            <div class="container">
+                <div class="titreOffre">
+                    <div>
+                        <h1 class="h3 mb-1">Offres d'emploi</h1>
+                        <p class="text-muted mb-0">
+                            <span th:text="${totalElements}">0</span> offre(s) trouvée(s)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container py-4">
+            <div class="row">
+                <!-- Filtres -->
+                <div class="col-lg-3 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="bi bi-funnel me-2"></i>
+                                Filtres
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" action="/client/offres">
+                                <div class="mb-3">
+                                    <label for="search" class="form-label">Recherche</label>
+                                    <input type="text" class="form-control" id="search" name="search"
+                                        th:value="${searchQuery}" placeholder="Mots-clés...">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="posteId" class="form-label">Poste</label>
+                                    <select class="form-select" id="posteId" name="posteId">
+                                        <option value="">Tous les postes</option>
+                                        <option th:each="poste : ${postes}" th:value="${poste.idPoste}"
+                                            th:text="${poste.nom}"
+                                            th:selected="${selectedPosteId != null and selectedPosteId.equals(poste.idPoste)}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="formationId" class="form-label">Formation</label>
+                                    <select class="form-select" id="formationId" name="formationId">
+                                        <option value="">Toutes les formations</option>
+                                        <option th:each="formation : ${formations}" th:value="${formation.idFormation}"
+                                            th:text="${formation.nom}"
+                                            th:selected="${selectedFormationId != null and selectedFormationId.equals(formation.idFormation)}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="localId" class="form-label">Localisation</label>
+                                    <select class="form-select" id="localId" name="localId">
+                                        <option value="">Toutes les localités</option>
+                                        <option th:each="local : ${locals}" th:value="${local.idLocal}"
+                                            th:text="${local.nom}"
+                                            th:selected="${selectedLocalId != null and selectedLocalId.equals(local.idLocal)}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-2"></i>
+                                        Filtrer
+                                    </button>
+                                    <a href="/client/offres" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                        Réinitialiser
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des offres -->
+                <div class="col-lg-9 offreContainer">
+                    <div th:if="${offres != null and !offres.empty}">
+                        <div class="row">
+                            <div class="col-md-6 col-xl-6 mb-4" th:each="offre : ${offres}">
+                                <div class="card offre-card h-100 border-0 shadow-sm">
+                                    <div class="entete">
+                                        <i class="bi bi-building me-1"></i>
+
+                                        <span class="badge rounded-pill"
+                                            style="background: linear-gradient(45deg, #10b981, #059669);">Verified
+                                            Company</span>
+                                        <div class="enteteItem">
+                                            <div class="entetelogo">
+                                                <img src="/logo.png" alt="">
+                                            </div>
+                                            <div class="descTete">
+                                                <p th:text="${offre.local?.nom ?: 'Remote'}">Paris</p>
+                                                <h1>Treva Agency</h1>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <!-- En-tête de l'offre -->
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="flex-grow-1">
+                                                <h5 class="card-title fw-bold mb-1"
+                                                    th:text="${offre.poste?.nom ?: 'Poste non défini'}">Développeur</h5>
+                                            </div>
+                                        </div>
+
+                                        <!-- Description -->
+                                        <p class="card-text text-muted mb-3 flex-grow-1"
+                                            th:text="${#strings.length(offre.mission) > 120 ? #strings.substring(offre.mission, 0, 120) + '...' : offre.mission}">
+                                            Description de la mission...
+                                        </p>
+
+                                        <div class="infoCle">
+                                            <div class="row g-2 mb-3">
+                                                <div class="">
+                                                    <div class="bg-light rounded p-2 text-center">
+                                                        <small class="text-muted d-block">Formation</small>
+                                                        <span class="fw-semibold small"
+                                                            th:text="${offre.formation?.nom ?: 'Non spécifiée'}">BAC+5</span>
+                                                    </div>
+                                                </div>
+                                                <div class="">
+                                                    <div class="bg-light rounded p-2 text-center">
+                                                        <small class="text-muted d-block">Postes</small>
+                                                        <span class="fw-semibold small"
+                                                            th:text="${offre.nbrPersonne ?: 1}">1</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="infoItem mb-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                    <span
+                                                        th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}">01/01/2025</span>
+                                                </small>
+                                                <div class="gap-1">
+                                                    <span th:if="${offre.dateFin != null}"
+                                                        class="badge badge-urgent small">
+                                                        <i class="bi bi-clock-fill me-1"></i>
+                                                        Date limite : <span
+                                                            th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">Bla</span>
+                                                    </span>
+                                                    <span class="badge bg-success bg-opacity-10 text-success small">
+                                                        <i class="bi bi-eye me-1"></i>
+                                                        Nouveau
+                                                    </span>
+                                                </div>
+                                                <div class="mt-auto">
+                                                    <a th:href="@{/client/offres/{id}(id=${offre.idOffre})}"
+                                                        class="btn btn-dark w-100 rounded-pill">
+                                                        <i class="bi bi-arrow-right me-2"></i>
+                                                        Voir les détails
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Informations clés -->
+
+
+
+                                        <!-- Date et indicateurs -->
+
+                                        <!-- Actions -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${totalPages > 1}" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/client/offres(page=0, search=${searchQuery}, posteId=${selectedPosteId}, formationId=${selectedFormationId}, localId=${selectedLocalId})}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item" th:classappend="${currentPage == 0 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/client/offres(page=${currentPage - 1}, search=${searchQuery}, posteId=${selectedPosteId}, formationId=${selectedFormationId}, localId=${selectedLocalId})}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+
+                                <li th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, currentPage - 2), T(java.lang.Math).min(totalPages - 1, currentPage + 2))}"
+                                    class="page-item" th:classappend="${i == currentPage ? 'active' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/client/offres(page=${i}, search=${searchQuery}, posteId=${selectedPosteId}, formationId=${selectedFormationId}, localId=${selectedLocalId})}"
+                                        th:text="${i + 1}">1</a>
+                                </li>
+
+                                <li class="page-item"
+                                    th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/client/offres(page=${currentPage + 1}, search=${searchQuery}, posteId=${selectedPosteId}, formationId=${selectedFormationId}, localId=${selectedLocalId})}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item"
+                                    th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">
+                                    <a class="page-link"
+                                        th:href="@{/client/offres(page=${totalPages - 1}, search=${searchQuery}, posteId=${selectedPosteId}, formationId=${selectedFormationId}, localId=${selectedLocalId})}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- État vide -->
+                    <div th:if="${offres == null or offres.empty}" class="text-center py-5">
+                        <i class="bi bi-search display-1 text-muted mb-4"></i>
+                        <h4 class="text-muted">Aucune offre trouvée</h4>
+                        <p class="text-muted mb-4">Essayez de modifier vos critères de recherche ou consultez toutes les
+                            offres disponibles.</p>
+                        <a href="/client/offres" class="btn btn-primary">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            Voir toutes les offres
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

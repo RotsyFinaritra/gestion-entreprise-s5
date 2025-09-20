@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${poste.idPoste != null ? 'Modifier le Poste' : 'Nouveau Poste'} + ' - Gestion Entreprise'">Nouveau Poste - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-briefcase me-2"></i>
+                <span th:text="${poste.idPoste != null ? 'Modifier le Poste' : 'Nouveau Poste'}">Nouveau Poste</span>
+            </h2>
+            <a href="/postes" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-form me-2"></i>
+                            Informations du Poste
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/postes}" th:object="${poste}" method="post">
+                            <input type="hidden" th:field="*{idPoste}">
+                            
+                            <div class="mb-3">
+                                <label for="nom" class="form-label">
+                                    <i class="bi bi-tag me-1"></i>
+                                    Nom du Poste *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nom" 
+                                       th:field="*{nom}" 
+                                       placeholder="Ex: Développeur Web Senior"
+                                       required>
+                                <div class="form-text">
+                                    Saisissez le nom du poste de manière claire et précise
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/postes" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${poste.idPoste != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            // Auto focus sur le premier champ
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('nom').focus();
+            });
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${question.idQuestion != null ? 'Modifier la Question' : 'Nouvelle Question'} + ' - Gestion Entreprise'">Nouvelle Question - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-question-circle me-2"></i>
+                <span th:text="${question.idQuestion != null ? 'Modifier la Question' : 'Nouvelle Question'}">Nouvelle Question</span>
+            </h2>
+            <a href="/questions" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-form me-2"></i>
+                            Informations de la Question
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/questions}" th:object="${question}" method="post">
+                            <input type="hidden" th:field="*{idQuestion}">
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label for="enonce" class="form-label">
+                                            <i class="bi bi-chat-quote me-1"></i>
+                                            Énoncé de la Question *
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  id="enonce" 
+                                                  th:field="*{enonce}" 
+                                                  rows="4"
+                                                  placeholder="Saisissez l'énoncé de votre question d'évaluation..."
+                                                  required></textarea>
+                                        <div class="form-text">
+                                            Rédigez une question claire et précise pour évaluer la compétence
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="competance" class="form-label">
+                                            <i class="bi bi-star me-1"></i>
+                                            Compétence Évaluée
+                                        </label>
+                                        <select class="form-select" 
+                                                id="competance" 
+                                                th:field="*{competance}">
+                                            <option value="">Sélectionner une compétence</option>
+                                            <option th:each="competance : ${competances}"
+                                                    th:value="${competance.idCompetance}"
+                                                    th:text="${competance.nom}"
+                                                    th:selected="${question.competance != null and question.competance.idCompetance == competance.idCompetance}">
+                                                Java
+                                            </option>
+                                        </select>
+                                        <div class="form-text">
+                                            Associez la question à une compétence spécifique
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="note" class="form-label">
+                                            <i class="bi bi-award me-1"></i>
+                                            Points Attribués
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="note" 
+                                               th:field="*{note}" 
+                                               min="1" 
+                                               max="100"
+                                               placeholder="5">
+                                        <div class="form-text">
+                                            Nombre de points pour une bonne réponse
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/questions" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-info">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${question.idQuestion != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('enonce').focus();
+                
+                // Auto-resize textarea
+                const textarea = document.getElementById('enonce');
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

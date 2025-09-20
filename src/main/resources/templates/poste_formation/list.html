@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Gestion des Relations Poste-Formation - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-network-wired me-2"></i>
+                                Gestion des Relations Poste-Formation
+                            </h4>
+                            <a href="/admin/poste_formation/form" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus me-1"></i>Nouvelle Association
+                            </a>
+                        </div>
+                        <div class="card-body">
+                        <!-- Filtres -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filterPoste" class="form-label">Filtrer par Poste</label>
+                                <select class="form-select" id="filterPoste">
+                                    <option value="">Tous les postes</option>
+                                    <option th:each="poste : ${postes}" 
+                                            th:value="${poste.idPoste}" 
+                                            th:text="${poste.nom}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="filterFormation" class="form-label">Filtrer par Formation</label>
+                                <select class="form-select" id="filterFormation">
+                                    <option value="">Toutes les formations</option>
+                                    <option th:each="formation : ${formations}" 
+                                            th:value="${formation.idFormation}" 
+                                            th:text="${formation.nom}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="filterNiveau" class="form-label">Filtrer par Niveau</label>
+                                <select class="form-select" id="filterNiveau">
+                                    <option value="">Tous les niveaux</option>
+                                    <option value="Requis">Requis</option>
+                                    <option value="Recommandé">Recommandé</option>
+                                    <option value="Optionnel">Optionnel</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Messages d'alerte -->
+                        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span th:text="${message}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <!-- Statistiques -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-link fa-2x mb-2"></i>
+                                        <h5 th:text="${#lists.size(posteFormations)}">0</h5>
+                                        <small>Total Associations</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-briefcase fa-2x mb-2"></i>
+                                        <h5 th:text="${#lists.size(postes)}">0</h5>
+                                        <small>Postes Concernés</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                                        <h5 th:text="${#lists.size(formations)}">0</h5>
+                                        <small>Formations Disponibles</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-star fa-2x mb-2"></i>
+                                        <h5 id="requiredCount">0</h5>
+                                        <small>Formations Requises</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tableau des associations -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="associationsTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-hashtag"></i> ID</th>
+                                        <th><i class="fas fa-briefcase"></i> Poste</th>
+                                        <th><i class="fas fa-graduation-cap"></i> Formation</th>
+                                        <th><i class="fas fa-star"></i> Niveau</th>
+                                        <th><i class="fas fa-info-circle"></i> Description</th>
+                                        <th><i class="fas fa-cogs"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(posteFormations)}">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            Aucune association trouvée
+                                            <br><br>
+                                            <a href="/admin/poste_formation/form" class="btn btn-primary">
+                                                <i class="fas fa-plus me-1"></i>Créer la première association
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="pf : ${posteFormations}" 
+                                        th:attr="data-poste=${pf.poste.idPoste}, data-formation=${pf.formation.idFormation}, data-niveau=${pf.niveau}">
+                                        <td th:text="${pf.idPosteFormation}" class="fw-bold"></td>
+                                        <td>
+                                            <span class="badge bg-secondary me-1">
+                                                <i class="fas fa-briefcase"></i>
+                                            </span>
+                                            <span th:text="${pf.poste.nom}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info me-1">
+                                                <i class="fas fa-graduation-cap"></i>
+                                            </span>
+                                            <span th:text="${pf.formation.nom}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${pf.niveau == 'Requis'}" class="badge bg-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Requis
+                                            </span>
+                                            <span th:if="${pf.niveau == 'Recommandé'}" class="badge bg-warning">
+                                                <i class="fas fa-thumbs-up"></i> Recommandé
+                                            </span>
+                                            <span th:if="${pf.niveau == 'Optionnel'}" class="badge bg-success">
+                                                <i class="fas fa-check"></i> Optionnel
+                                            </span>
+                                            <span th:if="${pf.niveau == null or pf.niveau == ''}" class="badge bg-light text-dark">
+                                                <i class="fas fa-minus"></i> Non défini
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${pf.description != null and pf.description != ''}" 
+                                                  th:text="${#strings.abbreviate(pf.description, 50)}" 
+                                                  th:title="${pf.description}"></span>
+                                            <span th:if="${pf.description == null or pf.description == ''}" 
+                                                  class="text-muted fst-italic">Aucune description</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/poste_formation/edit/{id}(id=${pf.idPosteFormation})}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        th:onclick="'confirmDelete(' + ${pf.idPosteFormation} + ')'" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de confirmation de suppression -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir supprimer cette association ?</p>
+                        <p class="text-muted">Cette action est irréversible.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="deleteAssociation()">
+                            <i class="fas fa-trash me-1"></i>Supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            let deleteId = null;
+            
+            // Filtres
+            document.getElementById('filterPoste').addEventListener('change', applyFilters);
+            document.getElementById('filterFormation').addEventListener('change', applyFilters);
+            document.getElementById('filterNiveau').addEventListener('change', applyFilters);
+            
+            function applyFilters() {
+                const posteFilter = document.getElementById('filterPoste').value;
+                const formationFilter = document.getElementById('filterFormation').value;
+                const niveauFilter = document.getElementById('filterNiveau').value;
+                
+                const rows = document.querySelectorAll('#associationsTable tbody tr');
+                
+                rows.forEach(row => {
+                    if (row.querySelector('td[colspan]')) return; // Skip empty message row
+                    
+                    const poste = row.dataset.poste;
+                    const formation = row.dataset.formation;
+                    const niveau = row.dataset.niveau || '';
+                    
+                    const showPoste = !posteFilter || poste === posteFilter;
+                    const showFormation = !formationFilter || formation === formationFilter;
+                    const showNiveau = !niveauFilter || niveau === niveauFilter;
+                    
+                    row.style.display = (showPoste && showFormation && showNiveau) ? '' : 'none';
+                });
+                
+                updateStats();
+            }
+            
+            function updateStats() {
+                const visibleRows = document.querySelectorAll('#associationsTable tbody tr[style=""], #associationsTable tbody tr:not([style])');
+                const requiredRows = Array.from(visibleRows).filter(row => 
+                    !row.querySelector('td[colspan]') && row.dataset.niveau === 'Requis'
+                );
+                
+                document.getElementById('requiredCount').textContent = requiredRows.length;
+            }
+            
+            function confirmDelete(id) {
+                deleteId = id;
+                const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                modal.show();
+            }
+            
+            function deleteAssociation() {
+                if (deleteId) {
+                    fetch(`/admin/poste_formation/delete/${deleteId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Erreur lors de la suppression');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Erreur lors de la suppression');
+                    });
+                }
+            }
+            
+            // Animation au survol des lignes
+            document.querySelectorAll('#associationsTable tbody tr').forEach(row => {
+                if (!row.querySelector('td[colspan]')) {
+                    row.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.01)';
+                        this.style.transition = 'transform 0.2s ease';
+                    });
+                    
+                    row.addEventListener('mouseleave', function() {
+                        this.style.transform = 'scale(1)';
+                    });
+                }
+            });
+            
+            // Initialiser les statistiques
+            updateStats();
+        </script>
+        
+        <style>
+            .table-hover tbody tr:hover {
+                background-color: rgba(0, 123, 255, 0.05);
+            }
+            
+            .card {
+                border-radius: 15px;
+            }
+            
+            .badge {
+                font-size: 0.75em;
+            }
+            
+            .btn-group .btn {
+                border-radius: 6px;
+            }
+            
+            .btn-group .btn + .btn {
+                margin-left: 2px;
+            }
+        </style>
+    </div>

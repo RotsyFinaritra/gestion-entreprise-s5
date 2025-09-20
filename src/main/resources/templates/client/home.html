@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{client_layout :: html}">
+
+<head>
+    <title>Accueil - Portail Emploi</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="backImg">
+                <img src=";/back.gif" alt="">
+            </div>
+            <div class="container hero-content">
+                <div class="row align-items-center min-vh-75">
+                    <div class="col-lg-6 fade-in-left">
+                        <h1 class="display-3 fw-bold mb-4 typewriter">Trouvez l'emploi tech de vos rêves</h1>
+                        <p class="lead mb-4 fs-5">Découvrez des opportunités dans les secteurs technologiques les plus
+                            innovants. Développement, IA, cybersécurité, data science... Votre carrière tech commence
+                            ici.</p>
+                        <div class="d-flex flex-wrap gap-3 mb-4">
+                            <a href="/client/offres" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="bi bi-search me-2"></i>
+                                Explorer les offres
+                            </a>
+                            <a href="#statistiques" class="btn btn-outline-light btn-lg px-5 py-3">
+                                <i class="bi bi-bar-chart me-2"></i>
+                                Découvrir plus
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center gap-4 mt-4">
+                            <div class="text-center">
+                                <h4 class="fw-bold mb-0" th:text="${totalOffres ?: 0}">0</h4>
+                                <small class="opacity-75">Offres tech</small>
+                            </div>
+                            <div class="text-center">
+                                <h4 class="fw-bold mb-0">500+</h4>
+                                <small class="opacity-75">Développeurs</small>
+                            </div>
+                            <div class="text-center">
+                                <h4 class="fw-bold mb-0">95%</h4>
+                                <small class="opacity-75">Satisfaction</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 text-center fade-in-right">
+                        <div class="hero-illustration">
+                            <div class="position-relative d-inline-block">
+                                <img src="/home.png" alt="Portail Emploi Tech" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section de recherche rapide -->
+        <section class="search-section">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="text-center mb-5 scrolled-element">
+                            <h2 class="h1 fw-bold mb-3">Trouvez votre mission tech idéale</h2>
+                            <p class="lead text-muted">Explorez les opportunités dans les technologies de pointe et
+                                lancez-vous dans l'innovation</p>
+                        </div>
+
+                        <div class="card shadow-lg border-0 scrolled-element">
+                            <div class="card-body p-4">
+                                <form method="GET" action="/client/offres" class="row g-3">
+                                    <div class="col-md-5">
+                                        <div class="position-relative">
+                                            <i
+                                                class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                            <input type="text" class="form-control form-control-lg ps-5" name="search"
+                                                placeholder="Métier, compétences, entreprise..."
+                                                style="border-radius: 50px;">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="position-relative">
+                                            <i
+                                                class="bi bi-geo-alt position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                            <select class="form-select form-select-lg ps-5" name="localId"
+                                                style="border-radius: 50px;">
+                                                <option value="">Toutes les localités</option>
+                                                <option th:each="local : ${locals}" th:if="${locals != null}"
+                                                    th:value="${local.idLocal}" th:text="${local.nom}"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100 px-4"
+                                            style="border-radius: 50px;">
+                                            <i class="bi bi-search me-2"></i>
+                                            Rechercher
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="mt-4 text-center">
+                                    <p class="text-muted mb-2">Recherches populaires :</p>
+                                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                                        <a href="/client/offres?search=développeur"
+                                            class="badge bg-light text-primary text-decoration-none px-3 py-2 rounded-pill">
+                                            <i class="bi bi-code-slash me-1"></i>
+                                            Développeur
+                                        </a>
+                                        <a href="/client/offres?search=data"
+                                            class="badge bg-light text-primary text-decoration-none px-3 py-2 rounded-pill">
+                                            <i class="bi bi-graph-up me-1"></i>
+                                            Data Science
+                                        </a>
+                                        <a href="/client/offres?search=devops"
+                                            class="badge bg-light text-primary text-decoration-none px-3 py-2 rounded-pill">
+                                            <i class="bi bi-cloud-fill me-1"></i>
+                                            DevOps
+                                        </a>
+                                        <a href="/client/offres?search=designer"
+                                            class="badge bg-light text-primary text-decoration-none px-3 py-2 rounded-pill">
+                                            <i class="bi bi-palette me-1"></i>
+                                            UI/UX
+                                        </a>
+                                        <a href="/client/offres?search=cybersécurité"
+                                            class="badge bg-light text-primary text-decoration-none px-3 py-2 rounded-pill">
+                                            <i class="bi bi-shield-check me-1"></i>
+                                            Cybersécurité
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Offres récentes -->
+        <section class="py-5 bg-light">
+            <div class="container">
+                <div class="text-center mb-5 scrolled-element">
+                    <h2 class="h1 fw-bold mb-3">🚀 Dernières missions tech</h2>
+                    <p class="lead text-muted">Les opportunités les plus récentes dans l'écosystème technologique
+                        français</p>
+                </div>
+
+                <div th:if="${offresRecentes != null and !offresRecentes.empty}">
+                    <div class="row g-4">
+                        <div class="col-lg-4 col-md-6 scrolled-element" th:each="offre : ${offresRecentes}">
+                            <div class="card offre-card h-100 border-0 shadow-sm">
+                                <div class="entete">
+                                    <i class="bi bi-building me-1"></i>
+
+                                    <span class="badge rounded-pill"
+                                        style="background: linear-gradient(45deg, #10b981, #059669);">Verified
+                                        Company</span>
+                                    <div class="enteteItem">
+                                        <div class="entetelogo">
+                                            <img src="/logo.png" alt="">
+                                        </div>
+                                        <div class="descTete">
+                                            <p th:text="${offre.local?.nom ?: 'Remote'}">Paris</p>
+                                            <h1>Treva Agency</h1>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <!-- En-tête de l'offre -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="flex-grow-1">
+                                            <h5 class="card-title fw-bold mb-1"
+                                                th:text="${offre.poste?.nom ?: 'Poste non défini'}">Développeur</h5>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <p class="card-text text-muted mb-3 flex-grow-1"
+                                        th:text="${#strings.length(offre.mission) > 120 ? #strings.substring(offre.mission, 0, 120) + '...' : offre.mission}">
+                                        Description de la mission...
+                                    </p>
+
+                                    <div class="infoCle">
+                                        <div class="row g-2 mb-3">
+                                            <div class="">
+                                                <div class="bg-light rounded p-2 text-center">
+                                                    <small class="text-muted d-block">Formation</small>
+                                                    <span class="fw-semibold small"
+                                                        th:text="${offre.formation?.nom ?: 'Non spécifiée'}">BAC+5</span>
+                                                </div>
+                                            </div>
+                                            <div class="">
+                                                <div class="bg-light rounded p-2 text-center">
+                                                    <small class="text-muted d-block">Postes</small>
+                                                    <span class="fw-semibold small"
+                                                        th:text="${offre.nbrPersonne ?: 1}">1</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="infoItem mb-3">
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                <span
+                                                    th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}">01/01/2025</span>
+                                            </small>
+                                            <div class="gap-1">
+                                                <span th:if="${offre.dateFin != null}" class="badge badge-urgent small">
+                                                    <i class="bi bi-clock-fill me-1"></i>
+                                                    Date limite : <span
+                                                        th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">Bla</span>
+                                                </span>
+                                                <span class="badge bg-success bg-opacity-10 text-success small">
+                                                    <i class="bi bi-eye me-1"></i>
+                                                    Nouveau
+                                                </span>
+                                            </div>
+                                            <div class="mt-auto">
+                                                <a th:href="@{/client/offres/{id}(id=${offre.idOffre})}"
+                                                    class="btn btn-dark w-100 rounded-pill">
+                                                    <i class="bi bi-arrow-right me-2"></i>
+                                                    Voir les détails
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Informations clés -->
+
+
+
+                                    <!-- Date et indicateurs -->
+
+                                    <!-- Actions -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bouton voir plus -->
+                    <div class="text-center mt-5 scrolled-element">
+                        <a href="/client/offres" class="btn btn-outline-primary btn-lg px-5 py-3">
+                            <i class="bi bi-grid me-2"></i>
+                            Voir toutes les offres
+                            <span class="badge bg-primary ms-2" th:text="${totalOffres ?: 0}">0</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- État vide amélioré -->
+                <div th:if="${offresRecentes == null or offresRecentes.empty}"
+                    class="text-center py-5 scrolled-element">
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light"
+                            style="width: 120px; height: 120px;">
+                            <i class="bi bi-briefcase display-3 text-muted"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-muted mb-3">Aucune offre disponible pour le moment</h4>
+                    <p class="text-muted mb-4 lead">Nos équipes travaillent activement pour vous proposer de nouvelles
+                        opportunités. Revenez bientôt !</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="/client/offres" class="btn btn-primary">
+                            <i class="bi bi-bell me-2"></i>
+                            Être notifié des nouvelles offres
+                        </a>
+                        <a href="/login" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Déposer une candidature spontanée
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Avantages -->
+        <section class="py-5">
+            <div class="container">
+                <div class="text-center mb-5 scrolled-element">
+                    <h2 class="h1 fw-bold mb-3">Pourquoi choisir TechJobs ?</h2>
+                    <p class="lead text-muted">Notre plateforme spécialisée tech vous offre des services adaptés aux
+                        professionnels de l'innovation</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-search display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Recherche IA</h4>
+                            <p class="text-muted">Trouvez rapidement les postes tech qui correspondent à vos compétences
+                                grâce à notre algorithme intelligent.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-people display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Startups innovantes</h4>
+                            <p class="text-muted">Rejoignez les entreprises les plus prometteuses du secteur tech, des
+                                startups aux licornes.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-lightning display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Stack moderne</h4>
+                            <p class="text-muted">Candidatez avec vos langages et frameworks préférés. React, Python,
+                                Kubernetes, et bien plus.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-bell display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Alertes personnalisées</h4>
+                            <p class="text-muted">Recevez des notifications pour les nouvelles offres correspondant à
+                                vos critères de recherche.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-shield-check display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Confidentialité</h4>
+                            <p class="text-muted">Vos données personnelles sont protégées et ne sont partagées qu'avec
+                                votre autorisation explicite.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 scrolled-element">
+                        <div class="text-center p-4">
+                            <div class="feature-icon bg-secondary bg-opacity-10 text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 80px; height: 80px;">
+                                <i class="bi bi-headset display-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Support dédié</h4>
+                            <p class="text-muted">Notre équipe est disponible pour vous accompagner dans vos démarches
+                                et répondre à vos questions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="py-5" style="background: linear-gradient(135deg, #00007c);">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 text-white scrolled-element">
+                        <h2 class="h1 fw-bold mb-3">Prêt à trouver votre prochain emploi ?</h2>
+                        <p class="lead mb-0">Rejoignez des milliers de candidats qui ont trouvé leur emploi idéal grâce
+                            à notre plateforme tech.</p>
+                    </div>
+                    <div class="col-lg-4 text-center scrolled-element">
+                        <a href="/client/offres" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow">
+                            <i class="bi bi-rocket-takeoff me-2"></i>
+                            Explorer les offres
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${posteCompetance.idPosteCompetance != null ? 'Modifier une relation - Gestion Entreprise' : 'Nouvelle relation - Gestion Entreprise'}">Relation Poste-Compétence</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-link-45deg me-2"></i>
+                <span th:text="${posteCompetance.idPosteCompetance != null ? 'Modifier la relation poste-compétence' : 'Nouvelle relation poste-compétence'}"></span>
+            </h2>
+            <a href="/poste-competances" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <!-- Messages flash -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="${posteCompetance.idPosteCompetance != null ? '/poste-competances/update/' + posteCompetance.idPosteCompetance : '/poste-competances'}" 
+                              method="post" th:object="${posteCompetance}">
+                            
+                            <div class="mb-4">
+                                <label for="poste" class="form-label fw-bold">
+                                    <i class="bi bi-briefcase me-2"></i>
+                                    Poste <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="poste" th:field="*{poste.idPoste}" required>
+                                    <option value="">-- Sélectionnez un poste --</option>
+                                    <option th:each="poste : ${postes}" 
+                                            th:value="${poste.idPoste}" 
+                                            th:text="${poste.nom}"></option>
+                                </select>
+                                <div class="form-text">Choisissez le poste qui nécessite cette compétence</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="competance" class="form-label fw-bold">
+                                    <i class="bi bi-star me-2"></i>
+                                    Compétence <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="competance" th:field="*{competance.idCompetance}" required>
+                                    <option value="">-- Sélectionnez une compétence --</option>
+                                    <option th:each="competance : ${competances}" 
+                                            th:value="${competance.idCompetance}" 
+                                            th:text="${competance.nom}"></option>
+                                </select>
+                                <div class="form-text">Sélectionnez la compétence requise pour ce poste</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="/poste-competances" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${posteCompetance.idPosteCompetance != null ? 'Modifier' : 'Créer'}"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{client_layout :: html}">
+
+<head>
+    <title th:text="${offre?.poste?.nom} + ' - Détail offre - Portail Emploi'">Détail de l'offre - Portail Emploi
+    </title>
+</head>
+
+<body>
+    <div th:fragment="content" th:if="${offre != null}">
+        <div class="enteteDetailOffre">
+            <div class="backImg">
+                <img src="/back.gif" alt="">
+            </div>
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/client" class="text-decoration-none">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="/client/offres" class="text-decoration-none">Offres
+                            d'emploi</a></li>
+                    <li class="breadcrumb-item active" th:text="${offre.poste?.nom}">Poste</li>
+                </ol>
+            </nav>
+
+        </div>
+        <div class="container py-4 detailOffre">
+            <!-- Navigation -->
+
+            <div class="row">
+                <!-- Détail de l'offre -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div class="flex-grow-1">
+                                    <h1 class="h3 mb-2" th:text="${offre.poste?.nom ?: 'Poste non défini'}">Développeur
+                                        Full Stack</h1>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <span class="badge bg-primary fs-6"
+                                            th:text="${offre.local?.nom ?: 'Remote'}">Paris</span>
+                                        <span
+                                            th:if="${offre.dateFin != null and joursRestants != null and joursRestants <= 7}"
+                                            class="badge badge-urgent fs-6">
+                                            <i class="bi bi-clock-fill me-1"></i>
+                                            Urgent - <span th:text="${joursRestants}">3</span> jour(s) restant(s)
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Publié le</small>
+                                    <strong
+                                        th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}">01/01/2025</strong>
+                                </div>
+                            </div>
+
+                            <!-- Informations générales -->
+                            <div class="row mb-4">
+                                <div class="col-md-3 text-center">
+                                    <div class="border rounded p-3 h-100">
+                                        <i class="bi bi-mortarboard text-primary fs-4 d-block mb-2"></i>
+                                        <small class="text-muted d-block">Formation</small>
+                                        <strong th:text="${offre.formation?.nom ?: 'Non spécifiée'}">BAC+5</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div class="border rounded p-3 h-100">
+                                        <i class="bi bi-people text-success fs-4 d-block mb-2"></i>
+                                        <small class="text-muted d-block">Postes à pourvoir</small>
+                                        <strong th:text="${offre.nbrPersonne ?: 1}">1</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div class="border rounded p-3 h-100">
+                                        <i class="bi bi-calendar-range text-info fs-4 d-block mb-2"></i>
+                                        <small class="text-muted d-block">Âge requis</small>
+                                        <strong>
+                                            <span th:if="${offre.ageMin != null and offre.ageMax != null}"
+                                                th:text="${offre.ageMin + '-' + offre.ageMax + ' ans'}">25-35 ans</span>
+                                            <span th:if="${offre.ageMin == null and offre.ageMax == null}">Non
+                                                spécifié</span>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <div class="border rounded p-3 h-100">
+                                        <i class="bi bi-calendar-check text-warning fs-4 d-block mb-2"></i>
+                                        <small class="text-muted d-block">Date limite</small>
+                                        <strong>
+                                            <span th:if="${offre.dateFin != null}"
+                                                th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">31/12/2025</span>
+                                            <span th:if="${offre.dateFin == null}">Non définie</span>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description de la mission -->
+                            <div class="mb-4">
+                                <h4 class="h5 mb-3">
+                                    <i class="bi bi-file-text me-2"></i>
+                                    Description de la mission
+                                </h4>
+                                <div class="bg-light p-3 rounded">
+                                    <p class="mb-0" th:text="${offre.mission ?: 'Aucune description disponible.'}">
+                                        Mission détaillée...
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Profils requis pour ce poste -->
+                            <div th:if="${profils != null and !profils.empty}" class="mb-4">
+                                <h4 class="h5 mb-3">
+                                    <i class="bi bi-person-check me-2"></i>
+                                    Profils requis
+                                </h4>
+                                <ul>
+                                    <li th:each="profil : ${profils}" class="">
+                                        <p class="mb-0 text-muted" th:text="${profil.description}">
+                                            Description du profil requis pour ce poste...
+                                        </p>
+                                    </li>
+                                </ul>
+                                <div th:if="${profils.size() == 0}" class="text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Aucun profil spécifique requis pour ce poste.
+                                </div>
+                            </div>
+
+                            <!-- Compétences requises -->
+                            <div th:if="${competances != null and !competances.empty}" class="mb-4">
+                                <h4 class="h5 mb-3">
+                                    <i class="bi bi-star me-2"></i>
+                                    Compétences requises
+                                </h4>
+                                <div class="row g-2">
+                                    <ul>
+                                        <li th:each="competance : ${competances}" class="col-auto">
+                                            <span class="fs-6 px-3 py-2" th:text="${competance.nom}">Compétence</span>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                                <div th:if="${competances.size() == 0}" class="text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Aucune compétence spécifique requise pour ce poste.
+                                </div>
+                            </div>
+
+                            <!-- Formations requises -->
+                            <div th:if="${formations != null and !formations.empty}" class="mb-4">
+                                <h4 class="h5 mb-3">
+                                    <i class="bi bi-mortarboard me-2"></i>
+                                    Formations requises
+                                </h4>
+                                <div class="row g-2">
+                                    <ul>
+                                        <li th:each="formation : ${formations}" class="col-auto">
+                                            <span class="fs-6 px-3 py-2" th:text="${formation.nom}">Formation</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div th:if="${formations.size() == 0}" class="text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Aucune formation spécifique requise pour ce poste.
+                                </div>
+                            </div>
+
+                            <!-- Bouton de candidature -->
+                            <div class="d-grid">
+                                <a th:href="@{/client/postuler/{id}(id=${offre.idOffre})}" class="btn btn-dark btn-lg">
+                                    <i class="bi bi-send me-2"></i>
+                                    Postuler à cette offre
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Actions rapides -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">Actions</h6>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/client/postuler/{id}(id=${offre.idOffre})}" class="btn btn-dark">
+                                    <i class="bi bi-send me-2"></i>
+                                    Postuler maintenant
+                                </a>
+                                <button class="btn btn-outline-secondary" onclick="window.print()">
+                                    <i class="bi bi-printer me-2"></i>
+                                    Imprimer l'offre
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations de contact -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title">Contact</h6>
+                            <p class="mb-2">
+                                <i class="bi bi-envelope me-2"></i>
+                                <a href="mailto:rh@entreprise.com" class="text-decoration-none">rh@entreprise.com</a>
+                            </p>
+                            <p class="mb-0">
+                                <i class="bi bi-telephone me-2"></i>
+                                <a href="tel:+33123456789" class="text-decoration-none">+33 1 23 45 67 89</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Offres similaires -->
+                    <div th:if="${offresSimilaires != null and !offresSimilaires.empty}" class="card">
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">Offres similaires</h6>
+                            <div th:each="offreSimilaire : ${offresSimilaires}" class="border-bottom pb-3 mb-3">
+                                <h6 class="mb-1">
+                                    <a th:href="@{/client/offres/{id}(id=${offreSimilaire.idOffre})}"
+                                        th:text="${offreSimilaire.poste?.nom}" class="text-decoration-none">Poste
+                                        similaire</a>
+                                </h6>
+                                <small class="text-muted d-block mb-1"
+                                    th:text="${offreSimilaire.local?.nom}">Lieu</small>
+                                <small class="text-muted">
+                                    Publié le <span
+                                        th:text="${#temporals.format(offreSimilaire.datePublication, 'dd/MM/yyyy')}">01/01/2025</span>
+                                </small>
+                            </div>
+                            <a href="/client/offres" class="btn btn-outline-dark btn-sm w-100">
+                                Voir toutes les offres
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page d'erreur si l'offre n'existe pas -->
+    <div th:fragment="content" th:if="${offre == null}" class="container py-5">
+        <div class="text-center">
+            <i class="bi bi-exclamation-triangle display-1 text-muted mb-4"></i>
+            <h2 class="text-muted mb-3">Offre non trouvée</h2>
+            <p class="text-muted mb-4">L'offre que vous recherchez n'existe pas ou a été supprimée.</p>
+            <a href="/client/offres" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour aux offres
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

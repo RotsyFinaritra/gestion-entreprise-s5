@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Liste des Compétences - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-star me-2"></i>
+                Liste des Compétences
+            </h2>
+            <a href="/competances/new" class="btn btn-success">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Compétence
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${competances.empty}" class="text-center py-5">
+                    <i class="bi bi-star display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune compétence trouvée</h5>
+                    <p class="text-muted mb-4">Commencez par définir les compétences nécessaires</p>
+                    <a href="/competances/new" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer une compétence
+                    </a>
+                </div>
+
+                <div th:unless="${competances.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom de la Compétence</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="competance : ${competances}">
+                                <td th:text="${competance.idCompetance}">1</td>
+                                <td>
+                                    <span class="badge bg-success me-2">
+                                        <i class="bi bi-star-fill"></i>
+                                    </span>
+                                    <strong th:text="${competance.nom}">Java</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/competances/edit/{id}(id=${competance.idCompetance})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/competances/delete/{id}(id=${competance.idCompetance})}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette compétence ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

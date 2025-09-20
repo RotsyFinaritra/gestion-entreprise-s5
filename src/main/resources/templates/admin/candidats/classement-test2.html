@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Classement Test 2 - Administration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .classement-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .search-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-badge-pass {
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .status-badge-echec {
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .status-badge-termine {
+            background: #ffc107;
+            color: #212529;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .candidate-row {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .candidate-row:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .rank-badge {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 0.5rem 0.8rem;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+        
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #333; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); color: white; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #D2691E); color: white; }
+        .rank-other { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+        
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .score-20 { color: #28a745; }
+        .score-percentage { color: #17a2b8; }
+        
+        .admission-panel {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .critere-option {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .critere-option.active {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+        
+        .form-control-white {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            color: #333;
+        }
+        
+        .btn-process {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-process:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(220,53,69,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <style>
+            .classement-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+            
+            .search-section {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .status-badge-pass {
+                background: #28a745;
+                color: white;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: bold;
+            }
+            
+            .status-badge-echec {
+                background: #dc3545;
+                color: white;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: bold;
+            }
+            
+            .status-badge-termine {
+                background: #ffc107;
+                color: #212529;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: bold;
+            }
+            
+            .stats-card {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+                border: none;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+            
+            .candidate-row {
+                background: white;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                padding: 15px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+            }
+            
+            .candidate-row:hover {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                transform: translateY(-2px);
+            }
+            
+            .rank-badge {
+                font-size: 1.2rem;
+                font-weight: bold;
+                padding: 0.5rem 0.8rem;
+                border-radius: 50%;
+                margin-right: 1rem;
+            }
+            
+            .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #333; }
+            .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); color: white; }
+            .rank-3 { background: linear-gradient(135deg, #CD7F32, #D2691E); color: white; }
+            .rank-other { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+            
+            .score-display {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+            
+            .score-20 { color: #28a745; }
+            .score-percentage { color: #17a2b8; }
+            
+            .admission-panel {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-top: 2rem;
+            }
+            
+            .critere-option {
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 10px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .critere-option.active {
+                background: rgba(255,255,255,0.3);
+                border-color: white;
+            }
+            
+            .form-control-white {
+                background: rgba(255,255,255,0.9);
+                border: none;
+                color: #333;
+            }
+            
+            .btn-process {
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                border: none;
+                border-radius: 25px;
+                padding: 12px 30px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-process:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(220,53,69,0.3);
+            }
+        </style>
+        
+        <div class="container-fluid py-4">
+            <!-- En-tête -->
+            <div class="classement-header text-center">
+                <h1><i class="fas fa-trophy me-3"></i>Classement Test 2</h1>
+                <p class="lead mb-0">Gestion des admissions - Candidats en attente de décision</p>
+            </div>
+
+            <!-- Section de recherche et filtres -->
+            <div class="search-section">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-search me-2"></i>Rechercher par poste :
+                        </label>
+                        <div class="input-group">
+                            <input type="text" id="searchPoste" class="form-control" placeholder="Tapez le nom d'un poste...">
+                            <button class="btn btn-primary" type="button" id="btnRechercher">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-filter me-2"></i>Filtrer par offre :
+                        </label>
+                        <select id="filterOffre" class="form-select">
+                            <option value="">Toutes les offres</option>
+                            <option th:each="offre : ${offres}" th:value="${offre.id}" th:text="${offre.titre}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary w-100" type="button" id="btnReset">
+                            <i class="fas fa-times"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold mb-2">
+                            <i class="fas fa-toggle-on me-2"></i>Afficher les candidats :
+                        </label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="showTermine" checked>
+                            <label class="form-check-label" for="showTermine">
+                                <span class="status-badge-termine">Terminé</span>
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="showPass" checked>
+                            <label class="form-check-label" for="showPass">
+                                <span class="status-badge-pass">Pass Test 2</span>
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="showEchec" checked>
+                            <label class="form-check-label" for="showEchec">
+                                <span class="status-badge-echec">Echec Test 2</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-primary" th:text="${statistiques.totalCandidats}">0</h3>
+                        <small class="text-muted">Candidats Total</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-warning" th:text="${statistiques.termine}">0</h3>
+                        <small class="text-muted">Terminé</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-success" th:text="${statistiques.admis}">0</h3>
+                        <small class="text-muted">Pass Test 2</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card text-center">
+                        <h3 class="text-danger" th:text="${statistiques.refuses}">0</h3>
+                        <small class="text-muted">Echec Test 2</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classement par poste -->
+            <div th:each="posteGroup : ${candidatsParPoste}" class="poste-group mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3" 
+                     th:data-poste="${posteGroup.key.nom}" 
+                     th:data-offre="${posteGroup.key.offre.id}">
+                    <h3 class="text-primary">
+                        <i class="fas fa-briefcase me-2"></i>
+                        <span th:text="${posteGroup.key.nom}">Nom du Poste</span>
+                        <span class="badge bg-secondary ms-2" th:text="${posteGroup.value.size()}">0</span>
+                    </h3>
+                    <small class="text-muted" th:text="'Offre: ' + ${posteGroup.key.offre.titre} + ' (ID: ' + ${posteGroup.key.offre.id} + ')'">Offre</small>
+                </div>
+
+                <!-- Liste des candidats pour ce poste -->
+                <div class="row" th:each="resultat, iterStat : ${posteGroup.value}">
+                    <div class="col-12">
+                        <div class="candidate-row" 
+                             th:data-status="${resultat.statutTest2}"
+                             th:data-poste="${posteGroup.key.nom}"
+                             th:data-offre="${posteGroup.key.offre.id}">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    <span th:if="${iterStat.index == 0}" class="rank-badge rank-1" th:text="${iterStat.index + 1}">1</span>
+                                    <span th:if="${iterStat.index == 1}" class="rank-badge rank-2" th:text="${iterStat.index + 1}">2</span>
+                                    <span th:if="${iterStat.index == 2}" class="rank-badge rank-3" th:text="${iterStat.index + 1}">3</span>
+                                    <span th:if="${iterStat.index > 2}" class="rank-badge rank-other" th:text="${iterStat.index + 1}">4</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5 class="mb-1" th:text="${resultat.candidat.prenom} + ' ' + ${resultat.candidat.nom}">Nom Candidat</h5>
+                                    <small class="text-muted" th:text="${resultat.candidat.email}">email@example.com</small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="score-display score-20" 
+                                         th:text="${resultat.nombreBonnesReponses} + '/' + ${resultat.nombreTotalQuestions}">15/20</div>
+                                    <small class="text-muted">Bonnes Réponses</small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="score-display score-percentage" 
+                                         th:text="${#numbers.formatDecimal(resultat.pourcentage, 1, 1)} + '%'">75.0%</div>
+                                    <small class="text-muted">Pourcentage</small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <span th:if="${resultat.statutTest2 == 'Pass Test 2'}" class="badge status-badge-pass" th:text="${resultat.statutTest2}">Pass Test 2</span>
+                                    <span th:if="${resultat.statutTest2 == 'Echec Test 2'}" class="badge status-badge-echec" th:text="${resultat.statutTest2}">Echec Test 2</span>
+                                    <span th:unless="${resultat.statutTest2 == 'Pass Test 2' or resultat.statutTest2 == 'Echec Test 2'}" class="badge status-badge-termine" th:text="${resultat.statutTest2}">Terminé</span>
+                                </div>
+                                <div class="col-md-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="'Non défini'">01/01/2024 10:00</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire de traitement des admissions pour ce poste -->
+                <div class="admission-panel" th:if="${!posteGroup.value.isEmpty()}">
+                    <h4 class="mb-3">
+                        <i class="fas fa-user-check me-2"></i>Traiter les Admissions - 
+                        <span th:text="${posteGroup.key.nom}">Poste</span>
+                    </h4>
+                    
+                    <form method="post" th:action="@{/admin/candidats/classement/traiterAdmissionsParPoste}">
+                        <input type="hidden" name="posteId" th:value="${posteGroup.key.id}">
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="critere-option" onclick="toggleCritere(this, 'pourcentage')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="critereAdmission" 
+                                               value="pourcentage" id="pourcentage_${posteGroup.key.id}">
+                                        <label class="form-check-label" for="pourcentage_${posteGroup.key.id}">
+                                            <strong>Par Pourcentage Minimum</strong>
+                                        </label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <input type="number" class="form-control form-control-white" 
+                                               name="seuilPourcentage" placeholder="Ex: 70" min="0" max="100" step="0.1">
+                                        <small>Pourcentage minimum pour être admis</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="critere-option" onclick="toggleCritere(this, 'rang')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="critereAdmission" 
+                                               value="rang" id="rang_${posteGroup.key.id}">
+                                        <label class="form-check-label" for="rang_${posteGroup.key.id}">
+                                            <strong>Par Rang Maximum</strong>
+                                        </label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <input type="number" class="form-control form-control-white" 
+                                               name="rangMaximum" placeholder="Ex: 10" min="1" th:max="${posteGroup.value.size()}">
+                                        <small th:text="'Admettre les ' + ${posteGroup.value.size()} + ' premiers'">Admettre les N premiers</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="critere-option" onclick="toggleCritere(this, 'nombre')">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="critereAdmission" 
+                                               value="nombre" id="nombre_${posteGroup.key.id}">
+                                        <label class="form-check-label" for="nombre_${posteGroup.key.id}">
+                                            <strong>Nombre Exact</strong>
+                                        </label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <input type="number" class="form-control form-control-white" 
+                                               name="nombreAdmis" placeholder="Ex: 5" min="1" th:max="${posteGroup.value.size()}">
+                                        <small>Nombre exact de candidats à admettre</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-process btn-lg">
+                                <i class="fas fa-cogs me-2"></i>Traiter les Admissions
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Message si aucun candidat -->
+            <div th:if="${candidatsParPoste.isEmpty()}" class="text-center py-5">
+                <div class="stats-card">
+                    <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun candidat n'a terminé le Test 2</h4>
+                    <p class="text-muted">Les candidats apparaîtront ici une fois qu'ils auront terminé leur Test 2.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCritere(element, type) {
+            // Retirer la classe active de toutes les options du même formulaire
+            const form = element.closest('form');
+            const options = form.querySelectorAll('.critere-option');
+            options.forEach(opt => opt.classList.remove('active'));
+            
+            // Ajouter la classe active à l'option sélectionnée
+            element.classList.add('active');
+            
+            // Cocher le radio button correspondant
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+        }
+
+        function filterCandidates() {
+            const searchTerm = document.getElementById('searchPoste').value.toLowerCase();
+            const filterOffre = document.getElementById('filterOffre').value;
+            const showTermine = document.getElementById('showTermine').checked;
+            const showPass = document.getElementById('showPass').checked;
+            const showEchec = document.getElementById('showEchec').checked;
+
+            document.querySelectorAll('.poste-group').forEach(group => {
+                const posteHeader = group.querySelector('[data-poste]');
+                const posteName = posteHeader ? posteHeader.getAttribute('data-poste').toLowerCase() : '';
+                const offreId = posteHeader ? posteHeader.getAttribute('data-offre') : '';
+                
+                // Filtrage par recherche de poste
+                const matchesSearch = searchTerm === '' || posteName.includes(searchTerm);
+                
+                // Filtrage par offre
+                const matchesOffre = !filterOffre || offreId === filterOffre;
+                
+                if (matchesSearch && matchesOffre) {
+                    group.style.display = 'block';
+                    
+                    // Filtrage des candidats par statut
+                    let visibleCandidates = 0;
+                    group.querySelectorAll('.candidate-row').forEach(candidate => {
+                        const statusElement = candidate.querySelector('[class*="status-badge-"]');
+                        const status = statusElement ? statusElement.textContent.trim() : '';
+                        let shouldShow = false;
+                        
+                        // Vérification du statut basée sur le texte affiché
+                        if ((status.includes('Terminé') || status === 'Terminé') && showTermine) {
+                            shouldShow = true;
+                        } else if (status.includes('Pass Test 2') && showPass) {
+                            shouldShow = true;
+                        } else if (status.includes('Echec Test 2') && showEchec) {
+                            shouldShow = true;
+                        }
+                        
+                        if (shouldShow) {
+                            candidate.style.display = 'block';
+                            visibleCandidates++;
+                        } else {
+                            candidate.style.display = 'none';
+                        }
+                    });
+                    
+                    // Masquer le groupe si aucun candidat visible
+                    if (visibleCandidates === 0) {
+                        group.style.display = 'none';
+                    }
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+        }
+
+        // Event listeners pour le filtrage en temps réel
+        document.getElementById('searchPoste').addEventListener('input', filterCandidates);
+        document.getElementById('filterOffre').addEventListener('change', filterCandidates);
+        document.getElementById('showTermine').addEventListener('change', filterCandidates);
+        document.getElementById('showPass').addEventListener('change', filterCandidates);
+        document.getElementById('showEchec').addEventListener('change', filterCandidates);
+        
+        // Event listeners pour les boutons de recherche
+        document.getElementById('btnRechercher').addEventListener('click', filterCandidates);
+        document.getElementById('btnReset').addEventListener('click', function() {
+            // Reset des champs de recherche
+            document.getElementById('searchPoste').value = '';
+            document.getElementById('filterOffre').value = '';
+            
+            // Reset des filtres de statut
+            document.getElementById('showTermine').checked = true;
+            document.getElementById('showPass').checked = true;
+            document.getElementById('showEchec').checked = true;
+            
+            // Réappliquer les filtres
+            filterCandidates();
+        });
+        
+        // Recherche par Enter
+        document.getElementById('searchPoste').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterCandidates();
+            }
+        });
+    </script>
+</body>
+</html>

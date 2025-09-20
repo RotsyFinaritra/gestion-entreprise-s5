@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${offre.idOffre != null ? 'Modifier l''Offre' : 'Nouvelle Offre'} + ' - Gestion Entreprise'">Nouvelle Offre - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-file-text me-2"></i>
+                <span th:text="${offre.idOffre != null ? 'Modifier l''Offre' : 'Nouvelle Offre'}">Nouvelle Offre</span>
+            </h2>
+            <a href="/offres" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-form me-2"></i>
+                            Informations de l'Offre d'Emploi
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/offres}" th:object="${offre}" method="post">
+                            <input type="hidden" th:field="*{idOffre}">
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="poste" class="form-label">
+                                            <i class="bi bi-briefcase me-1"></i>
+                                            Poste *
+                                        </label>
+                                        <select class="form-select" 
+                                                id="poste" 
+                                                th:field="*{poste}"
+                                                required>
+                                            <option value="">Sélectionner un poste</option>
+                                            <option th:each="poste : ${postes}"
+                                                    th:value="${poste.idPoste}"
+                                                    th:text="${poste.nom}"
+                                                    th:selected="${offre.poste != null and offre.poste.idPoste == poste.idPoste}">
+                                                Développeur Web
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="formation" class="form-label">
+                                            <i class="bi bi-mortarboard me-1"></i>
+                                            Formation Requise
+                                        </label>
+                                        <select class="form-select" 
+                                                id="formation" 
+                                                th:field="*{formation}">
+                                            <option value="">Sélectionner une formation</option>
+                                            <option th:each="formation : ${formations}"
+                                                    th:value="${formation.idFormation}"
+                                                    th:text="${formation.nom}"
+                                                    th:selected="${offre.formation != null and offre.formation.idFormation == formation.idFormation}">
+                                                Bac+5 Informatique
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="local" class="form-label">
+                                            <i class="bi bi-geo-alt me-1"></i>
+                                            Localisation
+                                        </label>
+                                        <select class="form-select" 
+                                                id="local" 
+                                                th:field="*{local}">
+                                            <option value="">Sélectionner une localisation</option>
+                                            <option th:each="local : ${locals}"
+                                                    th:value="${local.idLocal}"
+                                                    th:text="${local.nom}"
+                                                    th:selected="${offre.local != null and offre.local.idLocal == local.idLocal}">
+                                                Paris
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="mission" class="form-label">
+                                    <i class="bi bi-list-task me-1"></i>
+                                    Description de la Mission
+                                </label>
+                                <textarea class="form-control" 
+                                          id="mission" 
+                                          th:field="*{mission}" 
+                                          rows="4"
+                                          placeholder="Décrivez les principales missions et responsabilités du poste..."></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="datePublication" class="form-label">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            Date de Publication
+                                        </label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="datePublication" 
+                                               th:field="*{datePublication}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="dateFin" class="form-label">
+                                            <i class="bi bi-calendar-x me-1"></i>
+                                            Date de Fin
+                                        </label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="dateFin" 
+                                               th:field="*{dateFin}">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label for="ageMin" class="form-label">
+                                            <i class="bi bi-person me-1"></i>
+                                            Âge Min
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="ageMin" 
+                                               th:field="*{ageMin}"
+                                               min="16" 
+                                               max="70"
+                                               placeholder="25">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label for="ageMax" class="form-label">
+                                            <i class="bi bi-person-check me-1"></i>
+                                            Âge Max
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="ageMax" 
+                                               th:field="*{ageMax}"
+                                               min="16" 
+                                               max="70"
+                                               placeholder="45">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label for="nbrPersonne" class="form-label">
+                                            <i class="bi bi-people me-1"></i>
+                                            Nb Postes
+                                        </label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="nbrPersonne" 
+                                               th:field="*{nbrPersonne}"
+                                               min="1" 
+                                               placeholder="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/offres" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${offre.idOffre != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('poste').focus();
+                
+                // Auto-resize textarea
+                const textarea = document.getElementById('mission');
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+
+                // Validation des âges
+                const ageMin = document.getElementById('ageMin');
+                const ageMax = document.getElementById('ageMax');
+                
+                ageMin.addEventListener('input', function() {
+                    if (ageMax.value && parseInt(this.value) > parseInt(ageMax.value)) {
+                        ageMax.value = this.value;
+                    }
+                });
+                
+                ageMax.addEventListener('input', function() {
+                    if (ageMin.value && parseInt(this.value) < parseInt(ageMin.value)) {
+                        ageMin.value = this.value;
+                    }
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Liste des Postes - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-briefcase me-2"></i>
+                Liste des Postes
+            </h2>
+            <a href="/postes/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouveau Poste
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${postes.empty}" class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucun poste trouvé</h5>
+                    <p class="text-muted mb-4">Commencez par créer votre premier poste</p>
+                    <a href="/postes/new" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer un poste
+                    </a>
+                </div>
+
+                <div th:unless="${postes.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom du Poste</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="poste : ${postes}">
+                                <td th:text="${poste.idPoste}">1</td>
+                                <td>
+                                    <strong th:text="${poste.nom}">Développeur Web</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/postes/edit/{id}(id=${poste.idPoste})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/postes/delete/{id}(id=${poste.idPoste})}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce poste ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

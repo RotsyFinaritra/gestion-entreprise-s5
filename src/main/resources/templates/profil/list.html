@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Profils</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .nav-link {
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{layout :: sidebar}"></div>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-person-check me-2"></i>
+                        Gestion des Profils
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/profils/new" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Nouveau Profil
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Messages Flash -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Table des Profils -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list-ul me-2"></i>
+                            Liste des Profils
+                            <span class="badge bg-primary ms-2" th:text="${#lists.size(profils)}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(profils)}" class="text-center py-5">
+                            <i class="bi bi-person-x fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun profil défini</h5>
+                            <p class="text-muted">Commencez par ajouter un nouveau profil pour définir les exigences des postes.</p>
+                            <a href="/profils/new" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Créer le premier profil
+                            </a>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(profils)}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>
+                                            <i class="bi bi-briefcase me-1"></i>
+                                            Poste
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-card-text me-1"></i>
+                                            Description du Profil
+                                        </th>
+                                        <th width="150">
+                                            <i class="bi bi-gear me-1"></i>
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="profil, iterStat : ${profils}">
+                                        <td th:text="${iterStat.count}">1</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <div style="width: 35px; height: 35px; border-radius: 50%; background-color: #e3f2fd; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="bi bi-briefcase text-primary"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0" th:text="${profil.poste?.nom}">Nom du poste</h6>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-tag me-1"></i>
+                                                        ID: <span th:text="${profil.poste?.idPoste}">0</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 300px;" th:title="${profil.description}">
+                                                <span th:text="${profil.description}">Description du profil requis...</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a th:href="@{/profils/edit/{id}(id=${profil.idProfil})}"
+                                                    class="btn btn-outline-primary" title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/profils/delete/{id}(id=${profil.idProfil})}"
+                                                    class="btn btn-outline-danger" title="Supprimer"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce profil ?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques -->
+                <div th:if="${!#lists.isEmpty(profils)}" class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-person-check fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0" th:text="${#lists.size(profils)}">0</h5>
+                                        <p class="card-text">Total Profils</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-briefcase fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0" th:text="${#lists.size(profils) > 0 ? 'Actif' : 'Aucun'}">0</h5>
+                                        <p class="card-text">Système de Profils</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

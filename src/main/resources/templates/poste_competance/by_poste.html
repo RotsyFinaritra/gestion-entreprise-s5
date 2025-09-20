@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Compétences du Poste - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-briefcase me-2"></i>
+                Compétences requises pour : 
+                <span th:text="${poste?.nom ?: 'Poste non trouvé'}" class="text-primary"></span>
+            </h2>
+            <div class="d-flex gap-2">
+                <div class="btn-group" role="group">
+                    <a href="/poste-competances/by-competance" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-star me-2"></i>
+                        Par Compétence
+                    </a>
+                </div>
+                <a href="/poste-competances/new" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Ajouter une compétence
+                </a>
+                <a href="/poste-competances" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${posteCompetances.empty}" class="text-center py-5">
+                    <i class="bi bi-star display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune compétence requise</h5>
+                    <p class="text-muted mb-4">Ce poste n'a pas encore de compétences associées</p>
+                    <a href="/poste-competances/new" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Ajouter une compétence
+                    </a>
+                </div>
+
+                <div th:unless="${posteCompetances.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID Relation</th>
+                                <th>Compétence</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="posteCompetance : ${posteCompetances}">
+                                <td th:text="${posteCompetance.idPosteCompetance}">1</td>
+                                <td>
+                                    <span class="badge bg-success me-2">
+                                        <i class="bi bi-star-fill"></i>
+                                    </span>
+                                    <strong th:text="${posteCompetance.competance?.nom}">Java</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/poste-competances/edit/{id}(id=${posteCompetance.idPosteCompetance})}" 
+                                           class="btn btn-sm btn-outline-warning" title="Modifier">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form th:action="@{/poste-competances/delete/{id}(id=${posteCompetance.idPosteCompetance})}" 
+                                              method="post" style="display: inline;"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir retirer cette compétence du poste ?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Retirer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

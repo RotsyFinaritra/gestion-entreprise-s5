@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Détails Test 2 - Administration</title>
+    <style>
+        .result-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .score-excellent { background: linear-gradient(45deg, #28a745, #20c997); }
+        .score-bien { background: linear-gradient(45deg, #17a2b8, #6f42c1); }
+        .score-moyen { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        .score-faible { background: linear-gradient(45deg, #dc3545, #e83e8c); }
+        
+        .reponse-correcte {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid #28a745;
+        }
+        
+        .reponse-incorrecte {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid #dc3545;
+        }
+        
+        .question-detail {
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2));
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress-bar-animated {
+            animation: progressAnimation 1.5s ease-in-out;
+        }
+        
+        @keyframes progressAnimation {
+            0% { width: 0%; }
+            100% { width: var(--progress-width); }
+        }
+        
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Candidats</a></li>
+                <li class="breadcrumb-item"><a th:href="@{'/admin/candidats/detail/' + ${candidat.idCandidat}}" class="text-decoration-none">Détail</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Test 2</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>
+                    <i class="bi bi-clipboard-check text-primary me-2"></i>
+                    Résultats Test 2
+                </h2>
+                <p class="text-muted mb-0" th:text="${candidat.prenom} + ' ' + ${candidat.nom}">Candidat</p>
+            </div>
+            <div class="btn-group no-print">
+                <a th:href="@{'/admin/candidats/detail/' + ${candidat.idCandidat}}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour
+                </a>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Imprimer
+                </button>
+            </div>
+        </div>
+
+        <!-- Résumé des résultats -->
+        <div class="row mb-4">
+            <!-- Score principal -->
+            <div class="col-md-4">
+                <div class="card result-card">
+                    <div class="card-body text-center">
+                        <div class="score-circle mx-auto mb-3" 
+                             th:classappend="${resultats.noteSur20 >= 16} ? 'score-excellent' : 
+                                            ${resultats.noteSur20 >= 14} ? 'score-bien' : 
+                                            ${resultats.noteSur20 >= 10} ? 'score-moyen' : 'score-faible'">
+                            <div>
+                                <div class="fs-4" th:text="${#numbers.formatDecimal(resultats.noteSur20, 1, 2)}">15.5</div>
+                                <small>/20</small>
+                            </div>
+                        </div>
+                        <h5>Note finale</h5>
+                        <p class="text-muted mb-0" th:text="${#numbers.formatDecimal(resultats.pourcentage, 1, 1)} + '%'">75%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques détaillées -->
+            <div class="col-md-8">
+                <div class="card result-card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-4">
+                            <i class="bi bi-bar-chart me-2"></i>Détails de performance
+                        </h6>
+                        
+                        <div class="stats-grid mb-4">
+                            <div class="stat-item">
+                                <h4 class="text-success mb-1" th:text="${resultats.bonnesReponses}">8</h4>
+                                <small class="text-muted">Bonnes réponses</small>
+                            </div>
+                            <div class="stat-item">
+                                <h4 class="text-danger mb-1" th:text="${resultats.mauvaisesReponses}">2</h4>
+                                <small class="text-muted">Mauvaises réponses</small>
+                            </div>
+                            <div class="stat-item">
+                                <h4 class="text-primary mb-1" th:text="${resultats.pointsObtenus}">15</h4>
+                                <small class="text-muted">Points obtenus</small>
+                            </div>
+                            <div class="stat-item">
+                                <h4 class="text-info mb-1" th:text="${resultats.totalPoints}">20</h4>
+                                <small class="text-muted">Points possibles</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Barre de progression -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Progression</span>
+                                <span th:text="${#numbers.formatDecimal(resultats.pourcentage, 1, 1)} + '%'">75%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar progress-bar-animated" 
+                                     th:classappend="${resultats.pourcentage >= 80} ? 'bg-success' : 
+                                                    ${resultats.pourcentage >= 70} ? 'bg-info' : 
+                                                    ${resultats.pourcentage >= 60} ? 'bg-warning' : 'bg-danger'"
+                                     role="progressbar" 
+                                     th:style="'--progress-width: ' + ${resultats.pourcentage} + '%; width: ' + ${resultats.pourcentage} + '%'"
+                                     th:aria-valuenow="${resultats.pourcentage}"
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Statut de réussite -->
+                        <div class="text-center">
+                            <div th:if="${resultats.reussi}" class="alert alert-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <strong>Test réussi !</strong> Score supérieur au seuil de <span th:text="${seuilReussite}">60</span>%
+                            </div>
+                            <div th:unless="${resultats.reussi}" class="alert alert-danger">
+                                <i class="bi bi-x-circle-fill me-2"></i>
+                                <strong>Test non validé.</strong> Score inférieur au seuil de <span th:text="${seuilReussite}">60</span>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détail des réponses -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check me-2"></i>
+                    Détail des réponses (<span th:text="${#lists.size(reponsesCandidat)}">10</span> questions)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${reponsesCandidat.empty}" class="text-center py-4">
+                    <i class="bi bi-question-circle display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune réponse enregistrée</h5>
+                    <p class="text-muted">Le candidat n'a pas encore répondu aux questions</p>
+                </div>
+
+                <div th:unless="${reponsesCandidat.empty}">
+                    <div th:each="reponse : ${reponsesCandidat}" class="question-detail">
+                        <div class="card" 
+                             th:classappend="${reponse.reponseQuestion.valeur} ? 'reponse-correcte' : 'reponse-incorrecte'">
+                            <div class="card-body">
+                                <div class="row align-items-start">
+                                    <div class="col-md-1 text-center">
+                                        <div class="badge rounded-pill fs-6" 
+                                             th:classappend="${reponse.reponseQuestion.valeur} ? 'bg-success' : 'bg-danger'">
+                                            <i th:class="${reponse.reponseQuestion.valeur} ? 'bi bi-check' : 'bi bi-x'"></i>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted" th:text="${reponse.question.note} + ' pts'">5 pts</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-7">
+                                        <h6 class="mb-2">
+                                            <span class="text-muted">Q.</span> 
+                                            <span th:text="${reponse.question.enonce}">Question</span>
+                                        </h6>
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-tag me-1"></i>
+                                                <span th:text="${reponse.question.competance.nom}">Compétence</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="text-end">
+                                            <div class="mb-2">
+                                                <strong>Réponse choisie :</strong>
+                                            </div>
+                                            <div class="p-2 rounded" 
+                                                 th:classappend="${reponse.reponseQuestion.valeur} ? 'bg-success text-white' : 'bg-danger text-white'">
+                                                <small th:text="${reponse.reponseQuestion.choix}">Réponse sélectionnée</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations candidat (résumé) -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Informations candidat</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Nom :</strong> <span th:text="${candidat.nom}">Nom</span></p>
+                                <p><strong>Prénom :</strong> <span th:text="${candidat.prenom}">Prénom</span></p>
+                                <p><strong>Email :</strong> <span th:text="${candidat.email}">email@example.com</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Poste :</strong> <span th:text="${candidat.offre.poste.nom}">Poste</span></p>
+                                <p><strong>Offre :</strong> <span th:text="${candidat.offre.mission}">Mission</span></p>
+                                <p><strong>Date dépôt :</strong> <span th:text="${#temporals.format(candidat.dateDepot, 'dd/MM/yyyy')}">01/01/2023</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation de la barre de progression
+            const progressBar = document.querySelector('.progress-bar-animated');
+            if (progressBar) {
+                setTimeout(() => {
+                    progressBar.style.width = progressBar.style.getPropertyValue('--progress-width');
+                }, 500);
+            }
+            
+            // Animation des cartes
+            const cards = document.querySelectorAll('.result-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Accueil - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-building display-1 text-primary mb-4"></i>
+                        <h2 class="card-title mb-3">Bienvenue dans le système de gestion RH</h2>
+                        <p class="card-text text-muted mb-4">
+                            Gérez efficacement vos postes, candidatures et processus de recrutement
+                        </p>
+                        <div class="row g-3 justify-content-center">
+                            <div class="col-auto">
+                                <a href="/postes" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-briefcase me-2"></i>
+                                    Gérer les postes
+                                </a>
+                            </div>
+                            <div class="col-auto">
+                                <a href="/candidats" class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-people me-2"></i>
+                                    Voir les candidats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-briefcase display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Postes</h5>
+                        <p class="card-text">Gérer les postes disponibles</p>
+                        <a href="/postes" class="btn btn-sm btn-outline-primary">Voir tout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-star display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Compétences</h5>
+                        <p class="card-text">Définir les compétences requises</p>
+                        <a href="/competances" class="btn btn-sm btn-outline-success">Voir tout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-file-text display-4 text-warning mb-3"></i>
+                        <h5 class="card-title">Offres</h5>
+                        <p class="card-text">Publier des offres d'emploi</p>
+                        <a href="/offres" class="btn btn-sm btn-outline-warning">Voir tout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-people display-4 text-info mb-3"></i>
+                        <h5 class="card-title">Candidats</h5>
+                        <p class="card-text">Suivre les candidatures</p>
+                        <a href="/candidats" class="btn btn-sm btn-outline-info">Voir tout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-lightning me-2"></i>
+                            Actions rapides
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <a href="/postes/new" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouveau poste
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/offres/new" class="btn btn-outline-success w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouvelle offre
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/candidats/new" class="btn btn-outline-info w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouveau candidat
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/competances/new" class="btn btn-outline-warning w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouvelle compétence
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/questions/new" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouvelle question
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="/reponses/new" class="btn btn-outline-dark w-100">
+                                    <i class="bi bi-plus-circle d-block mb-2"></i>
+                                    Nouvelle réponse
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            // Animation pour les cards
+            document.addEventListener('DOMContentLoaded', function() {
+                const cards = document.querySelectorAll('.card');
+                cards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

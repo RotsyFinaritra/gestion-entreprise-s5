@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{client_layout :: html}">
+
+<head>
+    <title>Postuler - Portail Emploi</title>
+</head>
+
+<body>
+    <div th:fragment="content" th:if="${offre != null}">
+        <style>
+            nav.mb-4.headerCV {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 70px;
+                background-color: #00007c;
+                padding: 80px 80px 40px;
+            }
+
+            .cv-header.mb-4 {
+                margin-top: 126px;
+            }
+
+            form#candidatureForm {
+                display: grid;
+                grid-template-columns: 35% 65%;
+                box-shadow: 0px 3px 13px #8080803d;
+                border: 1px solid #80808047;
+            }
+
+            .profilProffessional>h1,
+            .competence>h1 {
+                font-size: 20px;
+                letter-spacing: 4px;
+                border-bottom: 1px solid black;
+            }
+
+            .profilProffessional>textarea {
+                width: 100%;
+                height: 100px;
+                border: none;
+            }
+
+            .informationProfessiona {
+                padding: 30px;
+            }
+
+            .photo-upload-area i {
+                font-size: 120px !important;
+                color: white !important;
+            }
+
+            .informationPersonnel {
+                padding: 20px;
+            }
+
+            .NomPrenom {
+                margin-top: 20px;
+            }
+
+            .NomPrenom>input {
+                background-color: transparent !important;
+                border: 0 !important;
+                font-size: 28px;
+                height: 40px;
+                font-weight: bold;
+                color: white !important;
+                text-align: center;
+            }
+
+            .NomPrenom>input::placeholder,
+            .itemContactCv>input::placeholder,
+            .itemContactCv>textarea::placeholder {
+                color: rgba(255, 255, 255, 0.491) !important;
+            }
+
+            .informationPersonnel {
+                padding: 30px;
+                background-color: #00007c;
+            }
+
+            .NomPrenom>h1 {
+                font-size: 20px;
+                font-family: monospace;
+                margin-top: 20px;
+                text-align: center;
+                color: wheat;
+            }
+
+            textarea::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            .contactCv>h1 {
+                font-size: 20px;
+                letter-spacing: 4px;
+                margin-top: 40px;
+                border-bottom: 1px solid wheat;
+                color: wheat;
+            }
+
+            .itemContactCv {
+                display: flex;
+                gap: 10px;
+                text-align: center;
+                align-items: center;
+                justify-items: center;
+                justify-content: center;
+            }
+
+            .itemContactCv>input,
+            .itemContactCv>textarea,
+            .itemContactCv>select {
+                background-color: transparent !important;
+                color: white !important;
+                border: 0 !important;
+                height: 50px;
+                font-size: 18px;
+            }
+
+            .itemContactCv>select option {
+                color: black;
+            }
+
+            .itemContactCv>i {
+                font-size: 25px;
+                color: white;
+            }
+
+            .competenceContainer {
+                display: grid;
+                margin-left: 50px;
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            .form-check.mb-3.p-3.bg-light.rounded {
+                padding-left: 40px !important;
+            }
+
+            .competenceItem {
+                display: flex;
+                gap: 20px;
+                align-items: center;
+            }
+
+            .competence {
+                margin-top: 30px;
+            }
+        </style>
+        <div class="container py-4">
+            <!-- Navigation -->
+            <nav aria-label="breadcrumb" class="mb-4 headerCV">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/client" class="text-decoration-none">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="/client/offres" class="text-decoration-none">Offres
+                            d'emploi</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/client/offres/{id}(id=${offre.idOffre})}"
+                            class="text-decoration-none" th:text="${offre.poste?.nom}">Poste</a></li>
+                    <li class="breadcrumb-item active">Postuler</li>
+                </ol>
+            </nav>
+
+            <div class="cv-header mb-4">
+                <div class="containerCvHeader border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="text-center">
+                            <h2 class="mb-1 fw-bold">CANDIDATURE POUR</h2>
+                            <h1 class="mb-3 text-uppercase" th:text="${offre.poste?.nom}">Développeur Full Stack
+                            </h1>
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <i class="bi bi-geo-alt fs-4 mb-2"></i>
+                                    <p class="mb-0 small" th:text="${offre.local?.nom ?: 'Remote'}">Paris</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="bi bi-mortarboard fs-4 mb-2"></i>
+                                    <p class="mb-0 small" th:text="${offre.formation?.nom ?: 'Non spécifiée'}">
+                                        BAC+5</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="bi bi-calendar-event fs-4 mb-2"></i>
+                                    <p class="mb-0 small">
+                                        <span th:if="${offre.dateFin != null}"
+                                            th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">31/12/2025</span>
+                                        <span th:if="${offre.dateFin == null}">Non définie</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- En-tête CV Style -->
+                    <!-- CV Template Form -->
+                    <form method="post" action="/client/submit-candidature" enctype="multipart/form-data"
+                        id="candidatureForm">
+                        <input type="hidden" name="offreId" th:value="${offre.idOffre}">
+                        <div class="informationPersonnel">
+                            <div class="profilCv">
+                                <div class="text-center">
+                                    <div class="photo-upload-area">
+                                        <div class="photo-placeholder mb-3">
+                                            <i class="bi bi-person-square fs-1 text-muted"></i>
+                                        </div>
+                                        <input type="file" class="form-control form-control-sm" id="photo" name="photo"
+                                            accept="image/*">
+                                        <div class="form-text small">Photo (optionnel)</div>
+                                        <div id="photo-preview" class="mt-2" style="display: none;">
+                                            <img id="photo-preview-img" src="" alt="Aperçu" class="rounded-circle"
+                                                style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #dee2e6;">
+                                            <button type="button" id="remove-photo"
+                                                class="btn btn-sm btn-outline-danger mt-2">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="NomPrenom">
+                                    <input type="text"
+                                        class="form-control border-0 border-bottom border-2 rounded-0 bg-light"
+                                        id="prenom" name="prenom" required placeholder="Prénom ...">
+                                    <input type="text"
+                                        class="form-control border-0 border-bottom border-2 rounded-0 bg-light" id="nom"
+                                        name="nom" required placeholder="Nom ...">
+                                    <h1 class="mb-3 text-uppercase" th:text="${offre.poste?.nom}">Développeur Full Stack
+                                </div>
+                                <div class="contactCv">
+                                    <h1>PROFIL</h1>
+                                    <div class="itemContactCv">
+                                        <i class="bi bi-trash"></i>
+                                        <input type="date"
+                                            class="form-control border-0 border-bottom border-2 rounded-0 bg-light"
+                                            id="dateNaissance" name="dateNaissance" placeholder="Date de naissance ...">
+                                    </div>
+                                    <div class="itemContactCv">
+                                        <i class="bi bi-trash"></i>
+                                        <select class="form-select border-0 border-bottom border-2 rounded-0 bg-light"
+                                            id="genre" name="genreId">
+                                            <option value="">Sélectionnez...</option>
+                                            <option value="1">Homme</option>
+                                            <option value="2">Femme</option>
+                                            <option value="3">Autre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="contactCv">
+                                    <h1>CONTACT</h1>
+                                    <div class="itemContactCv">
+                                        <i class="bi bi-trash"></i>
+                                        <input type="tel"
+                                            class="form-control border-0 border-bottom border-2 rounded-0 bg-light"
+                                            id="tel" name="tel" required placeholder="Téléphone ...">
+                                    </div>
+                                    <div class="itemContactCv">
+                                        <i class="bi bi-trash"></i>
+                                        <input type="email"
+                                            class="form-control border-0 border-bottom border-2 rounded-0 bg-light"
+                                            id="email" name="email" required placeholder="Email ...">
+                                    </div>
+                                    <div class="itemContactCv">
+                                        <i class="bi bi-trash"></i>
+                                        <textarea
+                                            class="form-control border-0 border-bottom border-2 rounded-0 bg-light"
+                                            id="adresse" name="adresse" rows="2" placeholder="Adresse ..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="informationProfessiona">
+                            <div class="profilProffessional">
+                                <h1>PROFIL PROFESSIONNEL</h1>
+                                <textarea class="form-control border-0 bg-light" name="messageMotivation"
+                                    id="messageMotivation" rows="6"
+                                    placeholder="Expliquez en quelques lignes pourquoi vous êtes le candidat idéal pour ce poste...&#10;&#10;• Votre expérience pertinente&#10;• Vos motivations pour rejoindre l'entreprise&#10;• Ce que vous apporteriez à l'équipe&#10;• Vos objectifs professionnels"></textarea>
+                            </div>
+                            <div class="competence">
+                                <h1>COMPETENCES</h1>
+                                <div class="competenceContainer">
+                                    <div th:each="competance : ${competances}" class="competenceItem">
+                                        <input class="form-check-input" type="checkbox"
+                                            th:id="'competance_' + ${competance.idCompetance}" name="competanceIds"
+                                            th:value="${competance.idCompetance}">
+                                        <label class="form-check-label w-100"
+                                            th:for="'competance_' + ${competance.idCompetance}">
+                                            <div class="d-flex align-items-center">
+                                                <span class="fw-semibold" th:text="${competance.nom}">Compétence</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="competence">
+                                <h1>FORMATION</h1>
+                                <div class="competenceContainer">
+                                    <div th:each="formation : ${formations}" class="competenceItem">
+                                        <input class="form-check-input" type="checkbox"
+                                            th:id="'formation_' + ${formation.idFormation}" name="formationIds"
+                                            th:value="${formation.idFormation}">
+                                        <label class="form-check-label w-100"
+                                            th:for="'formation_' + ${formation.idFormation}">
+                                            <div class="d-flex align-items-center">
+                                                <span class="fw-semibold" th:text="${formation.nom}">Formation</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="competence">
+                                <h1>CONDITION</h1>
+                                <div class="card-body p-4">
+                                    <!-- Consentements -->
+                                    <div class="consent-area">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="bi bi-shield-check me-2"></i>
+                                            Consentements et Autorisations
+                                        </h6>
+                                        <div class="form-check mb-3 p-3 bg-light rounded">
+                                            <input class="form-check-input" type="checkbox" id="consentement"
+                                                name="consentement" required>
+                                            <label class="form-check-label fw-semibold" for="consentement">
+                                                <i class="bi bi-shield-check text-success me-2"></i>
+                                                J'accepte que mes données personnelles soient traitées dans le cadre
+                                                de cette candidature *
+                                            </label>
+                                            <div class="form-text small">
+                                                Vos données seront utilisées uniquement pour traiter votre
+                                                candidature
+                                            </div>
+                                        </div>
+                                        <div class="form-check p-3 bg-light rounded">
+                                            <input class="form-check-input" type="checkbox" id="newsletter"
+                                                name="newsletter">
+                                            <label class="form-check-label" for="newsletter">
+                                                <i class="bi bi-envelope text-info me-2"></i>
+                                                Je souhaite recevoir des notifications pour des offres similaires
+                                            </label>
+                                            <div class="form-text small">
+                                                Recevez des alertes pour des postes correspondant à votre profil
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cv-actions text-center py-4">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <div class="mb-3">
+                                            <h5 class="text-muted mb-2">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Prêt à envoyer votre candidature ?
+                                            </h5>
+                                            <p class="text-muted small mb-0">
+                                                Vérifiez que toutes les informations sont correctes avant de soumettre
+                                            </p>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm"
+                                            id="submitBtn">
+                                            <i class="bi bi-send me-2"></i>
+                                            ENVOYER MA CANDIDATURE
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- SECTION 4: DOCUMENTS -->
+                        <div class="cv-section mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-warning text-dark py-3">
+                                    <h4 class="mb-0">
+                                        <i class="bi bi-file-earmark-text me-2"></i>
+                                        DOCUMENTS PROFESSIONNELS
+                                    </h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div
+                                                class="document-upload border-2 border-dashed border-warning rounded-3 p-4 text-center">
+                                                <i class="bi bi-file-pdf fs-1 text-warning mb-3"></i>
+                                                <h6 class="fw-bold mb-2">CV (Requis) *</h6>
+                                                <input type="file" class="form-control" id="cv" name="cv"
+                                                    accept=".pdf,.doc,.docx" required>
+                                                <small class="text-muted">PDF, DOC, DOCX - Max 5MB</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div
+                                                class="document-upload border-2 border-dashed border-secondary rounded-3 p-4 text-center">
+                                                <i class="bi bi-file-text fs-1 text-secondary mb-3"></i>
+                                                <h6 class="fw-bold mb-2">Lettre de motivation</h6>
+                                                <input type="file" class="form-control" id="lettreMotivation"
+                                                    name="lettreMotivation" accept=".pdf,.doc,.docx">
+                                                <small class="text-muted">PDF, DOC, DOCX - Max 5MB
+                                                    (Optionnel)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: MESSAGE DE MOTIVATION -->
+                        <div class="cv-section mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-secondary text-white py-3">
+                                    <h4 class="mb-0">
+                                        <i class="bi bi-chat-quote me-2"></i>
+                                        MESSAGE DE MOTIVATION
+                                    </h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <!-- Consentements -->
+                                    <div class="consent-area">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="bi bi-shield-check me-2"></i>
+                                            Consentements et Autorisations
+                                        </h6>
+                                        <div class="form-check mb-3 p-3 bg-light rounded">
+                                            <input class="form-check-input" type="checkbox" id="consentement"
+                                                name="consentement" required>
+                                            <label class="form-check-label fw-semibold" for="consentement">
+                                                <i class="bi bi-shield-check text-success me-2"></i>
+                                                J'accepte que mes données personnelles soient traitées dans le cadre
+                                                de cette candidature *
+                                            </label>
+                                            <div class="form-text small">
+                                                Vos données seront utilisées uniquement pour traiter votre
+                                                candidature
+                                            </div>
+                                        </div>
+                                        <div class="form-check p-3 bg-light rounded">
+                                            <input class="form-check-input" type="checkbox" id="newsletter"
+                                                name="newsletter">
+                                            <label class="form-check-label" for="newsletter">
+                                                <i class="bi bi-envelope text-info me-2"></i>
+                                                Je souhaite recevoir des notifications pour des offres similaires
+                                            </label>
+                                            <div class="form-text small">
+                                                Recevez des alertes pour des postes correspondant à votre profil
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOUTON DE SOUMISSION -->
+                        <div class="cv-actions text-center py-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <h5 class="text-muted mb-2">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Prêt à envoyer votre candidature ?
+                                        </h5>
+                                        <p class="text-muted small mb-0">
+                                            Vérifiez que toutes les informations sont correctes avant de soumettre
+                                        </p>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm" id="submitBtn">
+                                        <i class="bi bi-send me-2"></i>
+                                        ENVOYER MA CANDIDATURE
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Page d'erreur si l'offre n'existe pas -->
+    <div th:fragment="content" th:if="${offre == null}" class="container py-5">
+        <div class="text-center">
+            <i class="bi bi-exclamation-triangle display-1 text-muted mb-4"></i>
+            <h2 class="text-muted mb-3">Offre non trouvée</h2>
+            <p class="text-muted mb-4">Impossible de postuler à une offre qui n'existe pas.</p>
+            <a href="/client/offres" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour aux offres
+            </a>
+        </div>
+    </div>
+
+    <!-- Script multi-étapes SIMPLIFIÉ -->
+    <script>
+        console.log('🚀 Initialisation du formulaire multi-étapes - NOUVELLE APPROCHE');
+
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        // Validation simple
+        function validateStep(stepNumber) {
+            if (stepNumber === 1) {
+                const requiredFields = document.querySelectorAll('[data-step="1"] input[required]');
+                for (let field of requiredFields) {
+                    if (!field.value.trim()) {
+                        alert('Veuillez remplir tous les champs obligatoires');
+                        field.focus();
+                        return false;
+                    }
+                }
+            }
+            if (stepNumber === 4) {
+                const cvInput = document.getElementById('cv');
+                if (!cvInput.files || cvInput.files.length === 0) {
+                    alert('Veuillez télécharger votre CV');
+                    return false;
+                }
+            }
+            if (stepNumber === 5) {
+                const consent = document.getElementById('consentement');
+                if (!consent.checked) {
+                    alert('Veuillez accepter le traitement des données');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Validation du formulaire avant soumission
+        document.getElementById('candidatureForm').addEventListener('submit', function (e) {
+            const formationCheckboxes = document.querySelectorAll('input[name="formationIds"]:checked');
+            const competenceCheckboxes = document.querySelectorAll('input[name="competanceIds"]:checked');
+
+            // Vérification optionnelle des formations et compétences
+            if (formationCheckboxes.length === 0 && competenceCheckboxes.length === 0) {
+                const confirmSubmit = confirm('Aucune formation ou compétence sélectionnée. Voulez-vous continuer quand même ?');
+                if (!confirmSubmit) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            // Animation de soumission
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>ENVOI EN COURS...';
+                submitBtn.disabled = true;
+                document.querySelector('.cv-template').classList.add('form-submitting');
+            }
+        });
+
+        // Gestionnaire de clic global

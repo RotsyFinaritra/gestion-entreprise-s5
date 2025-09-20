@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title>Liste des Questions - Gestion Entreprise</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-question-circle me-2"></i>
+                Liste des Questions
+            </h2>
+            <a href="/questions/new" class="btn btn-dark">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Question
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${questions.empty}" class="text-center py-5">
+                    <i class="bi bi-question-circle display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune question trouvée</h5>
+                    <p class="text-muted mb-4">Commencez par créer des questions d'évaluation</p>
+                    <a href="/questions/new" class="btn btn-dark">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer une question
+                    </a>
+                </div>
+
+                <div th:unless="${questions.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Énoncé</th>
+                                <th>Compétence</th>
+                                <th>Note</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="question : ${questions}">
+                                <td th:text="${question.idQuestion}">1</td>
+                                <td>
+                                    <strong th:text="${question.enonce}">Qu'est-ce que Java ?</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success" th:if="${question.competance != null}"
+                                        th:text="${question.competance.nom}">Java</span>
+                                    <span class="badge bg-secondary" th:unless="${question.competance != null}">Non
+                                        assignée</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary"
+                                        th:text="${question.note != null ? question.note + ' pts' : 'Non définie'}">5
+                                        pts</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/questions/edit/{id}(id=${question.idQuestion})}"
+                                            class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/questions/delete/{id}(id=${question.idQuestion})}"
+                                            class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette question ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

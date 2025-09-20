@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Liste des Candidats - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-people me-2"></i>
+                Liste des Candidats
+            </h2>
+            <div class="btn-group">
+                <a href="/candidats/new" class="btn btn-dark">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouveau Candidat
+                </a>
+                <a href="/admin/candidats" class="btn btn-outline-primary">
+                    <i class="bi bi-shield-check me-2"></i>
+                    Gestion Avancée
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${candidats.empty}" class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucun candidat trouvé</h5>
+                    <p class="text-muted mb-4">Commencez par ajouter des candidats à vos offres</p>
+                    <a href="/candidats/new" class="btn btn-dark">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Ajouter un candidat
+                    </a>
+                </div>
+
+                <div th:unless="${candidats.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom Complet</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Offre</th>
+                                <th>Date Dépôt</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="candidat : ${candidats}">
+                                <td th:text="${candidat.idCandidat}">1</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <!-- Photo du candidat ou avatar par défaut -->
+                                        <div class="me-3">
+                                            <img th:if="${candidat.image != null and candidat.image != ''}" 
+                                                 th:src="${candidat.image}" 
+                                                 alt="Photo"
+                                                 class="rounded-circle"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                            <div th:unless="${candidat.image != null and candidat.image != ''}" 
+                                                 class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <span th:text="${#strings.substring(candidat.prenom, 0, 1) + #strings.substring(candidat.nom, 0, 1)}">JD</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <strong th:text="${candidat.prenom + ' ' + candidat.nom}">John Doe</strong>
+                                            <br>
+                                            <small class="text-muted" th:text="${candidat.genre != null ? candidat.genre.nom : 'Non spécifié'}">Homme</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a th:href="'mailto:' + ${candidat.email}" th:text="${candidat.email}">john.doe@email.com</a>
+                                </td>
+                                <td th:text="${candidat.tel}">+33 1 23 45 67 89</td>
+                                <td>
+                                    <span th:if="${candidat.offre != null}" class="badge bg-warning text-dark" th:text="${candidat.offre.poste != null ? candidat.offre.poste.nom : 'Offre sans poste'}">Développeur</span>
+                                    <span th:unless="${candidat.offre != null}" class="badge bg-secondary">Aucune offre</span>
+                                </td>
+                                <td>
+                                    <span th:text="${#temporals.format(candidat.dateDepot, 'dd/MM/yyyy')}" th:if="${candidat.dateDepot != null}">01/01/2024</span>
+                                    <span th:unless="${candidat.dateDepot != null}" class="text-muted">Non définie</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/candidats/detail/{id}(id=${candidat.idCandidat})}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Voir détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/candidats/edit/{id}(id=${candidat.idCandidat})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/candidats/delete/{id}(id=${candidat.idCandidat})}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce candidat ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

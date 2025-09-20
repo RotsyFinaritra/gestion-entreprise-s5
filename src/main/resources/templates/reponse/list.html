@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Liste des Réponses - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-chat-dots me-2"></i>
+                Liste des Réponses
+            </h2>
+            <a href="/reponses/new" class="btn btn-dark">
+                <i class="bi bi-plus-circle me-2"></i>
+                Nouvelle Réponse
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${reponses.empty}" class="text-center py-5">
+                    <i class="bi bi-chat-dots display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucune réponse trouvée</h5>
+                    <p class="text-muted mb-4">Commencez par créer des choix de réponses pour vos questions</p>
+                    <a href="/reponses/new" class="btn btn-dark">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer une réponse
+                    </a>
+                </div>
+
+                <div th:unless="${reponses.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Question</th>
+                                <th>Choix de Réponse</th>
+                                <th>Correct</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="reponse : ${reponses}">
+                                <td th:text="${reponse.idReponseQuestion}">1</td>
+                                <td>
+                                    <span th:if="${reponse.question != null}" 
+                                          th:text="${#strings.abbreviate(reponse.question.enonce, 50)}"
+                                          class="text-muted">
+                                        Qu'est-ce que Java ?
+                                    </span>
+                                    <span th:unless="${reponse.question != null}" class="text-muted">Question supprimée</span>
+                                </td>
+                                <td>
+                                    <strong th:text="${reponse.choix}">Un langage de programmation</strong>
+                                </td>
+                                <td>
+                                    <span th:if="${reponse.valeur}" class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Correcte
+                                    </span>
+                                    <span th:unless="${reponse.valeur}" class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Incorrecte
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/reponses/edit/{id}(id=${reponse.idReponseQuestion})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/reponses/delete/{id}(id=${reponse.idReponseQuestion})}" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

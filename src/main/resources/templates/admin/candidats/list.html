@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Gestion des Candidats - Administration</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- En-tête avec statistiques -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-people-fill me-2"></i>
+                Gestion des Candidats - Administration
+            </h2>
+            <div class="btn-group">
+                <a href="/admin/candidats/classement" class="btn btn-warning">
+                    <i class="bi bi-trophy-fill me-2"></i>Classement Test 2
+                </a>
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#infoModal">
+                    <i class="bi bi-info-circle me-2"></i>Aide
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 th:text="${totalCandidats}">0</h4>
+                                <p class="mb-0">Total Candidats</p>
+                            </div>
+                            <div>
+                                <i class="bi bi-people fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 th:text="${candidatsAvecAge}">0</h4>
+                                <p class="mb-0">Avec Date de Naissance</p>
+                            </div>
+                            <div>
+                                <i class="bi bi-calendar-date fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 th:text="${candidatsEnAttente}">0</h4>
+                                <p class="mb-0">En Attente de Test</p>
+                            </div>
+                            <div>
+                                <i class="bi bi-hourglass-split fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Candidats par Offre -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>
+                    Candidats par Offre d'Emploi
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${candidatsParOffre.empty}" class="text-center py-4">
+                    <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune candidature trouvée</h5>
+                    <p class="text-muted">Les candidatures apparaîtront ici une fois soumises</p>
+                </div>
+
+                <div th:unless="${candidatsParOffre.empty}">
+                    <div class="row">
+                        <div th:each="entry : ${candidatsParOffre}" class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <h6 class="mb-0" th:text="${entry.key}">Nom du Poste</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="badge bg-primary rounded-pill">
+                                            <span th:text="${#lists.size(entry.value)}">0</span> candidat(s)
+                                        </span>
+                                        <div th:if="${entry.value.size() > 0}">
+                                            <span class="small text-muted">Âge requis: </span>
+                                            <span class="badge bg-info text-dark" 
+                                                  th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax != null}"
+                                                  th:text="${entry.value[0].offre.ageMin + '-' + entry.value[0].offre.ageMax + ' ans'}">24-45 ans</span>
+                                            <span class="badge bg-info text-dark" 
+                                                  th:if="${entry.value[0].offre.ageMin != null and entry.value[0].offre.ageMax == null}"
+                                                  th:text="${entry.value[0].offre.ageMin + '+ ans'}">24+ ans</span>
+                                            <span class="badge bg-info text-dark" 
+                                                  th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax != null}"
+                                                  th:text="'Moins de ' + ${entry.value[0].offre.ageMax + ' ans'}">Moins de 45 ans</span>
+                                            <span class="badge bg-secondary" 
+                                                  th:if="${entry.value[0].offre.ageMin == null and entry.value[0].offre.ageMax == null}">Non défini</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Liste des candidats pour cette offre -->
+                                    <div class="candidats-list">
+                                        <div th:each="candidat, iterStat : ${entry.value}" 
+                                             th:if="${iterStat.index < 3}" 
+                                             class="d-flex align-items-center mb-2">
+                                            <img th:if="${candidat.image != null and candidat.image != ''}" 
+                                                 th:src="${candidat.image}" 
+                                                 alt="Photo" 
+                                                 class="rounded-circle me-2"
+                                                 style="width: 30px; height: 30px; object-fit: cover;">
+                                            <div th:unless="${candidat.image != null and candidat.image != ''}" 
+                                                 class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 30px; height: 30px; font-size: 12px;">
+                                                <span th:text="${#strings.substring(candidat.prenom, 0, 1) + #strings.substring(candidat.nom, 0, 1)}">JD</span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <small class="fw-semibold" th:text="${candidat.prenom + ' ' + candidat.nom}">John Doe</small>
+                                                <div th:if="${candidat.dateNaissance != null}">
+                                                    <small class="text-muted">
+                                                        <span th:text="${agesMap[candidat.idCandidat]}">25</span> ans
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <!-- Statut du candidat -->
+                                            <div>
+                                                <div th:if="${candidat.statusCandidats.size() > 0}">
+                                                    <span th:each="status : ${candidat.statusCandidats}"
+                                                          th:if="${status.status.nom == 'Pass Test 1'}"
+                                                          class="badge bg-success">✓ Test 1</span>
+                                                    <span th:each="status : ${candidat.statusCandidats}"
+                                                          th:if="${status.status.nom == 'Refus Test 1'}"
+                                                          class="badge bg-danger">✗ Test 1</span>
+                                                </div>
+                                                <span th:if="${candidat.statusCandidats.empty}" 
+                                                      class="badge bg-secondary">En attente</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div th:if="${entry.value.size() > 3}" class="text-muted">
+                                            <small>+ <span th:text="${entry.value.size() - 3}">2</span> autre(s)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Actions -->
+                                    <div class="mt-3" th:if="${entry.value.size() > 0}">
+                                        <div class="d-flex gap-2">
+                                            <a th:href="@{'/admin/candidats/by-offre/' + ${entry.value[0].offre.idOffre}}" 
+                                               class="btn btn-outline-primary btn-sm flex-fill">
+                                                <i class="bi bi-eye me-1"></i>Voir candidats
+                                            </a>
+                                            <div th:if="${!premierTestEffectueParOffre[entry.value[0].offre.idOffre]}">
+                                                <form th:action="@{/admin/candidats/premier-test/{offreId}(offreId=${entry.value[0].offre.idOffre})}" 
+                                                      method="post" 
+                                                      onsubmit="return confirm('Êtes-vous sûr de vouloir procéder au premier test pour tous les candidats de cette offre ?');">
+                                                    <button type="submit" class="btn btn-warning btn-sm">
+                                                        <i class="bi bi-gear me-1"></i>Premier Test
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div th:if="${premierTestEffectueParOffre[entry.value[0].offre.idOffre]}">
+                                                <span class="badge bg-success p-2">
+                                                    <i class="bi bi-check-circle me-1"></i>Test effectué
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste détaillée des candidats -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Liste Complète des Candidats
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${candidats.empty}" class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-4"></i>
+                    <h5 class="text-muted">Aucun candidat trouvé</h5>
+                    <p class="text-muted mb-4">Les candidatures apparaîtront ici une fois soumises via le site client</p>
+                </div>
+
+                <div th:unless="${candidats.empty}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Candidat</th>
+                                <th>Âge</th>
+                                <th>Offre Postulée</th>
+                                <th>Âge Requis</th>
+                                <th>Compatibilité Âge</th>
+                                <th>Statut</th>
+                                <th>Date Candidature</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="candidat : ${candidats}">
+                                <td th:text="${candidat.idCandidat}">1</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img th:if="${candidat.image != null and candidat.image != ''}" 
+                                             th:src="${candidat.image}" 
+                                             alt="Photo"
+                                             class="rounded-circle me-2"
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div th:unless="${candidat.image != null and candidat.image != ''}" 
+                                             class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 40px; height: 40px;">
+                                            <span th:text="${#strings.substring(candidat.prenom, 0, 1) + #strings.substring(candidat.nom, 0, 1)}">JD</span>
+                                        </div>
+                                        <div>
+                                            <strong th:text="${candidat.prenom + ' ' + candidat.nom}">John Doe</strong>
+                                            <br>
+                                            <small class="text-muted" th:text="${candidat.email}">john@email.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${candidat.dateNaissance != null}" 
+                                          th:text="${agesMap[candidat.idCandidat]} + ' ans'">25 ans</span>
+                                    <span th:unless="${candidat.dateNaissance != null}" 
+                                          class="badge bg-secondary">Non renseigné</span>
+                                </td>
+                                <td>
+                                    <span th:if="${candidat.offre != null}" 
+                                          class="badge bg-primary" 
+                                          th:text="${candidat.offre.poste != null ? candidat.offre.poste.nom : 'Poste non défini'}">Développeur</span>
+                                    <span th:unless="${candidat.offre != null}" 
+                                          class="badge bg-secondary">Aucune offre</span>
+                                </td>
+                                <td>
+                                    <div th:if="${candidat.offre != null}">
+                                        <span th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax != null}" 
+                                              class="badge bg-info text-dark"
+                                              th:text="${candidat.offre.ageMin + '-' + candidat.offre.ageMax + ' ans'}">24-45 ans</span>
+                                        <span th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax == null}" 
+                                              class="badge bg-info text-dark"
+                                              th:text="${candidat.offre.ageMin + '+ ans'}">24+ ans</span>
+                                        <span th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax != null}" 
+                                              class="badge bg-info text-dark"
+                                              th:text="'Moins de ' + ${candidat.offre.ageMax + ' ans'}">Moins de 45 ans</span>
+                                        <span th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax == null}" 
+                                              class="badge bg-secondary">Non défini</span>
+                                    </div>
+                                    <span th:unless="${candidat.offre != null}" 
+                                          class="badge bg-secondary">-</span>
+                                </td>
+                                <td>
+                                    <div th:if="${candidat.dateNaissance != null and candidat.offre != null and (candidat.offre.ageMin != null or candidat.offre.ageMax != null)}">
+                                        <!-- Calculer la compatibilité -->
+                                        <div th:with="age=${agesMap[candidat.idCandidat]},
+                                                     ageMin=${candidat.offre.ageMin},
+                                                     ageMax=${candidat.offre.ageMax},
+                                                     compatible=${(ageMin == null or age >= ageMin) and (ageMax == null or age <= ageMax)}">
+                                            <span th:if="${compatible}" class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Compatible
+                                            </span>
+                                            <span th:unless="${compatible}" class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Non compatible
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span th:if="${candidat.dateNaissance == null}" 
+                                          class="badge bg-secondary">À vérifier</span>
+                                    <span th:if="${candidat.offre == null or (candidat.offre.ageMin == null and candidat.offre.ageMax == null)}" 
+                                          class="badge bg-secondary">Non applicable</span>
+                                </td>
+                                <td>
+                                    <div th:if="${candidat.statusCandidats.size() > 0}">
+                                        <div th:each="status : ${candidat.statusCandidats}">
+                                            <span th:if="${status.status.nom == 'Pass Test 1'}" 
+                                                  class="badge bg-success">✓ Passé Test 1</span>
+                                            <span th:if="${status.status.nom == 'Refus Test 1'}" 
+                                                  class="badge bg-danger">✗ Refusé Test 1</span>
+                                        </div>
+                                    </div>
+                                    <span th:if="${candidat.statusCandidats.empty}" 
+                                          class="badge bg-warning text-dark">En attente</span>
+                                </td>
+                                <td>
+                                    <span th:if="${candidat.dateDepot != null}"
+                                          th:text="${#temporals.format(candidat.dateDepot, 'dd/MM/yyyy')}">01/01/2024</span>
+                                    <span th:unless="${candidat.dateDepot != null}" 
+                                          class="text-muted">Non définie</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/admin/candidats/detail/{id}(id=${candidat.idCandidat})}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Voir détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/candidats/edit/{id}(id=${candidat.idCandidat})}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .candidats-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .btn-group .btn {
+            border-radius: 0.25rem;
+            margin: 0 1px;
+        }
+    </style>
+</body>
+</html>

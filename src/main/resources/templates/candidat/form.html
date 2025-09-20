@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${candidat.idCandidat != null ? 'Modifier le Candidat' : 'Nouveau Candidat'} + ' - Gestion Entreprise'">Nouveau Candidat - Gestion Entreprise</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-people me-2"></i>
+                <span th:text="${candidat.idCandidat != null ? 'Modifier le Candidat' : 'Nouveau Candidat'}">Nouveau Candidat</span>
+            </h2>
+            <a href="/candidats" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-form me-2"></i>
+                            Informations du Candidat
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/candidats}" th:object="${candidat}" method="post">
+                            <input type="hidden" th:field="*{idCandidat}">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="prenom" class="form-label">
+                                            <i class="bi bi-person me-1"></i>
+                                            Prénom *
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="prenom" 
+                                               th:field="*{prenom}" 
+                                               placeholder="John"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nom" class="form-label">
+                                            <i class="bi bi-person me-1"></i>
+                                            Nom *
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="nom" 
+                                               th:field="*{nom}" 
+                                               placeholder="Doe"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">
+                                            <i class="bi bi-envelope me-1"></i>
+                                            Email *
+                                        </label>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="email" 
+                                               th:field="*{email}" 
+                                               placeholder="john.doe@email.com"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="tel" class="form-label">
+                                            <i class="bi bi-telephone me-1"></i>
+                                            Téléphone
+                                        </label>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="tel" 
+                                               th:field="*{tel}" 
+                                               placeholder="+33 1 23 45 67 89">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="adresse" class="form-label">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    Adresse
+                                </label>
+                                <textarea class="form-control" 
+                                          id="adresse" 
+                                          th:field="*{adresse}" 
+                                          rows="2"
+                                          placeholder="123 Rue de la Paix, 75001 Paris"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="dateNaissance" class="form-label">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            Date de Naissance
+                                        </label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="dateNaissance" 
+                                               th:field="*{dateNaissance}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="genre" class="form-label">
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            Genre
+                                        </label>
+                                        <select class="form-select" 
+                                                id="genre" 
+                                                th:field="*{genre}">
+                                            <option value="">Sélectionner un genre</option>
+                                            <option th:each="genre : ${genres}"
+                                                    th:value="${genre.idSexe}"
+                                                    th:text="${genre.nom}"
+                                                    th:selected="${candidat.genre != null and candidat.genre.idSexe == genre.idSexe}">
+                                                Homme
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="offre" class="form-label">
+                                            <i class="bi bi-file-text me-1"></i>
+                                            Offre
+                                        </label>
+                                        <select class="form-select" 
+                                                id="offre" 
+                                                th:field="*{offre}">
+                                            <option value="">Sélectionner une offre</option>
+                                            <option th:each="offre : ${offres}"
+                                                    th:value="${offre.idOffre}"
+                                                    th:text="${offre.poste != null ? offre.poste.nom : 'Offre sans poste'}"
+                                                    th:selected="${candidat.offre != null and candidat.offre.idOffre == offre.idOffre}">
+                                                Développeur Web
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">
+                                    <i class="bi bi-image me-1"></i>
+                                    Photo (URL)
+                                </label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="image" 
+                                       th:field="*{image}" 
+                                       placeholder="https://example.com/photo.jpg">
+                                <div class="form-text">
+                                    Optionnel : URL vers la photo du candidat
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/candidats" class="btn btn-secondary me-md-2">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-info">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${candidat.idCandidat != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="scripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('prenom').focus();
+            });
+        </script>
+    </div>
+</body>
+</html>

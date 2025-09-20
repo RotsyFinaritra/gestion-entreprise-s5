@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test 2 - Questionnaire Technique</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+                .question-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .question-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .question-card.answered {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        .reponse-option {
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+        }
+        .reponse-option:hover {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        .reponse-option input[type="radio"] {
+            display: none;
+        }
+        .reponse-option input[type="radio"]:checked + label {
+            background-color: #007bff;
+            color: white;
+        }
+        .reponse-option input[type="radio"]:checked + label .reponse-letter {
+            background-color: white;
+            color: #007bff;
+        }
+        .reponse-content {
+            padding: 15px;
+            cursor: pointer;
+        }
+        .reponse-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            font-weight: bold;
+            color: #6c757d;
+            flex-shrink: 0;
+        }
+        .question-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .candidate-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .timer-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 150px;
+            text-align: center;
+        }
+        .timer-warning {
+            background-color: #ffeaa7;
+            color: #d63031;
+            border: 2px solid #fdcb6e;
+        }
+        .timer-danger {
+            background-color: #fab1a0;
+            color: #e17055;
+            border: 2px solid #e84393;
+            animation: pulse 1s infinite;
+        }
+        .timer-normal {
+            background-color: #81ecec;
+            color: #00b894;
+            border: 2px solid #55a3ff;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Minuteur fixe -->
+    <div class="timer-container">
+        <div class="timer-display timer-normal" id="timerDisplay">
+            ⏰ <span id="timeRemaining"></span>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <!-- En-tête avec informations du candidat -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card candidate-info">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">Test Technique - Niveau 2</h2>
+                        <p class="mb-2" th:text="|Candidat: ${candidat.prenom} ${candidat.nom}|"></p>
+                        <p class="mb-0" th:text="|Poste: ${candidat.offre.poste.nom}|"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/test2/soumettre/{token}(token=${token})}" method="post" id="questionnaireForm">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <!-- Instructions -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-info-circle"></i> Instructions
+                            </h5>
+                            <ul class="mb-0">
+                                <li>Lisez attentivement chaque question</li>
+                                <li>Sélectionnez la meilleure réponse parmi les choix proposés</li>
+                                <li>Une seule réponse est possible par question</li>
+                                <li><strong>Temps limite: <span th:text="${dureeMinutes}"></span> minutes</strong></li>
+                                <li class="text-warning"><strong>Le test sera automatiquement soumis à la fin du temps</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Questions -->
+                    <!-- Questions -->
+                    <div th:each="entry : ${questionsReponses}" class="card question-card mb-4">
+                        <div class="card-header bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-question-circle text-primary me-2"></i>
+                                        Question <span th:text="${entry.key.idQuestion}">1</span>
+                                        <span class="badge bg-primary ms-2" th:text="${entry.key.note} + ' pts'">5 pts</span>
+                                    </h6>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tags me-1"></i>
+                                        <span th:text="${entry.key.competance.nom}">Compétence</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="question-text mb-4" th:text="${entry.key.enonce}">Question text here</p>
+                            
+                            <div class="row">
+                                <div th:each="reponse, iterStat : ${entry.value}" class="col-12 mb-3">
+                                    <div class="form-check reponse-option">
+                                        <input class="form-check-input" 
+                                               type="radio" 
+                                               th:name="'question_' + ${entry.key.idQuestion}"
+                                               th:id="'reponse_' + ${reponse.idReponseQuestion}"
+                                               th:value="${reponse.idReponseQuestion}"
+                                               required>
+                                        <label class="form-check-label w-100" 
+                                               th:for="'reponse_' + ${reponse.idReponseQuestion}">
+                                            <div class="reponse-content">
+                                                <div class="d-flex align-items-start">
+                                                    <span class="reponse-letter me-3" 
+                                                          th:text="${iterStat.index < 4} ? ${'ABCD'[iterStat.index]} : ${iterStat.index + 1}">A</span>
+                                                    <span th:text="${reponse.choix}" class="flex-grow-1">Réponse</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    <!-- Boutons d'action -->
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <button type="button" class="btn btn-outline-secondary me-3" onclick="verifierReponses()">
+                                <i class="fas fa-check-circle"></i> Vérifier mes réponses
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" onclick="return confirmerSoumission()">
+                                <i class="fas fa-paper-plane"></i> Soumettre le test
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Modal pour temps écoulé -->
+        <div class="modal fade" id="timeUpModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-clock"></i> Temps écoulé !
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-hourglass-end fa-3x text-danger mb-3"></i>
+                        <h5>Le temps alloué pour le test est terminé.</h5>
+                        <p>Vos réponses vont être automatiquement soumises.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="soumettreAutomatique()">
+                            Valider la soumission
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    
+    <script th:inline="javascript">
+        // Configuration du minuteur
+        /*<![CDATA[*/
+        const dureeMinutes = /*[[${dureeMinutes}]]*/ 10;
+        /*]]>*/
+        let tempsRestant = dureeMinutes * 60; // en secondes
+        let minuterInterval;
+        let testSoumis = false;
+
+        // Fonctions utilitaires
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timeRemaining');
+            const container = document.getElementById('timerDisplay');
+            
+            display.textContent = formatTime(tempsRestant);
+            
+            // Changer la couleur selon le temps restant
+            container.className = 'timer-display ';
+            if (tempsRestant <= 60) {
+                container.className += 'timer-danger';
+            } else if (tempsRestant <= 300) { // 5 minutes
+                container.className += 'timer-warning';
+            } else {
+                container.className += 'timer-normal';
+            }
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            
+            minuterInterval = setInterval(() => {
+                tempsRestant--;
+                updateTimerDisplay();
+                
+                // Sauvegarder automatiquement toutes les 30 secondes
+                if (tempsRestant % 30 === 0) {
+                    sauvegarderProgression();
+                }
+                
+                // Alertes à 5 minutes et 1 minute
+                if (tempsRestant === 300) {
+                    alert('⏰ Attention ! Il vous reste 5 minutes pour terminer le test.');
+                } else if (tempsRestant === 60) {
+                    alert('⚠️ Dernière minute ! Le test sera soumis automatiquement dans 1 minute.');
+                }
+                
+                // Temps écoulé
+                if (tempsRestant <= 0) {
+                    clearInterval(minuterInterval);
+                    tempsEcoule();
+                }
+            }, 1000);
+        }
+
+        function tempsEcoule() {
+            if (testSoumis) return;
+            
+            // Afficher le modal
+            const modal = new bootstrap.Modal(document.getElementById('timeUpModal'));
+            modal.show();
+        }
+
+        function soumettreAutomatique() {
+            if (testSoumis) return;
+            testSoumis = true;
+            
+            // Marquer que c'est une soumission automatique
+            const form = document.getElementById('questionnaireForm');
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'soumissionAutomatique';
+            hiddenInput.value = 'true';
+            form.appendChild(hiddenInput);
+            
+            form.submit();
+        }
+
+        function verifierReponses() {
+            const questions = document.querySelectorAll('.question-card');
+            let questionsNonRepondues = [];
+            
+            questions.forEach((card, index) => {
+                const radios = card.querySelectorAll('input[type="radio"]');
+                const isAnswered = Array.from(radios).some(radio => radio.checked);
+                
+                if (!isAnswered) {
+                    questionsNonRepondues.push(index + 1);
+                    card.style.border = '2px solid #dc3545';
+                } else {
+                    card.style.border = '2px solid #28a745';
+                }
+            });
+            
+            if (questionsNonRepondues.length > 0) {
+                alert(`Attention: Les questions ${questionsNonRepondues.join(', ')} ne sont pas encore répondues.`);
+            } else {
+                alert('✅ Toutes les questions ont été répondues. Vous pouvez soumettre le test.');
+            }
+        }
+        
+        function confirmerSoumission() {
+            if (testSoumis) return false;
+            
+            const questions = document.querySelectorAll('.question-card');
+            let questionsNonRepondues = 0;
+            
+            questions.forEach(card => {
+                const radios = card.querySelectorAll('input[type="radio"]');
+                const isAnswered = Array.from(radios).some(radio => radio.checked);
+                if (!isAnswered) questionsNonRepondues++;
+            });
+            
+            if (questionsNonRepondues > 0) {
+                const reponse = confirm(`Vous n'avez pas répondu à ${questionsNonRepondues} question(s). Voulez-vous quand même soumettre le test?`);
+                if (!reponse) return false;
+            }
+            
+            testSoumis = true;
+            clearInterval(minuterInterval);
+            return true;
+        }
+
+        function sauvegarderProgression() {
+            const form = new FormData(document.getElementById('questionnaireForm'));
+            const token = window.location.pathname.split('/').pop();
+            
+            // Sauvegarde en arrière-plan via AJAX
+            fetch('/test2/sauvegarde/' + token, {
+                method: 'POST',
+                body: form
+            }).catch(() => {
+                // Silence, sauvegarde locale en cas d'échec
+                sauvegardeLocale();
+            });
+        }
+
+        function sauvegardeLocale() {
+            const radios = document.querySelectorAll('input[type="radio"]:checked');
+            radios.forEach(radio => {
+                localStorage.setItem('test2_' + radio.name, radio.value);
+            });
+        }
+
+        function restaurerReponses() {
+            const radios = document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                const saved = localStorage.getItem('test2_' + radio.name);
+                if (saved === radio.value) {
+                    radio.checked = true;
+                }
+            });
+            // Mettre à jour l'affichage après restauration
+            updateQuestionStatus();
+        }
+
+        // Initialisation
+        window.addEventListener('load', function() {
+            restaurerReponses();
+            startTimer();
+            initializeInteractions();
+        });
+        
+        function initializeInteractions() {
+            // Gérer les sélections de réponses avec animation
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Marquer la question comme répondue
+                    const questionCard = this.closest('.question-card');
+                    questionCard.classList.add('answered');
+                    
+                    // Animation de sélection
+                    const label = this.nextElementSibling;
+                    label.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        label.style.transform = 'scale(1)';
+                    }, 100);
+                    
+                    // Sauvegarder automatiquement
+                    sauvegardeLocale();
+                });
+            });
+            
+            // Mettre à jour le statut initial des questions
+            updateQuestionStatus();
+        }
+        
+        function updateQuestionStatus() {
+            const questions = document.querySelectorAll('.question-card');
+            questions.forEach(card => {
+                const radios = card.querySelectorAll('input[type="radio"]');
+                const isAnswered = Array.from(radios).some(radio => radio.checked);
+                
+                if (isAnswered) {
+                    card.classList.add('answered');
+                } else {
+                    card.classList.remove('answered');
+                }
+            });
+        }
+
+        // Sauvegarder automatiquement les changements
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'radio') {
+                sauvegardeLocale();
+            }
+        });
+
+        // Nettoyer avant de quitter
+        window.addEventListener('beforeunload', function(e) {
+            if (!testSoumis && tempsRestant > 0) {
+                e.preventDefault();
+                e.returnValue = 'Votre test n\'est pas terminé. Voulez-vous vraiment quitter?';
+                return e.returnValue;
+            }
+        });
+
+        // Nettoyer après soumission
+        document.getElementById('questionnaireForm').addEventListener('submit', function() {
+            const radios = document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                localStorage.removeItem('test2_' + radio.name);
+            });
+        });
+
+        // Éviter les tricheries
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
