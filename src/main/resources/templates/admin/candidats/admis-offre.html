@@ -141,28 +141,40 @@
         <div class="container-fluid">
             <!-- Statistiques -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="stats-card text-center">
                         <h3 class="text-success" th:text="${candidatsAdmis.size()}">0</h3>
                         <small class="text-muted">Candidats Admis</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <div class="stats-card text-center">
+                        <h3 class="text-warning" th:text="${candidatsSansEntretien}">0</h3>
+                        <small class="text-muted">À planifier</small>
+                    </div>
+                </div>
+                <div class="col-md-2">
                     <div class="stats-card text-center">
                         <h3 class="text-primary" th:text="${statistiquesEntretiens.total}">0</h3>
                         <small class="text-muted">Entretiens Total</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="stats-card text-center">
-                        <h3 class="text-warning" th:text="${statistiquesEntretiens.programmes}">0</h3>
+                        <h3 class="text-info" th:text="${statistiquesEntretiens.programmes}">0</h3>
                         <small class="text-muted">Programmés</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="stats-card text-center">
                         <h3 class="text-success" th:text="${statistiquesEntretiens.confirmes}">0</h3>
                         <small class="text-muted">Confirmés</small>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="stats-card text-center">
+                        <h3 class="text-secondary" th:text="${statistiquesEntretiens.termines}">0</h3>
+                        <small class="text-muted">Terminés</small>
                     </div>
                 </div>
             </div>
@@ -191,7 +203,7 @@
                                 <div th:each="candidat, iterStat : ${candidatsAdmis}" class="candidate-card card m-3">
                                     <div class="card-body">
                                         <div class="row align-items-center">
-                                            <div class="col-md-6">
+                                            <div class="col-md-5">
                                                 <h6 class="mb-1" th:text="${candidat.prenom} + ' ' + ${candidat.nom}">Nom Candidat</h6>
                                                 <small class="text-muted" th:text="${candidat.email}">email@example.com</small>
                                             </div>
@@ -199,6 +211,18 @@
                                                 <span class="badge bg-success">Admis</span>
                                             </div>
                                             <div class="col-md-2 text-center">
+                                                <div th:if="${candidatsAvecEntretien.get(candidat.idCandidat)}">
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-calendar-check me-1"></i>Entretien planifié
+                                                    </span>
+                                                </div>
+                                                <div th:unless="${candidatsAvecEntretien.get(candidat.idCandidat)}">
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-calendar-plus me-1"></i>À planifier
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1 text-center">
                                                 <span th:if="${agesMap.containsKey(candidat.idCandidat)}" 
                                                       th:text="${agesMap.get(candidat.idCandidat)} + ' ans'">25 ans</span>
                                                 <span th:unless="${agesMap.containsKey(candidat.idCandidat)}" 

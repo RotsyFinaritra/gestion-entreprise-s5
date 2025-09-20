@@ -48,6 +48,20 @@ public class EntretienService {
     }
 
     public Entretien save(Entretien entretien) {
+        // Vérifier qu'un entretien n'existe pas déjà pour ce candidat et cette offre
+        if (entretien.getIdEntretien() == null) { // Nouveau entretien
+            Optional<Entretien> entretienExistant = entretienRepository
+                .findByCandidatIdCandidatAndOffreIdOffre(
+                    entretien.getCandidat().getIdCandidat(), 
+                    entretien.getOffre().getIdOffre()
+                );
+            
+            if (entretienExistant.isPresent()) {
+                throw new RuntimeException("Un entretien existe déjà pour ce candidat et cette offre. " +
+                    "Un candidat ne peut avoir qu'un seul entretien par offre.");
+            }
+        }
+        
         return entretienRepository.save(entretien);
     }
 
@@ -89,8 +103,23 @@ public class EntretienService {
             throw new RuntimeException("Aucun candidat admis trouvé pour cette offre");
         }
 
+        // Filtrer les candidats qui ont déjà un entretien planifié pour cette offre
+        List<Candidat> candidatsSansEntretien = candidatsAdmis.stream()
+            .filter(candidat -> {
+                Optional<Entretien> entretienExistant = entretienRepository
+                    .findByCandidatIdCandidatAndOffreIdOffre(candidat.getIdCandidat(), offreId);
+                return entretienExistant.isEmpty();
+            })
+            .collect(Collectors.toList());
+
+        System.out.println("Candidats sans entretien existant: " + candidatsSansEntretien.size());
+
+        if (candidatsSansEntretien.isEmpty()) {
+            throw new RuntimeException("Tous les candidats admis ont déjà un entretien planifié pour cette offre");
+        }
+
         // Trier les candidats par meilleur score Test 2 (priorité)
-        candidatsAdmis.sort((c1, c2) -> {
+        candidatsSansEntretien.sort((c1, c2) -> {
             // Ici on pourrait récupérer les scores, pour l'instant on trie par ID
             return c1.getIdCandidat().compareTo(c2.getIdCandidat());
         });
@@ -103,7 +132,7 @@ public class EntretienService {
         LocalDate dateActuelle = dateDebut;
         int candidatIndex = 0;
         
-        while (candidatIndex < candidatsAdmis.size()) {
+        while (candidatIndex < candidatsSansEntretien.size()) {
             // Ignorer les weekends et jours fériés
             if (dateActuelle.getDayOfWeek().getValue() >= 6 || 
                 (joursFeries != null && joursFeries.contains(dateActuelle))) {
@@ -115,14 +144,14 @@ public class EntretienService {
             for (CreneauHoraire creneau : creneaux) {
                 LocalTime heureActuelle = creneau.heureDebut;
                 
-                while (heureActuelle.isBefore(creneau.heureFin) && candidatIndex < candidatsAdmis.size()) {
+                while (heureActuelle.isBefore(creneau.heureFin) && candidatIndex < candidatsSansEntretien.size()) {
                     LocalDateTime dateHeureEntretien = LocalDateTime.of(dateActuelle, heureActuelle);
                     
                     // Vérifier les conflits
                     LocalDateTime finEntretien = dateHeureEntretien.plusMinutes(dureeEntretien);
                     if (!aConflitHoraire(dateHeureEntretien, finEntretien)) {
                         
-                        Candidat candidat = candidatsAdmis.get(candidatIndex);
+                        Candidat candidat = candidatsSansEntretien.get(candidatIndex);
                         
                         // Créer l'entretien
                         Entretien entretien = new Entretien();
@@ -247,6 +276,20 @@ public class EntretienService {
     private boolean aConflitHoraire(LocalDateTime debut, LocalDateTime fin) {
         List<Entretien> conflits = entretienRepository.findEntretiensEnConflit(debut, fin);
         return !conflits.isEmpty();
+    }
+
+    /**
+     * Vérifier si un candidat a déjà un entretien pour une offre donnée
+     */
+    public boolean candidatADejaEntretien(Long candidatId, Long offreId) {
+        return entretienRepository.findByCandidatIdCandidatAndOffreIdOffre(candidatId, offreId).isPresent();
+    }
+
+    /**
+     * Obtenir l'entretien d'un candidat pour une offre spécifique
+     */
+    public Optional<Entretien> getEntretienCandidatPourOffre(Long candidatId, Long offreId) {
+        return entretienRepository.findByCandidatIdCandidatAndOffreIdOffre(candidatId, offreId);
     }
 
     /**

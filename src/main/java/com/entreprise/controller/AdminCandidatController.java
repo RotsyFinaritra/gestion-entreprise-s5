@@ -953,12 +953,26 @@ public class AdminCandidatController {
             // Vérifier s'il y a déjà des entretiens planifiés
             List<Entretien> entretiensExistants = entretienService.findByOffreId(offreId);
             Map<String, Object> statistiquesEntretiens = entretienService.getStatistiquesEntretiens(offreId);
+            
+            // Créer une map pour savoir quels candidats ont déjà un entretien
+            Map<Long, Boolean> candidatsAvecEntretien = candidatsAdmis.stream()
+                .collect(Collectors.toMap(
+                    Candidat::getIdCandidat,
+                    candidat -> entretienService.candidatADejaEntretien(candidat.getIdCandidat(), offreId)
+                ));
+            
+            // Compter les candidats sans entretien
+            long candidatsSansEntretien = candidatsAvecEntretien.values().stream()
+                .mapToLong(aEntretien -> aEntretien ? 0 : 1)
+                .sum();
 
             model.addAttribute("offre", offre);
             model.addAttribute("candidatsAdmis", candidatsAdmis);
             model.addAttribute("agesMap", agesMap);
             model.addAttribute("entretiensExistants", entretiensExistants);
             model.addAttribute("statistiquesEntretiens", statistiquesEntretiens);
+            model.addAttribute("candidatsAvecEntretien", candidatsAvecEntretien);
+            model.addAttribute("candidatsSansEntretien", candidatsSansEntretien);
             model.addAttribute("activeSection", "admin-candidats");
 
             return "admin/candidats/admis-offre";
@@ -1029,6 +1043,16 @@ public class AdminCandidatController {
                     "Aucun entretien n'a pu être planifié. Vérifiez les candidats admis.");
             }
 
+        } catch (RuntimeException e) {
+            System.err.println("Erreur planification entretiens: " + e.getMessage());
+            if (e.getMessage().contains("ont déjà un entretien planifié")) {
+                redirectAttributes.addFlashAttribute("warningMessage", 
+                    "Tous les candidats admis ont déjà un entretien planifié pour cette offre. " +
+                    "Un candidat ne peut avoir qu'un seul entretien par offre.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                    "Erreur lors de la planification des entretiens: " + e.getMessage());
+            }
         } catch (Exception e) {
             System.err.println("Erreur planification entretiens: " + e.getMessage());
             e.printStackTrace();
