@@ -1,62 +1,94 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
 <head>
     <title>Classement Test 2 - Administration</title>
-    <style>
-        .classement-card {
-            transition: transform 0.2s ease-in-out;
-            border-left: 4px solid #007bff;
-        }
-        .classement-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .rang-badge {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-        }
-        .rang-1 { background: linear-gradient(45deg, #FFD700, #FFA500); }
-        .rang-2 { background: linear-gradient(45deg, #C0C0C0, #A0A0A0); }
-        .rang-3 { background: linear-gradient(45deg, #CD7F32, #B8860B); }
-        .rang-other { background: linear-gradient(45deg, #6c757d, #495057); }
-        
-        .note-display {
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-        }
-        .note-excellent { color: #28a745; }
-        .note-bien { color: #17a2b8; }
-        .note-moyen { color: #ffc107; }
-        .note-faible { color: #dc3545; }
-        
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .progress-custom {
-            height: 8px;
-            border-radius: 4px;
-        }
-        
-        @media (max-width: 768px) {
-            .note-display { font-size: 1.5rem; }
-        }
-    </style>
+
 </head>
+
 <body>
     <div th:fragment="content">
+        <style>
+            .classement-card {
+                transition: transform 0.2s ease-in-out;
+                border-left: 4px solid #007bff;
+            }
+
+            .classement-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .rang-badge {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: white;
+            }
+
+            .rang-1 {
+                background: linear-gradient(45deg, #FFD700, #FFA500);
+            }
+
+            .rang-2 {
+                background: linear-gradient(45deg, #C0C0C0, #A0A0A0);
+            }
+
+            .rang-3 {
+                background: linear-gradient(45deg, #CD7F32, #B8860B);
+            }
+
+            .rang-other {
+                background: linear-gradient(45deg, #6c757d, #495057);
+            }
+
+            .note-display {
+                font-size: 2rem;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .note-excellent {
+                color: #28a745;
+            }
+
+            .note-bien {
+                color: #17a2b8;
+            }
+
+            .note-moyen {
+                color: #ffc107;
+            }
+
+            .note-faible {
+                color: #dc3545;
+            }
+
+            .stats-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            .progress-custom {
+                height: 8px;
+                border-radius: 4px;
+            }
+
+            @media (max-width: 768px) {
+                .note-display {
+                    font-size: 1.5rem;
+                }
+            }
+        </style>
         <!-- Navigation -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a>
+                </li>
                 <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Candidats</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Classement Test 2</li>
             </ol>
@@ -106,7 +138,9 @@
                         <h5 class="card-title">
                             <i class="bi bi-percent me-2"></i>Taux de Réussite
                         </h5>
-                        <h2 class="mb-0" th:text="${#numbers.formatDecimal((classement.size() > 0 ? classement.?[#this.noteSur20 >= 10].size() * 100.0 / classement.size() : 0), 1, 1)} + '%'">0%</h2>
+                        <h2 class="mb-0"
+                            th:text="${#numbers.formatDecimal((classement.size() > 0 ? classement.?[#this.noteSur20 >= 10].size() * 100.0 / classement.size() : 0), 1, 1)} + '%'">
+                            0%</h2>
                     </div>
                 </div>
             </div>
@@ -116,7 +150,8 @@
         <div th:if="${classement.empty}" class="text-center py-5">
             <i class="bi bi-trophy display-1 text-muted mb-4"></i>
             <h5 class="text-muted">Aucun candidat n'a encore passé le Test 2</h5>
-            <p class="text-muted mb-4">Les résultats apparaîtront ici une fois que les candidats auront terminé leurs tests</p>
+            <p class="text-muted mb-4">Les résultats apparaîtront ici une fois que les candidats auront terminé leurs
+                tests</p>
             <a href="/admin/candidats" class="btn btn-primary">
                 <i class="bi bi-arrow-left me-2"></i>Retour aux candidats
             </a>
@@ -126,16 +161,14 @@
         <div th:unless="${classement.empty}">
             <div class="row">
                 <div th:each="candidatScore : ${classement}" class="col-12 mb-3">
-                    <div class="card classement-card" 
-                         th:classappend="${candidatScore.noteSur20 >= 16} ? 'border-success' : 
+                    <div class="card classement-card" th:classappend="${candidatScore.noteSur20 >= 16} ? 'border-success' : 
                                         ${candidatScore.noteSur20 >= 14} ? 'border-info' : 
                                         ${candidatScore.noteSur20 >= 10} ? 'border-warning' : 'border-danger'">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <!-- Rang -->
                                 <div class="col-md-1 text-center">
-                                    <div class="rang-badge" 
-                                         th:classappend="${candidatScore.rang == 1} ? 'rang-1' : 
+                                    <div class="rang-badge" th:classappend="${candidatScore.rang == 1} ? 'rang-1' : 
                                                         ${candidatScore.rang == 2} ? 'rang-2' : 
                                                         ${candidatScore.rang == 3} ? 'rang-3' : 'rang-other'">
                                         <span th:text="${candidatScore.rang}">1</span>
@@ -149,8 +182,11 @@
                                             <i class="bi bi-person-circle display-6 text-primary"></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-1" th:text="${candidatScore.candidat.prenom} + ' ' + ${candidatScore.candidat.nom}">Nom Prénom</h6>
-                                            <small class="text-muted" th:text="${candidatScore.candidat.email}">email@example.com</small>
+                                            <h6 class="mb-1"
+                                                th:text="${candidatScore.candidat.prenom} + ' ' + ${candidatScore.candidat.nom}">
+                                                Nom Prénom</h6>
+                                            <small class="text-muted"
+                                                th:text="${candidatScore.candidat.email}">email@example.com</small>
                                             <br>
                                             <small class="text-muted">
                                                 <i class="bi bi-briefcase me-1"></i>
@@ -163,10 +199,11 @@
                                 <!-- Note -->
                                 <div class="col-md-2">
                                     <div class="note-display"
-                                         th:classappend="${candidatScore.noteSur20 >= 16} ? 'note-excellent' : 
+                                        th:classappend="${candidatScore.noteSur20 >= 16} ? 'note-excellent' : 
                                                         ${candidatScore.noteSur20 >= 14} ? 'note-bien' : 
                                                         ${candidatScore.noteSur20 >= 10} ? 'note-moyen' : 'note-faible'">
-                                        <span th:text="${#numbers.formatDecimal(candidatScore.noteSur20, 1, 2)}">15.5</span>
+                                        <span
+                                            th:text="${#numbers.formatDecimal(candidatScore.noteSur20, 1, 2)}">15.5</span>
                                         <small>/20</small>
                                     </div>
                                 </div>
@@ -175,32 +212,33 @@
                                 <div class="col-md-3">
                                     <div class="mb-2">
                                         <small class="text-muted">Score: </small>
-                                        <strong th:text="${#numbers.formatDecimal(candidatScore.scorePercentage, 1, 1)} + '%'">75%</strong>
+                                        <strong
+                                            th:text="${#numbers.formatDecimal(candidatScore.scorePercentage, 1, 1)} + '%'">75%</strong>
                                     </div>
                                     <div class="progress progress-custom">
-                                        <div class="progress-bar" 
-                                             th:classappend="${candidatScore.scorePercentage >= 80} ? 'bg-success' : 
+                                        <div class="progress-bar"
+                                            th:classappend="${candidatScore.scorePercentage >= 80} ? 'bg-success' : 
                                                             ${candidatScore.scorePercentage >= 70} ? 'bg-info' : 
                                                             ${candidatScore.scorePercentage >= 60} ? 'bg-warning' : 'bg-danger'"
-                                             role="progressbar" 
-                                             th:style="'width: ' + ${candidatScore.scorePercentage} + '%'"
-                                             th:aria-valuenow="${candidatScore.scorePercentage}"
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
+                                            role="progressbar"
+                                            th:style="'width: ' + ${candidatScore.scorePercentage} + '%'"
+                                            th:aria-valuenow="${candidatScore.scorePercentage}" aria-valuemin="0"
+                                            aria-valuemax="100">
                                         </div>
                                     </div>
-                                    <small class="text-muted" th:text="${candidatScore.nombreReponses} + ' réponse(s)'">5 réponses</small>
+                                    <small class="text-muted"
+                                        th:text="${candidatScore.nombreReponses} + ' réponse(s)'">5 réponses</small>
                                 </div>
 
                                 <!-- Statut et actions -->
                                 <div class="col-md-2 text-end">
                                     <div class="mb-2">
-                                        <span class="badge" 
-                                              th:classappend="${candidatScore.statut.contains('Pass')} ? 'bg-success' : 'bg-danger'"
-                                              th:text="${candidatScore.statut}">Pass Test 2</span>
+                                        <span class="badge"
+                                            th:classappend="${candidatScore.statut.contains('Pass')} ? 'bg-success' : 'bg-danger'"
+                                            th:text="${candidatScore.statut}">Pass Test 2</span>
                                     </div>
-                                    <a th:href="@{'/admin/candidats/detail/' + ${candidatScore.candidat.idCandidat}}" 
-                                       class="btn btn-outline-primary btn-sm">
+                                    <a th:href="@{'/admin/candidats/detail/' + ${candidatScore.candidat.idCandidat}}"
+                                        class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye me-1"></i>Détail
                                     </a>
                                 </div>
@@ -221,19 +259,25 @@
                             <div class="row">
                                 <div class="col-md-3 text-center">
                                     <h6 class="text-success">Excellent (16-20)</h6>
-                                    <h4 class="text-success" th:text="${classement.?[#this.noteSur20 >= 16].size()}">0</h4>
+                                    <h4 class="text-success" th:text="${classement.?[#this.noteSur20 >= 16].size()}">0
+                                    </h4>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <h6 class="text-info">Bien (14-15.9)</h6>
-                                    <h4 class="text-info" th:text="${classement.?[#this.noteSur20 >= 14 && #this.noteSur20 < 16].size()}">0</h4>
+                                    <h4 class="text-info"
+                                        th:text="${classement.?[#this.noteSur20 >= 14 && #this.noteSur20 < 16].size()}">
+                                        0</h4>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <h6 class="text-warning">Moyen (10-13.9)</h6>
-                                    <h4 class="text-warning" th:text="${classement.?[#this.noteSur20 >= 10 && #this.noteSur20 < 14].size()}">0</h4>
+                                    <h4 class="text-warning"
+                                        th:text="${classement.?[#this.noteSur20 >= 10 && #this.noteSur20 < 14].size()}">
+                                        0</h4>
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <h6 class="text-danger">Insuffisant (< 10)</h6>
-                                    <h4 class="text-danger" th:text="${classement.?[#this.noteSur20 < 10].size()}">0</h4>
+                                            <h4 class="text-danger"
+                                                th:text="${classement.?[#this.noteSur20 < 10].size()}">0</h4>
                                 </div>
                             </div>
                         </div>
@@ -245,7 +289,7 @@
 
     <script>
         // Animation d'apparition progressive des cartes
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const cards = document.querySelectorAll('.classement-card');
             cards.forEach((card, index) => {
                 setTimeout(() => {
@@ -261,4 +305,5 @@
         });
     </script>
 </body>
+
 </html>
