@@ -139,6 +139,10 @@
                 padding-left: 40px !important;
             }
 
+            .form-check.p-3.bg-light.rounded {
+                padding-left: 40px !important;
+            }
+
             .competenceItem {
                 display: flex;
                 gap: 20px;
@@ -150,6 +154,9 @@
             }
         </style>
         <div class="container py-4">
+            <div class="backImg">
+                <img src=";/back.gif" alt="">
+            </div>
             <!-- Navigation -->
             <nav aria-label="breadcrumb" class="mb-4 headerCV">
                 <ol class="breadcrumb">
@@ -367,108 +374,9 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- SECTION 4: DOCUMENTS -->
-                        <div class="cv-section mb-4">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-header bg-warning text-dark py-3">
-                                    <h4 class="mb-0">
-                                        <i class="bi bi-file-earmark-text me-2"></i>
-                                        DOCUMENTS PROFESSIONNELS
-                                    </h4>
-                                </div>
-                                <div class="card-body p-4">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-4">
-                                            <div
-                                                class="document-upload border-2 border-dashed border-warning rounded-3 p-4 text-center">
-                                                <i class="bi bi-file-pdf fs-1 text-warning mb-3"></i>
-                                                <h6 class="fw-bold mb-2">CV (Requis) *</h6>
-                                                <input type="file" class="form-control" id="cv" name="cv"
-                                                    accept=".pdf,.doc,.docx" required>
-                                                <small class="text-muted">PDF, DOC, DOCX - Max 5MB</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-4">
-                                            <div
-                                                class="document-upload border-2 border-dashed border-secondary rounded-3 p-4 text-center">
-                                                <i class="bi bi-file-text fs-1 text-secondary mb-3"></i>
-                                                <h6 class="fw-bold mb-2">Lettre de motivation</h6>
-                                                <input type="file" class="form-control" id="lettreMotivation"
-                                                    name="lettreMotivation" accept=".pdf,.doc,.docx">
-                                                <small class="text-muted">PDF, DOC, DOCX - Max 5MB
-                                                    (Optionnel)</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- SECTION 5: MESSAGE DE MOTIVATION -->
-                        <div class="cv-section mb-4">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-header bg-secondary text-white py-3">
-                                    <h4 class="mb-0">
-                                        <i class="bi bi-chat-quote me-2"></i>
-                                        MESSAGE DE MOTIVATION
-                                    </h4>
-                                </div>
-                                <div class="card-body p-4">
-                                    <!-- Consentements -->
-                                    <div class="consent-area">
-                                        <h6 class="fw-bold mb-3">
-                                            <i class="bi bi-shield-check me-2"></i>
-                                            Consentements et Autorisations
-                                        </h6>
-                                        <div class="form-check mb-3 p-3 bg-light rounded">
-                                            <input class="form-check-input" type="checkbox" id="consentement"
-                                                name="consentement" required>
-                                            <label class="form-check-label fw-semibold" for="consentement">
-                                                <i class="bi bi-shield-check text-success me-2"></i>
-                                                J'accepte que mes données personnelles soient traitées dans le cadre
-                                                de cette candidature *
-                                            </label>
-                                            <div class="form-text small">
-                                                Vos données seront utilisées uniquement pour traiter votre
-                                                candidature
-                                            </div>
-                                        </div>
-                                        <div class="form-check p-3 bg-light rounded">
-                                            <input class="form-check-input" type="checkbox" id="newsletter"
-                                                name="newsletter">
-                                            <label class="form-check-label" for="newsletter">
-                                                <i class="bi bi-envelope text-info me-2"></i>
-                                                Je souhaite recevoir des notifications pour des offres similaires
-                                            </label>
-                                            <div class="form-text small">
-                                                Recevez des alertes pour des postes correspondant à votre profil
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- BOUTON DE SOUMISSION -->
-                        <div class="cv-actions text-center py-4">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <div class="mb-3">
-                                        <h5 class="text-muted mb-2">
-                                            <i class="bi bi-check-circle me-2"></i>
-                                            Prêt à envoyer votre candidature ?
-                                        </h5>
-                                        <p class="text-muted small mb-0">
-                                            Vérifiez que toutes les informations sont correctes avant de soumettre
-                                        </p>
-                                    </div>
-                                    <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm" id="submitBtn">
-                                        <i class="bi bi-send me-2"></i>
-                                        ENVOYER MA CANDIDATURE
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+
                 </div>
                 </form>
             </div>
