@@ -23,8 +23,6 @@ import java.time.LocalDate;
 import java.time.Period;
 
 import jakarta.servlet.http.HttpSession;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
@@ -76,12 +74,18 @@ public class AdminCandidatController {
                 c -> Period.between(c.getDateNaissance(), LocalDate.now()).getYears()
             ));
         
-        // Regrouper les candidats par offre
+        // Regrouper les candidats par offre (et non par poste)
         Map<String, List<Candidat>> candidatsParOffre = candidats.stream()
             .filter(c -> c.getOffre() != null)
-            .collect(Collectors.groupingBy(c -> 
-                c.getOffre().getPoste() != null ? c.getOffre().getPoste().getNom() : "Poste non défini"
-            ));
+            .collect(Collectors.groupingBy(c -> {
+                String posteNom = c.getOffre().getPoste() != null ? c.getOffre().getPoste().getNom() : "Poste non défini";
+                String mission = c.getOffre().getMission() != null && !c.getOffre().getMission().trim().isEmpty() 
+                    ? " - " + (c.getOffre().getMission().length() > 50 
+                        ? c.getOffre().getMission().substring(0, 50) + "..." 
+                        : c.getOffre().getMission())
+                    : "";
+                return posteNom + mission + " (ID: " + c.getOffre().getIdOffre() + ")";
+            }));
         
         // Vérifier pour chaque offre si le premier test a été effectué
         Map<Long, Boolean> premierTestEffectueParOffre = candidats.stream()
