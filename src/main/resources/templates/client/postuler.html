@@ -154,9 +154,6 @@
             }
         </style>
         <div class="container py-4">
-            <div class="backImg">
-                <img src=";/back.gif" alt="">
-            </div>
             <!-- Navigation -->
             <nav aria-label="breadcrumb" class="mb-4 headerCV">
                 <ol class="breadcrumb">
@@ -398,64 +395,3 @@
             </a>
         </div>
     </div>
-
-    <!-- Script multi-étapes SIMPLIFIÉ -->
-    <script>
-        console.log('🚀 Initialisation du formulaire multi-étapes - NOUVELLE APPROCHE');
-
-        let currentStep = 1;
-        const totalSteps = 5;
-
-        // Validation simple
-        function validateStep(stepNumber) {
-            if (stepNumber === 1) {
-                const requiredFields = document.querySelectorAll('[data-step="1"] input[required]');
-                for (let field of requiredFields) {
-                    if (!field.value.trim()) {
-                        alert('Veuillez remplir tous les champs obligatoires');
-                        field.focus();
-                        return false;
-                    }
-                }
-            }
-            if (stepNumber === 4) {
-                const cvInput = document.getElementById('cv');
-                if (!cvInput.files || cvInput.files.length === 0) {
-                    alert('Veuillez télécharger votre CV');
-                    return false;
-                }
-            }
-            if (stepNumber === 5) {
-                const consent = document.getElementById('consentement');
-                if (!consent.checked) {
-                    alert('Veuillez accepter le traitement des données');
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // Validation du formulaire avant soumission
-        document.getElementById('candidatureForm').addEventListener('submit', function (e) {
-            const formationCheckboxes = document.querySelectorAll('input[name="formationIds"]:checked');
-            const competenceCheckboxes = document.querySelectorAll('input[name="competanceIds"]:checked');
-
-            // Vérification optionnelle des formations et compétences
-            if (formationCheckboxes.length === 0 && competenceCheckboxes.length === 0) {
-                const confirmSubmit = confirm('Aucune formation ou compétence sélectionnée. Voulez-vous continuer quand même ?');
-                if (!confirmSubmit) {
-                    e.preventDefault();
-                    return false;
-                }
-            }
-
-            // Animation de soumission
-            const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>ENVOI EN COURS...';
-                submitBtn.disabled = true;
-                document.querySelector('.cv-template').classList.add('form-submitting');
-            }
-        });
-
-        // Gestionnaire de clic global
