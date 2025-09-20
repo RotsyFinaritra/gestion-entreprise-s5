@@ -1,14 +1,27 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
 <head>
     <title>Détail Candidat - Administration</title>
 </head>
+
 <body>
     <div th:fragment="content">
+        <style>
+            .col-md-2.sidebar.p-0 {
+                height: 100vh;
+                overflow-x: scroll;
+            }
+
+            .col-md-2.sidebar.p-0::-webkit-scrollbar {
+                display: none;
+            }
+        </style>
         <!-- Navigation -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Administration</a>
+                </li>
                 <li class="breadcrumb-item"><a href="/admin/candidats" class="text-decoration-none">Candidats</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Détail</li>
             </ol>
@@ -27,15 +40,15 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3 text-center mb-4">
-                                <img th:if="${candidat.image != null and candidat.image != ''}" 
-                                     th:src="${candidat.image}" 
-                                     alt="Photo du candidat"
-                                     class="rounded-circle img-fluid mb-3"
-                                     style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #dee2e6;">
-                                <div th:unless="${candidat.image != null and candidat.image != ''}" 
-                                     class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
-                                     style="width: 120px; height: 120px; font-size: 2rem;">
-                                    <span th:text="${#strings.substring(candidat.prenom, 0, 1) + #strings.substring(candidat.nom, 0, 1)}">JD</span>
+                                <img th:if="${candidat.image != null and candidat.image != ''}"
+                                    th:src="${candidat.image}" alt="Photo du candidat"
+                                    class="rounded-circle img-fluid mb-3"
+                                    style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #dee2e6;">
+                                <div th:unless="${candidat.image != null and candidat.image != ''}"
+                                    class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                                    style="width: 120px; height: 120px; font-size: 2rem;">
+                                    <span
+                                        th:text="${#strings.substring(candidat.prenom, 0, 1) + #strings.substring(candidat.nom, 0, 1)}">JD</span>
                                 </div>
                                 <h6 class="text-muted">ID: <span th:text="${candidat.idCandidat}">1</span></h6>
                             </div>
@@ -48,7 +61,8 @@
                                     <tr>
                                         <td class="fw-bold">Email:</td>
                                         <td>
-                                            <a th:href="'mailto:' + ${candidat.email}" th:text="${candidat.email}">john@email.com</a>
+                                            <a th:href="'mailto:' + ${candidat.email}"
+                                                th:text="${candidat.email}">john@email.com</a>
                                         </td>
                                     </tr>
                                     <tr>
@@ -62,7 +76,8 @@
                                     <tr th:if="${candidat.dateNaissance != null}">
                                         <td class="fw-bold">Date de naissance:</td>
                                         <td>
-                                            <span th:text="${#temporals.format(candidat.dateNaissance, 'dd/MM/yyyy')}">01/01/1990</span>
+                                            <span
+                                                th:text="${#temporals.format(candidat.dateNaissance, 'dd/MM/yyyy')}">01/01/1990</span>
                                             <span class="badge bg-info ms-2">
                                                 <span th:text="${age}">33</span> ans
                                             </span>
@@ -74,7 +89,8 @@
                                     </tr>
                                     <tr>
                                         <td class="fw-bold">Date de candidature:</td>
-                                        <td th:text="${#temporals.format(candidat.dateDepot, 'dd/MM/yyyy HH:mm')}">01/01/2025 14:30</td>
+                                        <td th:text="${#temporals.format(candidat.dateDepot, 'dd/MM/yyyy HH:mm')}">
+                                            01/01/2025 14:30</td>
                                     </tr>
                                 </table>
                             </div>
@@ -97,7 +113,9 @@
                                     <tr>
                                         <td class="fw-bold">Poste:</td>
                                         <td>
-                                            <span class="badge bg-primary fs-6" th:text="${candidat.offre.poste?.nom ?: 'Non défini'}">Développeur Web</span>
+                                            <span class="badge bg-primary fs-6"
+                                                th:text="${candidat.offre.poste?.nom ?: 'Non défini'}">Développeur
+                                                Web</span>
                                         </td>
                                     </tr>
                                     <tr th:if="${candidat.offre.local != null}">
@@ -121,33 +139,41 @@
                                     <tr>
                                         <td class="fw-bold">Âge requis:</td>
                                         <td>
-                                            <span th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax != null}" 
-                                                  class="badge bg-info text-dark"
-                                                  th:text="${candidat.offre.ageMin + '-' + candidat.offre.ageMax + ' ans'}">24-45 ans</span>
-                                            <span th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax == null}" 
-                                                  class="badge bg-info text-dark"
-                                                  th:text="${candidat.offre.ageMin + '+ ans'}">24+ ans</span>
-                                            <span th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax != null}" 
-                                                  class="badge bg-info text-dark"
-                                                  th:text="'Moins de ' + ${candidat.offre.ageMax + ' ans'}">Moins de 45 ans</span>
-                                            <span th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax == null}" 
-                                                  class="badge bg-secondary">Non défini</span>
+                                            <span
+                                                th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax != null}"
+                                                class="badge bg-info text-dark"
+                                                th:text="${candidat.offre.ageMin + '-' + candidat.offre.ageMax + ' ans'}">24-45
+                                                ans</span>
+                                            <span
+                                                th:if="${candidat.offre.ageMin != null and candidat.offre.ageMax == null}"
+                                                class="badge bg-info text-dark"
+                                                th:text="${candidat.offre.ageMin + '+ ans'}">24+ ans</span>
+                                            <span
+                                                th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax != null}"
+                                                class="badge bg-info text-dark"
+                                                th:text="'Moins de ' + ${candidat.offre.ageMax + ' ans'}">Moins de 45
+                                                ans</span>
+                                            <span
+                                                th:if="${candidat.offre.ageMin == null and candidat.offre.ageMax == null}"
+                                                class="badge bg-secondary">Non défini</span>
                                         </td>
                                     </tr>
                                     <tr th:if="${candidat.offre.nbrPersonne != null}">
                                         <td class="fw-bold">Nb postes:</td>
                                         <td>
-                                            <span class="badge bg-warning text-dark" th:text="${candidat.offre.nbrPersonne}">1</span>
+                                            <span class="badge bg-warning text-dark"
+                                                th:text="${candidat.offre.nbrPersonne}">1</span>
                                         </td>
                                     </tr>
                                     <tr th:if="${candidat.offre.dateFin != null}">
                                         <td class="fw-bold">Date limite:</td>
-                                        <td th:text="${#temporals.format(candidat.offre.dateFin, 'dd/MM/yyyy')}">31/12/2025</td>
+                                        <td th:text="${#temporals.format(candidat.offre.dateFin, 'dd/MM/yyyy')}">
+                                            31/12/2025</td>
                                     </tr>
                                 </table>
                             </div>
                         </div>
-                        
+
                         <!-- Mission -->
                         <div th:if="${candidat.offre.mission != null and candidat.offre.mission != ''}" class="mt-3">
                             <h6 class="fw-bold">Mission:</h6>
@@ -160,9 +186,10 @@
             <!-- Panneau latéral -->
             <div class="col-lg-4">
                 <!-- Compatibilité âge -->
-                <div class="card mb-4" th:if="${candidat.dateNaissance != null and candidat.offre != null and (candidat.offre.ageMin != null or candidat.offre.ageMax != null)}">
-                    <div class="card-header" 
-                         th:classappend="${compatibleAge} ? 'bg-success text-white' : 'bg-danger text-white'">
+                <div class="card mb-4"
+                    th:if="${candidat.dateNaissance != null and candidat.offre != null and (candidat.offre.ageMin != null or candidat.offre.ageMax != null)}">
+                    <div class="card-header"
+                        th:classappend="${compatibleAge} ? 'bg-success text-white' : 'bg-danger text-white'">
                         <h6 class="mb-0">
                             <i class="bi bi-check-circle me-2" th:if="${compatibleAge}"></i>
                             <i class="bi bi-x-circle me-2" th:unless="${compatibleAge}"></i>
@@ -178,7 +205,7 @@
                                 <small class="text-muted">Âge du candidat</small>
                             </div>
                             <div class="mb-3">
-                                <strong>Requis:</strong> 
+                                <strong>Requis:</strong>
                                 <span th:text="${ageRequis}">24-45 ans</span>
                             </div>
                             <div th:if="${compatibleAge}" class="alert alert-success">
@@ -197,8 +224,8 @@
 
                 <!-- Compatibilité compétences -->
                 <div class="card mb-4" th:if="${competencesRequises != null and !competencesRequises.isEmpty()}">
-                    <div class="card-header" 
-                         th:classappend="${compatibleCompetences} ? 'bg-success text-white' : 'bg-danger text-white'">
+                    <div class="card-header"
+                        th:classappend="${compatibleCompetences} ? 'bg-success text-white' : 'bg-danger text-white'">
                         <h6 class="mb-0">
                             <i class="bi bi-check-circle me-2" th:if="${compatibleCompetences}"></i>
                             <i class="bi bi-x-circle me-2" th:unless="${compatibleCompetences}"></i>
@@ -207,27 +234,29 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <h6 class="text-success mb-2" th:if="${competencesCommunes != null and !competencesCommunes.isEmpty()}">
+                            <h6 class="text-success mb-2"
+                                th:if="${competencesCommunes != null and !competencesCommunes.isEmpty()}">
                                 <i class="bi bi-check-circle me-2"></i>Compétences possédées:
                             </h6>
-                            <div class="d-flex flex-wrap gap-1" th:if="${competencesCommunes != null and !competencesCommunes.isEmpty()}">
-                                <span th:each="comp : ${competencesCommunes}" 
-                                      class="badge bg-success" th:text="${comp.nom}">Java</span>
+                            <div class="d-flex flex-wrap gap-1"
+                                th:if="${competencesCommunes != null and !competencesCommunes.isEmpty()}">
+                                <span th:each="comp : ${competencesCommunes}" class="badge bg-success"
+                                    th:text="${comp.nom}">Java</span>
                             </div>
-                            <div th:if="${competencesCommunes == null or competencesCommunes.isEmpty()}" 
-                                 class="text-muted">Aucune compétence requise possédée</div>
+                            <div th:if="${competencesCommunes == null or competencesCommunes.isEmpty()}"
+                                class="text-muted">Aucune compétence requise possédée</div>
                         </div>
-                        
+
                         <div class="mb-3" th:if="${competencesManquantes != null and !competencesManquantes.isEmpty()}">
                             <h6 class="text-danger mb-2">
                                 <i class="bi bi-x-circle me-2"></i>Compétences manquantes:
                             </h6>
                             <div class="d-flex flex-wrap gap-1">
-                                <span th:each="comp : ${competencesManquantes}" 
-                                      class="badge bg-danger" th:text="${comp.nom}">Python</span>
+                                <span th:each="comp : ${competencesManquantes}" class="badge bg-danger"
+                                    th:text="${comp.nom}">Python</span>
                             </div>
                         </div>
-                        
+
                         <div th:if="${compatibleCompetences}" class="alert alert-success">
                             <i class="bi bi-check-circle me-2"></i>
                             <strong>Compatible!</strong><br>
@@ -243,8 +272,8 @@
 
                 <!-- Compatibilité formation -->
                 <div class="card mb-4" th:if="${formationsRequises != null and !formationsRequises.isEmpty()}">
-                    <div class="card-header" 
-                         th:classappend="${compatibleFormation} ? 'bg-success text-white' : 'bg-danger text-white'">
+                    <div class="card-header"
+                        th:classappend="${compatibleFormation} ? 'bg-success text-white' : 'bg-danger text-white'">
                         <h6 class="mb-0">
                             <i class="bi bi-check-circle me-2" th:if="${compatibleFormation}"></i>
                             <i class="bi bi-x-circle me-2" th:unless="${compatibleFormation}"></i>
@@ -255,31 +284,30 @@
                         <div class="mb-3">
                             <h6 class="text-primary mb-2">Formations requises pour le poste:</h6>
                             <div class="d-flex flex-wrap gap-1">
-                                <span th:each="formation : ${formationsRequises}" 
-                                      class="badge bg-primary" th:text="${formation.nom}">Master Informatique</span>
+                                <span th:each="formation : ${formationsRequises}" class="badge bg-primary"
+                                    th:text="${formation.nom}">Master Informatique</span>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3" th:if="${formationsCandidat != null and !formationsCandidat.isEmpty()}">
                             <h6 class="text-info mb-2">Formations du candidat:</h6>
                             <div class="d-flex flex-wrap gap-1">
-                                <span th:each="form : ${formationsCandidat}" 
-                                      class="badge" 
-                                      th:classappend="${formationsCommunes.contains(form)} ? 'bg-success' : 'bg-secondary'"
-                                      th:text="${form.nom}">Licence Informatique</span>
+                                <span th:each="form : ${formationsCandidat}" class="badge"
+                                    th:classappend="${formationsCommunes.contains(form)} ? 'bg-success' : 'bg-secondary'"
+                                    th:text="${form.nom}">Licence Informatique</span>
                             </div>
                         </div>
-                        <div th:if="${formationsCandidat == null or formationsCandidat.isEmpty()}" 
-                             class="text-muted mb-3">Aucune formation renseignée</div>
-                        
+                        <div th:if="${formationsCandidat == null or formationsCandidat.isEmpty()}"
+                            class="text-muted mb-3">Aucune formation renseignée</div>
+
                         <div th:if="${formationsCommunes != null and !formationsCommunes.isEmpty()}" class="mb-3">
                             <h6 class="text-success mb-2">Formations communes:</h6>
                             <div class="d-flex flex-wrap gap-1">
-                                <span th:each="formation : ${formationsCommunes}" 
-                                      class="badge bg-success" th:text="${formation.nom}">Formation commune</span>
+                                <span th:each="formation : ${formationsCommunes}" class="badge bg-success"
+                                    th:text="${formation.nom}">Formation commune</span>
                             </div>
                         </div>
-                        
+
                         <div th:if="${compatibleFormation}" class="alert alert-success">
                             <i class="bi bi-check-circle me-2"></i>
                             <strong>Compatible!</strong><br>
@@ -307,27 +335,31 @@
                             <p class="mb-0">Aucun test effectué</p>
                             <small>En attente de traitement</small>
                         </div>
-                        
+
                         <div th:unless="${candidat.statusCandidats.empty}" class="timeline">
                             <div th:each="status : ${candidat.statusCandidats}" class="timeline-item mb-3">
                                 <div class="d-flex align-items-start">
                                     <div class="timeline-marker me-3">
-                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
-                                             style="width: 30px; height: 30px;">
-                                            <i class="bi bi-check text-white" th:if="${status.status.nom.contains('Pass')}"></i>
-                                            <i class="bi bi-x text-white" th:if="${status.status.nom.contains('Refus')}"></i>
-                                            <i class="bi bi-clock text-white" th:unless="${status.status.nom.contains('Pass') or status.status.nom.contains('Refus')}"></i>
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center"
+                                            style="width: 30px; height: 30px;">
+                                            <i class="bi bi-check text-white"
+                                                th:if="${status.status.nom.contains('Pass')}"></i>
+                                            <i class="bi bi-x text-white"
+                                                th:if="${status.status.nom.contains('Refus')}"></i>
+                                            <i class="bi bi-clock text-white"
+                                                th:unless="${status.status.nom.contains('Pass') or status.status.nom.contains('Refus')}"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start mb-1">
                                             <span class="fw-semibold" th:text="${status.status.nom}">Status</span>
-                                            <small class="text-muted" th:text="${#temporals.format(status.dateModification, 'dd/MM/yyyy')}">01/01/2025</small>
+                                            <small class="text-muted"
+                                                th:text="${#temporals.format(status.dateModification, 'dd/MM/yyyy')}">01/01/2025</small>
                                         </div>
-                                        <span class="badge" 
-                                              th:classappend="${status.status.nom.contains('Pass')} ? 'bg-success' : 
+                                        <span class="badge"
+                                            th:classappend="${status.status.nom.contains('Pass')} ? 'bg-success' : 
                                                             (${status.status.nom.contains('Refus')} ? 'bg-danger' : 'bg-warning text-dark')"
-                                              th:text="${status.status.nom}">Status Name</span>
+                                            th:text="${status.status.nom}">Status Name</span>
                                     </div>
                                 </div>
                             </div>
@@ -345,30 +377,29 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a th:href="@{/candidats/edit/{id}(id=${candidat.idCandidat})}" 
-                               class="btn btn-outline-primary">
+                            <a th:href="@{/candidats/edit/{id}(id=${candidat.idCandidat})}"
+                                class="btn btn-outline-primary">
                                 <i class="bi bi-pencil me-2"></i>
                                 Modifier les informations
                             </a>
-                            
-                            <button type="button" class="btn btn-outline-success" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#statusModal">
+
+                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal"
+                                data-bs-target="#statusModal">
                                 <i class="bi bi-plus-circle me-2"></i>
                                 Ajouter un statut
                             </button>
-                            
-                            <a th:href="@{/admin/candidats/{id}/test2(id=${candidat.idCandidat})}" 
-                               class="btn btn-outline-warning">
+
+                            <a th:href="@{/admin/candidats/{id}/test2(id=${candidat.idCandidat})}"
+                                class="btn btn-outline-warning">
                                 <i class="bi bi-clipboard-data me-2"></i>
                                 Voir Test 2
                             </a>
-                            
+
                             <a href="#" class="btn btn-outline-info">
                                 <i class="bi bi-download me-2"></i>
                                 Télécharger CV
                             </a>
-                            
+
                             <a href="#" class="btn btn-outline-secondary">
                                 <i class="bi bi-file-text me-2"></i>
                                 Générer rapport
@@ -415,8 +446,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="commentaire" class="form-label">Commentaire (optionnel)</label>
-                                <textarea class="form-control" id="commentaire" name="commentaire" rows="3" 
-                                         placeholder="Ajouter un commentaire sur ce changement de statut..."></textarea>
+                                <textarea class="form-control" id="commentaire" name="commentaire" rows="3"
+                                    placeholder="Ajouter un commentaire sur ce changement de statut..."></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -436,7 +467,7 @@
         .timeline-item {
             position: relative;
         }
-        
+
         .timeline-item:not(:last-child)::after {
             content: '';
             position: absolute;
@@ -446,29 +477,30 @@
             height: calc(100% + 12px);
             background-color: #dee2e6;
         }
-        
+
         .card {
             transition: all 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
         }
-        
+
         .badge {
             font-size: 0.85em;
         }
-        
+
         .alert {
             border: none;
             border-radius: 10px;
         }
-        
+
         .table-borderless td {
             padding: 0.5rem 0.75rem;
             border: none;
         }
     </style>
 </body>
+
 </html>
