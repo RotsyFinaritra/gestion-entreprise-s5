@@ -121,6 +121,13 @@
                                         Envoyer invitations Test 2
                                     </button>
                                 </form>
+                                
+                                <!-- Bouton Classement Test 2 -->
+                                <a th:href="@{'/admin/candidats/classement/' + ${offre.idOffre}}" 
+                                   class="btn btn-warning btn-sm w-100">
+                                    <i class="bi bi-trophy-fill me-1"></i>
+                                    Classement Test 2
+                                </a>
                             </div>
                             
                             <small class="d-block text-muted mt-2">
