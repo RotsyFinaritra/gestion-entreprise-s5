@@ -94,6 +94,79 @@
             </div>
         </div>
 
+        <!-- Section Traitement des Admissions -->
+        <div class="card mb-4" th:if="${statistiques != null and statistiques.termine > 0}">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear-fill me-2"></i>
+                    Traitement des Admissions - Cette Offre
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Définissez les critères pour sélectionner les candidats admis pour cette offre spécifique.
+                    Les candidats avec le statut "Test 2 Terminé" seront traités.
+                </p>
+                
+                <form th:action="@{'/admin/candidats/traiter-admissions-offre/' + ${offre.idOffre}}" method="post" 
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir traiter les admissions pour cette offre ? Cette action est irréversible.');">
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label"><strong>Critère de sélection:</strong></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="critere" id="critereNote" value="note" checked>
+                                    <label class="form-check-label" for="critereNote">
+                                        Par note minimum
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="critere" id="critereNombre" value="nombre">
+                                    <label class="form-check-label" for="critereNombre">
+                                        Par nombre de meilleurs candidats
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4" id="noteMinimumSection">
+                            <div class="form-group mb-3">
+                                <label for="noteMinimum" class="form-label"><strong>Note minimum (sur 20):</strong></label>
+                                <input type="number" class="form-control" id="noteMinimum" name="noteMinimum" 
+                                       min="0" max="20" step="0.1" placeholder="Ex: 12.0">
+                                <div class="form-text">Les candidats avec cette note ou plus seront admis</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4" id="nombreCandidatsSection" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="nombreCandidats" class="form-label"><strong>Nombre de candidats:</strong></label>
+                                <input type="number" class="form-control" id="nombreCandidats" name="nombreCandidats" 
+                                       min="1" th:max="${statistiques.termine}" placeholder="Ex: 5">
+                                <div class="form-text">Nombre de meilleurs candidats à admettre</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <span th:text="${statistiques.termine}">3</span> candidat(s) en attente de traitement pour cette offre
+                                </small>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Traiter les admissions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Tableau de classement -->
         <div class="card">
             <div class="card-header">
@@ -212,5 +285,35 @@
             transition: all 0.3s ease;
         }
     </style>
+    
+    <script>
+        // Gérer l'affichage conditionnel des champs selon le critère sélectionné
+        document.addEventListener('DOMContentLoaded', function() {
+            const critereNote = document.getElementById('critereNote');
+            const critereNombre = document.getElementById('critereNombre');
+            const noteSection = document.getElementById('noteMinimumSection');
+            const nombreSection = document.getElementById('nombreCandidatsSection');
+            
+            function toggleSections() {
+                if (critereNote.checked) {
+                    noteSection.style.display = 'block';
+                    nombreSection.style.display = 'none';
+                    document.getElementById('noteMinimum').required = true;
+                    document.getElementById('nombreCandidats').required = false;
+                } else {
+                    noteSection.style.display = 'none';
+                    nombreSection.style.display = 'block';
+                    document.getElementById('noteMinimum').required = false;
+                    document.getElementById('nombreCandidats').required = true;
+                }
+            }
+            
+            critereNote.addEventListener('change', toggleSections);
+            critereNombre.addEventListener('change', toggleSections);
+            
+            // Initialiser l'affichage
+            toggleSections();
+        });
+    </script>
 </body>
 </html>

@@ -659,6 +659,109 @@ public class Test2Service {
         
         System.out.println("============================================");
     }
+    
+    public int traiterAdmissionsTest2ParOffre(Long offreId, String critere, Double noteMinimum, Integer nombreCandidats) {
+        System.out.println("=== TRAITEMENT ADMISSIONS TEST 2 PAR OFFRE ===");
+        System.out.println("Offre ID: " + offreId);
+        System.out.println("Critère: " + critere);
+        System.out.println("Note minimum: " + noteMinimum);
+        System.out.println("Nombre candidats: " + nombreCandidats);
+        
+        // Récupérer tous les candidats ayant terminé le Test 2 pour cette offre spécifique
+        Optional<Status> statusOpt = statusRepository.findByNom("Test 2 Terminé");
+        if (!statusOpt.isPresent()) {
+            System.out.println("Statut 'Test 2 Terminé' non trouvé");
+            return 0;
+        }
+        
+        Status statusTest2Termine = statusOpt.get();
+        List<StatusCandidat> statusCandidats = statusCandidatRepository.findByStatusIdStatus(statusTest2Termine.getIdStatus());
+        
+        // Filtrer les candidats pour cette offre spécifique
+        List<Candidat> candidatsTest2TermineOffre = new ArrayList<>();
+        for (StatusCandidat sc : statusCandidats) {
+            Candidat candidat = sc.getCandidat();
+            if (candidat.getOffre() != null && 
+                candidat.getOffre().getIdOffre().equals(offreId)) {
+                candidatsTest2TermineOffre.add(candidat);
+            }
+        }
+        
+        System.out.println("Candidats trouvés pour l'offre " + offreId + ": " + candidatsTest2TermineOffre.size());
+        
+        if (candidatsTest2TermineOffre.isEmpty()) {
+            System.out.println("Aucun candidat 'Test 2 Terminé' trouvé pour cette offre");
+            return 0;
+        }
+        
+        // Calculer les résultats pour ces candidats
+        List<Map<String, Object>> resultatsAvecNotes = new ArrayList<>();
+        for (Candidat candidat : candidatsTest2TermineOffre) {
+            Map<String, Object> resultatComplet = getResultatCompletTest2(candidat);
+            resultatComplet.put("candidat", candidat);
+            resultatsAvecNotes.add(resultatComplet);
+        }
+        
+        // Trier par note décroissante
+        resultatsAvecNotes.sort((r1, r2) -> {
+            Double note1 = (Double) r1.get("noteSur20");
+            Double note2 = (Double) r2.get("noteSur20");
+            return Double.compare(note2, note1);
+        });
+        
+        // Sélectionner les candidats selon le critère
+        List<Candidat> candidatsSelectionnes = new ArrayList<>();
+        
+        if ("note".equals(critere) && noteMinimum != null) {
+            // Sélection par note minimum
+            for (Map<String, Object> resultat : resultatsAvecNotes) {
+                Double note = (Double) resultat.get("noteSur20");
+                if (note >= noteMinimum) {
+                    candidatsSelectionnes.add((Candidat) resultat.get("candidat"));
+                }
+            }
+        } else if ("nombre".equals(critere) && nombreCandidats != null) {
+            // Sélection par nombre de meilleurs candidats
+            int limite = Math.min(nombreCandidats, resultatsAvecNotes.size());
+            for (int i = 0; i < limite; i++) {
+                candidatsSelectionnes.add((Candidat) resultatsAvecNotes.get(i).get("candidat"));
+            }
+        }
+        
+        System.out.println("Candidats sélectionnés pour admission: " + candidatsSelectionnes.size());
+        
+        // Créer les statuts
+        Status statusPassTest2 = statusRepository.findByNom("Pass Test 2")
+            .orElseGet(() -> statusRepository.save(new Status("Pass Test 2")));
+        Status statusEchecTest2 = statusRepository.findByNom("Echec Test 2")
+            .orElseGet(() -> statusRepository.save(new Status("Echec Test 2")));
+        
+        LocalDate dateTraitement = LocalDate.now();
+        int candidatsTraites = 0;
+        
+        // Appliquer les nouveaux statuts
+        for (Candidat candidat : candidatsTest2TermineOffre) {
+            if (candidatsSelectionnes.contains(candidat)) {
+                // Admis
+                StatusCandidat statusCandidat = new StatusCandidat(statusPassTest2, candidat, dateTraitement);
+                statusCandidatRepository.save(statusCandidat);
+                System.out.println("Candidat admis: " + candidat.getPrenom() + " " + candidat.getNom());
+            } else {
+                // Refusé
+                StatusCandidat statusCandidat = new StatusCandidat(statusEchecTest2, candidat, dateTraitement);
+                statusCandidatRepository.save(statusCandidat);
+                System.out.println("Candidat refusé: " + candidat.getPrenom() + " " + candidat.getNom());
+            }
+            candidatsTraites++;
+        }
+        
+        System.out.println("=== FIN TRAITEMENT ADMISSIONS PAR OFFRE ===");
+        System.out.println("Candidats traités: " + candidatsTraites);
+        System.out.println("Candidats admis: " + candidatsSelectionnes.size());
+        System.out.println("Candidats refusés: " + (candidatsTraites - candidatsSelectionnes.size()));
+        
+        return candidatsTraites;
+    }
 
     // Classe interne pour faciliter le tri
     private static class ResultatTest2 {

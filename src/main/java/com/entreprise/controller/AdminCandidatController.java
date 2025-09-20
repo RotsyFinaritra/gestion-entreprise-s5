@@ -735,6 +735,44 @@ public class AdminCandidatController {
         return "redirect:/admin/candidats/classement-test2";
     }
     
+    @PostMapping("/traiter-admissions-offre/{offreId}")
+    public String traiterAdmissionsParOffre(@PathVariable Long offreId,
+                                           @RequestParam String critere,
+                                           @RequestParam(required = false) Double noteMinimum,
+                                           @RequestParam(required = false) Integer nombreCandidats,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) {
+        if (!userService.isAdmin(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent effectuer cette action");
+            return "redirect:/login";
+        }
+        
+        try {
+            System.out.println("=== TRAITEMENT ADMISSIONS POUR OFFRE " + offreId + " ===");
+            System.out.println("Critère: " + critere);
+            System.out.println("Note minimum: " + noteMinimum);
+            System.out.println("Nombre candidats: " + nombreCandidats);
+            
+            // Utiliser une nouvelle méthode du service qui traite seulement une offre
+            int candidatsTraites = test2Service.traiterAdmissionsTest2ParOffre(offreId, critere, noteMinimum, nombreCandidats);
+            
+            if (candidatsTraites > 0) {
+                redirectAttributes.addFlashAttribute("success", 
+                    candidatsTraites + " candidat(s) traité(s) avec succès pour cette offre !");
+            } else {
+                redirectAttributes.addFlashAttribute("info", 
+                    "Aucun candidat à traiter selon les critères spécifiés.");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erreur traitement admissions offre: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors du traitement des admissions: " + e.getMessage());
+        }
+        
+        return "redirect:/admin/candidats/classement/" + offreId;
+    }
+    
     @GetMapping("/detail-test2/{id}")
     public String detailTest2Candidat(@PathVariable Long id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         if (!userService.isAdmin(session)) {
