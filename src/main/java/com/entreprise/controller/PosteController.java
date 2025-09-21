@@ -3,12 +3,15 @@ package com.entreprise.controller;
 import com.entreprise.model.Poste;
 import com.entreprise.service.PosteService;
 import com.entreprise.service.UserService;
+import com.entreprise.service.CompetanceService;
+import com.entreprise.service.FormationService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.List;
 
 @Controller
 @RequestMapping("/postes")
@@ -19,6 +22,12 @@ public class PosteController {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private CompetanceService competanceService;
+    
+    @Autowired
+    private FormationService formationService;
     
     @GetMapping
     public String listPostes(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
@@ -40,7 +49,9 @@ public class PosteController {
         }
         
         model.addAttribute("poste", new Poste());
-        model.addAttribute("departements", userService.findAllDepartements()); // Ajouter la liste des départements
+        model.addAttribute("departements", userService.findAllDepartements());
+        model.addAttribute("competences", competanceService.findAll());
+        model.addAttribute("formations", formationService.findAll());
         model.addAttribute("activeSection", "postes");
         return "poste/form";
     }
@@ -55,7 +66,9 @@ public class PosteController {
         return posteService.findById(id)
             .map(poste -> {
                 model.addAttribute("poste", poste);
-                model.addAttribute("departements", userService.findAllDepartements()); // Ajouter la liste des départements
+                model.addAttribute("departements", userService.findAllDepartements());
+                model.addAttribute("competences", competanceService.findAll());
+                model.addAttribute("formations", formationService.findAll());
                 model.addAttribute("activeSection", "postes");
                 return "poste/form";
             })
@@ -66,17 +79,32 @@ public class PosteController {
     }
     
     @PostMapping
-    public String savePoste(@ModelAttribute Poste poste, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String savePoste(@ModelAttribute Poste poste, 
+                           @RequestParam(value = "competencesIds", required = false) List<Long> competencesIds,
+                           @RequestParam(value = "formationsIds", required = false) List<Long> formationsIds,
+                           HttpSession session, 
+                           RedirectAttributes redirectAttributes) {
         if (!userService.isAdmin(session)) {
             redirectAttributes.addFlashAttribute("error", "Accès refusé. Seuls les administrateurs peuvent effectuer cette action");
             return "redirect:/login";
         }
         
         try {
-            posteService.save(poste);
+            Poste savedPoste = posteService.save(poste);
+            
+            // Gérer les associations avec les compétences
+            if (competencesIds != null && !competencesIds.isEmpty()) {
+                posteService.associateCompetences(savedPoste.getIdPoste(), competencesIds);
+            }
+            
+            // Gérer les associations avec les formations
+            if (formationsIds != null && !formationsIds.isEmpty()) {
+                posteService.associateFormations(savedPoste.getIdPoste(), formationsIds);
+            }
+            
             redirectAttributes.addFlashAttribute("success", "Poste enregistré avec succès");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement");
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
         }
         return "redirect:/postes";
     }

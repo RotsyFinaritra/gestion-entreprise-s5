@@ -91,6 +91,52 @@
                                 </div>
                             </div>
 
+                            <!-- Sélection des compétences -->
+                            <div class="mb-3">
+                                <label for="competences" class="form-label">
+                                    <i class="bi bi-star me-1"></i>
+                                    Compétences requises
+                                </label>
+                                <select class="form-select" 
+                                        id="competences" 
+                                        name="competencesIds" 
+                                        multiple 
+                                        size="6">
+                                    <option th:each="competence : ${competences}" 
+                                            th:value="${competence.idCompetance}" 
+                                            th:text="${competence.nom}"
+                                            th:selected="${selectedCompetencesIds != null and #lists.contains(selectedCompetencesIds, competence.idCompetance)}">
+                                        Compétence
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs compétences
+                                </div>
+                            </div>
+
+                            <!-- Sélection des formations -->
+                            <div class="mb-3">
+                                <label for="formations" class="form-label">
+                                    <i class="bi bi-mortarboard me-1"></i>
+                                    Formations requises
+                                </label>
+                                <select class="form-select" 
+                                        id="formations" 
+                                        name="formationsIds" 
+                                        multiple 
+                                        size="6">
+                                    <option th:each="formation : ${formations}" 
+                                            th:value="${formation.idFormation}" 
+                                            th:text="${formation.nom}"
+                                            th:selected="${selectedFormationsIds != null and #lists.contains(selectedFormationsIds, formation.idFormation)}">
+                                        Formation
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs formations
+                                </div>
+                            </div>
+
                             <!-- Boutons d'action -->
                             <div class="d-flex justify-content-between">
                                 <a th:href="@{/departement/postes}" class="btn btn-outline-secondary">
@@ -125,20 +171,21 @@
                                 À savoir
                             </h6>
                             <ul class="mb-0 small">
-                                <li>Une fois créé, vous pourrez définir les compétences requises</li>
-                                <li>Vous pourrez ajouter les formations nécessaires</li>
+                                <li>Sélectionnez les compétences nécessaires pour ce poste</li>
+                                <li>Choisissez les formations requises</li>
+                                <li>Vous pourrez modifier ces exigences plus tard</li>
                                 <li>Des profils de recrutement pourront être créés et envoyés aux RH</li>
                                 <li>Les RH pourront publier des offres basées sur ce poste</li>
                             </ul>
                         </div>
 
                         <div class="mt-3">
-                            <h6 class="fw-bold">Prochaines étapes:</h6>
+                            <h6 class="fw-bold">Étapes de création:</h6>
                             <ol class="small">
+                                <li>Nommer le poste</li>
+                                <li>Sélectionner les compétences requises</li>
+                                <li>Choisir les formations nécessaires</li>
                                 <li>Créer le poste</li>
-                                <li>Définir les compétences requises</li>
-                                <li>Ajouter les formations nécessaires</li>
-                                <li>Créer un profil de recrutement</li>
                                 <li>Envoyer la demande aux RH</li>
                             </ol>
                         </div>
@@ -166,6 +213,77 @@
             </div>
         </div>
     </div>
+
+    <!-- Script pour améliorer l'interface -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Améliorer les sélecteurs multiples
+            const competencesSelect = document.getElementById('competences');
+            const formationsSelect = document.getElementById('formations');
+            
+            function addSelectAllFeature(selectElement, labelText) {
+                if (selectElement && selectElement.options.length > 0) {
+                    const container = selectElement.parentNode;
+                    const selectAllDiv = document.createElement('div');
+                    selectAllDiv.className = 'mt-2';
+                    
+                    const selectAllBtn = document.createElement('button');
+                    selectAllBtn.type = 'button';
+                    selectAllBtn.className = 'btn btn-sm btn-outline-primary me-2';
+                    selectAllBtn.innerHTML = '<i class="bi bi-check-all me-1"></i>Tout sélectionner';
+                    selectAllBtn.onclick = function() {
+                        for (let option of selectElement.options) {
+                            option.selected = true;
+                        }
+                    };
+                    
+                    const deselectAllBtn = document.createElement('button');
+                    deselectAllBtn.type = 'button';
+                    deselectAllBtn.className = 'btn btn-sm btn-outline-secondary';
+                    deselectAllBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Tout désélectionner';
+                    deselectAllBtn.onclick = function() {
+                        for (let option of selectElement.options) {
+                            option.selected = false;
+                        }
+                    };
+                    
+                    selectAllDiv.appendChild(selectAllBtn);
+                    selectAllDiv.appendChild(deselectAllBtn);
+                    container.appendChild(selectAllDiv);
+                }
+            }
+            
+            addSelectAllFeature(competencesSelect, 'compétences');
+            addSelectAllFeature(formationsSelect, 'formations');
+            
+            // Afficher le nombre d'éléments sélectionnés
+            function updateSelectionCount(selectElement) {
+                if (selectElement) {
+                    const selectedCount = selectElement.selectedOptions.length;
+                    const totalCount = selectElement.options.length;
+                    const formText = selectElement.parentNode.querySelector('.form-text');
+                    
+                    if (formText) {
+                        if (selectedCount > 0) {
+                            formText.innerHTML = `${selectedCount} sur ${totalCount} sélectionné(s). Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs éléments.`;
+                        } else {
+                            formText.innerHTML = `Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs éléments`;
+                        }
+                    }
+                }
+            }
+            
+            if (competencesSelect) {
+                competencesSelect.addEventListener('change', () => updateSelectionCount(competencesSelect));
+                updateSelectionCount(competencesSelect);
+            }
+            
+            if (formationsSelect) {
+                formationsSelect.addEventListener('change', () => updateSelectionCount(formationsSelect));
+                updateSelectionCount(formationsSelect);
+            }
+        });
+    </script>
 </body>
 
 </html>
