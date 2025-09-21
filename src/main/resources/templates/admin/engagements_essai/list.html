@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title>Engagements à l'essai</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .engagement-header {
+                background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .offre-card {
+                border: none;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                margin-bottom: 1.5rem;
+            }
+
+            .offre-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+                color: white;
+                padding: 1.5rem;
+                border-radius: 10px;
+                text-align: center;
+            }
+
+            .badge-essai {
+                background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+                color: black;
+                font-weight: bold;
+                padding: 0.5rem 1rem;
+                border-radius: 25px;
+            }
+
+            .candidat-mini {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 0.5rem;
+                margin-bottom: 0.25rem;
+                border-left: 4px solid #17a2b8;
+            }
+        </style>
+
+        <!-- En-tête -->
+        <div class="engagement-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-person-check-fill me-3"></i>Engagements à l'Essai
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-calendar-week me-1"></i>
+                        Gestion des candidats en période d'essai (3 mois)
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="d-flex align-items-center">
+                        <div class="text-end me-3">
+                            <small class="opacity-75 d-block">Total des engagements</small>
+                            <span class="h3 mb-0" th:text="${totalEngagements}">0</span>
+                        </div>
+                        <i class="bi bi-briefcase-fill opacity-50" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques générales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="bi bi-building mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1" th:text="${engagementsParOffre.size()}">0</h3>
+                <small>Offres avec engagements</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-people-fill mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1" th:text="${totalEngagements}">0</h3>
+                <small>Candidats à l'essai</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-calendar-week mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1">3</h3>
+                <small>Mois d'essai</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-file-earmark-pdf mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1" th:text="${totalEngagements}">0</h3>
+                <small>Contrats à générer</small>
+            </div>
+        </div>
+
+        <!-- Alerte si aucun engagement -->
+        <div th:if="${engagementsParOffre.isEmpty()}" class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-1 text-muted mb-3"></i>
+            <h4>Aucun engagement à l'essai</h4>
+            <p class="text-muted">
+                Il n'y a encore aucun candidat engagé à l'essai.
+                Les engagements apparaîtront ici après la sélection depuis les résultats d'entretiens.
+            </p>
+            <a href="/admin/resultats-entretiens" class="btn btn-primary">
+                <i class="bi bi-graph-up-arrow me-1"></i>Voir les résultats d'entretiens
+            </a>
+        </div>
+
+        <!-- Engagements par offre -->
+        <div th:unless="${engagementsParOffre.isEmpty()}">
+            <h3 class="mb-4">
+                <i class="bi bi-file-text me-2"></i>Engagements par Offre
+            </h3>
+
+            <div class="row">
+                <div th:each="entry : ${engagementsParOffre}" class="col-xl-6 col-lg-12">
+                    <div class="offre-card">
+                        <div class="card-header border-0 bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <span th:text="${entry.key.poste.nom}">Nom du poste</span>
+                                        <small class="text-muted"> - Offre #<span th:text="${entry.key.idOffre}">1</span></small>
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="bi bi-people me-1"></i>
+                                        <span th:text="${entry.value.size()}">0</span> candidat(s) engagé(s) à l'essai
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge-essai">
+                                        <i class="bi bi-clock-history me-1"></i>En cours d'essai
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <!-- Liste des candidats engagés -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-person-check me-1"></i>Candidats engagés
+                                </h6>
+                                <div th:each="entretien : ${entry.value}" class="candidat-mini">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                                Candidat
+                                            </strong>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-envelope me-1"></i>
+                                                <span th:text="${entretien.candidat.email}">email@exemple.com</span>
+                                            </small>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                       th:href="@{/admin/engagements/contrat-pdf/{id}(id=${entretien.idEntretien})}">
+                                                        <i class="bi bi-file-earmark-pdf me-1"></i>Générer contrat PDF
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item" 
+                                                            th:onclick="'envoyerContrat(' + ${entretien.idEntretien} + ')'">
+                                                        <i class="bi bi-send me-1"></i>Envoyer par email
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" 
+                                                       th:href="@{/entretiens/{id}(id=${entretien.idEntretien})}">
+                                                        <i class="bi bi-eye me-1"></i>Voir détails entretien
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Besoin: <strong th:text="${entry.key.nbrPersonne}">0</strong> personne(s)
+                                </small>
+                                <a th:href="@{/admin/engagements/offre/{id}(id=${entry.key.idOffre})}"
+                                    class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Gérer les contrats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function envoyerContrat(entretienId) {
+                if (confirm('Êtes-vous sûr de vouloir envoyer le contrat d\'essai par email ?')) {
+                    fetch(`/admin/engagements/envoyer-contrat/${entretienId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.text())
+                    .then(message => {
+                        alert(message);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi du contrat.');
+                    });
+                }
+            }
+        </script>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-0">Résultats des Entretiens</h2>
+            <p class="text-muted mb-0">Consulter les résultats des entretiens par offre d'emploi</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                Offres avec Entretiens
+                <span class="badge bg-secondary ms-2" th:text="${#lists.size(offres)}">0</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(offres)}" class="text-center py-5">
+                <i class="bi bi-briefcase-x display-1 text-muted"></i>
+                <h4 class="text-muted mt-3">Aucune offre disponible</h4>
+                <p class="text-muted">Créez des offres d'emploi pour commencer les entretiens</p>
+                <a th:href="@{/offres/new}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouvelle Offre
+                </a>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(offres)}" class="row">
+                <div th:each="offre : ${offres}" class="col-lg-6 mb-4">
+                    <div class="card h-100 border-primary">
+                        <div class="card-header bg-primary bg-opacity-10">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="card-title mb-1 text-primary" th:text="${offre.poste.nom}">Poste</h6>
+                                    <small class="text-muted" th:text="${offre.formation?.nom ?: 'Formation non spécifiée'}">Formation</small>
+                                </div>
+                                <span class="badge bg-primary" th:text="${offre.nbrPersonne} + ' poste(s)'">1 poste</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Date de publication</small>
+                                    <div th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}">Date</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Date de fin</small>
+                                    <div th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">Date</div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3" th:with="entretiens=${@entretienService.findByOffreId(offre.idOffre)}">
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <div class="h5 mb-0 text-info" th:text="${#lists.size(entretiens)}">0</div>
+                                        <small class="text-muted">Entretiens</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center" th:with="entretiensTermines=${entretiens.?[statut == 'terminé']}">
+                                        <div class="h5 mb-0 text-success" th:text="${#lists.size(entretiensTermines)}">0</div>
+                                        <small class="text-muted">Terminés</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center" th:with="candidats=${@candidatService.findByOffreId(offre.idOffre)}">
+                                        <div class="h5 mb-0 text-primary" th:text="${#lists.size(candidats)}">0</div>
+                                        <small class="text-muted">Candidats</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" th:if="${offre.local}">
+                                <small class="text-muted">Localisation</small>
+                                <div th:text="${offre.local.nom}">Lieu</div>
+                            </div>
+
+                            <div th:if="${offre.mission}" class="mb-3">
+                                <small class="text-muted">Mission</small>
+                                <div class="text-truncate" th:text="${#strings.abbreviate(offre.mission, 100)}">Mission</div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/admin/notes-entretien/resultats/{id}(id=${offre.idOffre})}" 
+                                   class="btn btn-primary btn-sm flex-fill">
+                                    <i class="bi bi-graph-up me-1"></i>
+                                    Voir Résultats
+                                </a>
+                                <a th:href="@{/admin/entretiens/by-offre/{id}(id=${offre.idOffre})}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-calendar-event"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques globales -->
+    <div th:if="${!#lists.isEmpty(offres)}" class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-briefcase-fill display-4 text-primary"></i>
+                    <h5 class="card-title mt-2">Offres Actives</h5>
+                    <p class="card-text display-6 text-primary" th:text="${#lists.size(offres)}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" th:with="totalEntretiens=${offres.![#this].stream().mapToInt(o -> @entretienService.findByOffreId(o.idOffre).size()).sum()}">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="bi bi-calendar-event-fill display-4 text-info"></i>
+                    <h5 class="card-title mt-2">Total Entretiens</h5>
+                    <p class="card-text display-6 text-info" th:text="${totalEntretiens}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" th:with="entretiensTermines=${offres.![#this].stream().mapToInt(o -> @entretienService.findByOffreId(o.idOffre).?[statut == 'terminé'].size()).sum()}">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill display-4 text-success"></i>
+                    <h5 class="card-title mt-2">Entretiens Terminés</h5>
+                    <p class="card-text display-6 text-success" th:text="${entretiensTermines}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" th:with="totalCandidats=${offres.![#this].stream().mapToInt(o -> @candidatService.findByOffreId(o.idOffre).size()).sum()}">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="bi bi-people-fill display-4 text-warning"></i>
+                    <h5 class="card-title mt-2">Total Candidats</h5>
+                    <p class="card-text display-6 text-warning" th:text="${totalCandidats}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

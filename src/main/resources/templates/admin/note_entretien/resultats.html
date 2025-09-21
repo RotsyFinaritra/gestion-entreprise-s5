@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/notes-entretien/liste-resultats}" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="h4 mb-0">Résultats des Entretiens</h2>
+            <p class="text-muted mb-0">
+                <strong th:text="${offre.poste.nom}">Poste</strong>
+                - <span th:text="${#lists.size(entretiens)}">0</span> entretien(s) terminé(s)
+            </p>
+        </div>
+    </div>
+
+    <!-- Informations de l'offre -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-briefcase me-2"></i>
+                Détails de l'Offre
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Poste :</strong> <span th:text="${offre.poste.nom}">Poste</span></p>
+                    <p><strong>Formation requise :</strong> <span th:text="${offre.formation?.nom ?: 'Non spécifiée'}">Formation</span></p>
+                    <p><strong>Nombre de postes :</strong> <span th:text="${offre.nbrPersonne}">1</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date de publication :</strong> <span th:text="${#temporals.format(offre.datePublication, 'dd/MM/yyyy')}">Date</span></p>
+                    <p><strong>Date de fin :</strong> <span th:text="${#temporals.format(offre.dateFin, 'dd/MM/yyyy')}">Date</span></p>
+                    <p><strong>Localisation :</strong> <span th:text="${offre.local?.nom ?: 'Non spécifiée'}">Lieu</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats des entretiens -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-graph-up me-2"></i>
+                Classement des Candidats
+            </h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(entretiens)}" class="text-center py-5">
+                <i class="bi bi-clipboard-x display-1 text-muted"></i>
+                <h4 class="text-muted mt-3">Aucun entretien terminé</h4>
+                <p class="text-muted">Les résultats apparaîtront après la notation des entretiens</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(entretiens)}" class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Candidat</th>
+                            <th>Contact</th>
+                            <th>Date Entretien</th>
+                            <th>Moyenne</th>
+                            <th>Total</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="entretien, iterStat : ${entretiens}" 
+                            th:with="moyenne=${@noteEntretienService.calculateMoyenneByEntretien(entretien.idEntretien)},
+                                    total=${@noteEntretienService.calculateTotalByEntretien(entretien.idEntretien)}">
+                            <td>
+                                <span class="badge fs-6"
+                                      th:classappend="${iterStat.index == 0 ? 'bg-warning' : (iterStat.index == 1 ? 'bg-secondary' : (iterStat.index == 2 ? 'bg-dark' : 'bg-light text-dark'))}"
+                                      th:text="${iterStat.index + 1}">1</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img th:if="${entretien.candidat.image}" 
+                                         th:src="@{'/uploads/images/' + ${entretien.candidat.image}}"
+                                         class="rounded-circle me-2" 
+                                         width="32" height="32">
+                                    <div th:if="${!entretien.candidat.image}" 
+                                         class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2"
+                                         style="width: 32px; height: 32px;">
+                                        <span class="text-white fw-bold" th:text="${#strings.substring(entretien.candidat.prenom, 0, 1)}">C</span>
+                                    </div>
+                                    <div>
+                                        <strong th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">Nom</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <small class="d-block" th:text="${entretien.candidat.email}">Email</small>
+                                <small class="text-muted" th:text="${entretien.candidat.tel}">Téléphone</small>
+                            </td>
+                            <td>
+                                <span th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary fs-6" th:text="${#numbers.formatDecimal(moyenne, 1, 2)} + '/20'">15.5/20</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success" th:text="${#numbers.formatDecimal(total, 1, 1)}">124.5</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{/admin/notes-entretien/entretien/{id}(id=${entretien.idEntretien})}" 
+                                       class="btn btn-outline-primary" title="Voir/Modifier les notes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-info" 
+                                            data-bs-toggle="modal" 
+                                            th:data-bs-target="'#detailsModal' + ${entretien.idEntretien}"
+                                            title="Détails des notes">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div th:if="${!#lists.isEmpty(entretiens)}" class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-people-fill display-4 text-primary"></i>
+                    <h5 class="card-title mt-2">Candidats Évalués</h5>
+                    <p class="card-text display-6 text-primary" th:text="${#lists.size(entretiens)}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-graph-up display-4 text-success"></i>
+                    <h5 class="card-title mt-2">Moyenne Générale</h5>
+                    <p class="card-text display-6 text-success" 
+                       th:with="moyenneGenerale=${entretiens.![#this].stream().mapToDouble(e -> @noteEntretienService.calculateMoyenneByEntretien(e.idEntretien)).average().orElse(0.0)}"
+                       th:text="${#numbers.formatDecimal(moyenneGenerale, 1, 2)}">0.0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="bi bi-trophy-fill display-4 text-warning"></i>
+                    <h5 class="card-title mt-2">Meilleure Note</h5>
+                    <p class="card-text display-6 text-warning" 
+                       th:with="meilleureNote=${entretiens.![#this].stream().mapToDouble(e -> @noteEntretienService.calculateMoyenneByEntretien(e.idEntretien)).max().orElse(0.0)}"
+                       th:text="${#numbers.formatDecimal(meilleureNote, 1, 2)}">0.0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="bi bi-briefcase-fill display-4 text-info"></i>
+                    <h5 class="card-title mt-2">Postes Disponibles</h5>
+                    <p class="card-text display-6 text-info" th:text="${offre.nbrPersonne}">1</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals pour les détails -->
+<div th:each="entretien : ${entretiens}" 
+     class="modal fade" 
+     th:id="'detailsModal' + ${entretien.idEntretien}" 
+     tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Détails des Notes - <span th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">Candidat</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div th:with="notes=${@noteEntretienService.findByEntretienId(entretien.idEntretien)}">
+                    <div th:if="${#lists.isEmpty(notes)}" class="text-center py-3">
+                        <i class="bi bi-exclamation-circle text-warning"></i>
+                        Aucune note enregistrée pour cet entretien
+                    </div>
+                    <div th:if="${!#lists.isEmpty(notes)}">
+                        <div th:each="note : ${notes}" class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 th:text="${note.section.nomSection}">Section</h6>
+                                <span class="badge bg-primary" th:text="${note.noteObtenue} + '/' + ${note.section.noteMax}">15/20</span>
+                            </div>
+                            <p class="text-muted small mb-1" th:text="${note.section.description}">Description</p>
+                            <p th:if="${note.commentaire}" class="small border-start border-3 border-info ps-3 mb-0" th:text="${note.commentaire}">Commentaire</p>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Total : </strong>
+                                <span th:text="${@noteEntretienService.calculateTotalByEntretien(entretien.idEntretien)}">0</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Moyenne : </strong>
+                                <span th:text="${@noteEntretienService.calculateMoyenneByEntretien(entretien.idEntretien)} + '/20'">0/20</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title>Résultats des entretiens</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .result-header {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .poste-card {
+                border: none;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                margin-bottom: 1.5rem;
+            }
+
+            .poste-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 1.5rem;
+                border-radius: 10px;
+                text-align: center;
+            }
+
+            .moyenne-badge {
+                font-size: 1.2rem;
+                font-weight: bold;
+                padding: 0.5rem 1rem;
+                border-radius: 50px;
+            }
+
+            .moyenne-excellent {
+                background: #28a745;
+                color: white;
+            }
+
+            .moyenne-bon {
+                background: #17a2b8;
+                color: white;
+            }
+
+            .moyenne-moyen {
+                background: #ffc107;
+                color: black;
+            }
+
+            .moyenne-faible {
+                background: #dc3545;
+                color: white;
+            }
+        </style>
+
+        <!-- En-tête -->
+        <div class="result-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-graph-up-arrow me-3"></i>Résultats des Entretiens
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Analyse des performances par poste et candidat
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="d-flex align-items-center">
+                        <div class="text-end me-3">
+                            <small class="opacity-75 d-block">Total des entretiens</small>
+                            <span class="h3 mb-0" th:text="${totalEntretiens}">0</span>
+                        </div>
+                        <i class="bi bi-people-fill opacity-50" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques générales -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="bi bi-briefcase-fill mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1" th:text="${entretiensParOffre.size()}">0</h3>
+                <small>Offres évaluées</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-person-check-fill mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1" th:text="${totalEntretiens}">0</h3>
+                <small>Candidats évalués</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-star-fill mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1">
+                    <span th:text="${#numbers.formatDecimal(moyenneGenerale, 1, 2)}">0.0</span>
+                </h3>
+                <small>Moyenne générale</small>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-trophy-fill mb-2" style="font-size: 2rem;"></i>
+                <h3 class="mb-1">
+                    <span th:text="${#numbers.formatDecimal(meilleurScore, 1, 2)}">0.0</span>
+                </h3>
+                <small>Meilleur score</small>
+            </div>
+        </div>
+
+        <!-- Alerte si aucun résultat -->
+        <div th:if="${entretiensParOffre.isEmpty()}" class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-1 text-muted mb-3"></i>
+            <h4>Aucun résultat disponible</h4>
+            <p class="text-muted">
+                Il n'y a encore aucun entretien terminé et évalué.
+                Les résultats apparaîtront ici une fois que les entretiens seront complétés et notés.
+            </p>
+            <a href="/entretiens" class="btn btn-primary">
+                <i class="bi bi-calendar-event me-1"></i>Voir les entretiens
+            </a>
+        </div>
+
+        <!-- Résultats par offre -->
+        <div th:unless="${entretiensParOffre.isEmpty()}">
+            <h3 class="mb-4">
+                <i class="bi bi-file-text me-2"></i>Résultats par Offre
+            </h3>
+
+            <div class="row">
+                <div th:each="entry : ${entretiensParOffre}" class="col-xl-6 col-lg-12">
+                    <div class="poste-card">
+                        <div class="card-header border-0 bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <span th:text="${entry.key.poste.nom}">Nom du poste</span>
+                                        <small class="text-muted"> - Offre #<span th:text="${entry.key.idOffre}">1</span></small>
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="bi bi-people me-1"></i>
+                                        <span th:text="${entry.value.size()}">0</span> candidat(s) évalué(s)
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="moyenne-badge"
+                                        th:classappend="${moyennesParOffre.get(entry.key) >= 16 ? 'moyenne-excellent' : 
+                                                          (moyennesParOffre.get(entry.key) >= 12 ? 'moyenne-bon' : 
+                                                          (moyennesParOffre.get(entry.key) >= 8 ? 'moyenne-moyen' : 'moyenne-faible'))}"
+                                        th:text="${#numbers.formatDecimal(moyennesParOffre.get(entry.key), 1, 2)} + '/20'">
+                                        0.0/20
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar bg-success"
+                                    th:style="'width: ' + ${(moyennesParOffre.get(entry.key) / 20.0 * 100)} + '%'">
+                                </div>
+                            </div>
+
+                            <!-- Top 3 candidats -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-award me-1"></i>Meilleurs candidats
+                                </h6>
+                                <div th:each="entretien, iterStat : ${entry.value}" th:if="${iterStat.index < 3}"
+                                    class="d-flex justify-content-between align-items-center py-1">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" th:classappend="${iterStat.index == 0 ? 'bg-warning text-dark' : 
+                                                              (iterStat.index == 1 ? 'bg-secondary' : 'bg-dark')}"
+                                            th:text="${iterStat.index + 1}">1</span>
+                                        <span th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                            Candidat
+                                        </span>
+                                    </div>
+                                    <span class="fw-bold text-success"
+                                        th:text="${#numbers.formatDecimal(moyennesEntretiens.get(entretien.idEntretien), 1, 2)} + '/20'">
+                                        0.0/20
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Dernière mise à jour: <span
+                                        th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">Date</span>
+                                </small>
+                                <a th:href="@{/admin/resultats-entretiens/offre/{id}(id=${entry.key.idOffre})}"
+                                    class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

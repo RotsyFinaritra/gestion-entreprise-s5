@@ -47,6 +47,10 @@ public class EntretienService {
         return entretienRepository.findByCandidatIdCandidat(candidatId);
     }
 
+    public List<Entretien> findByStatut(String statut) {
+        return entretienRepository.findByStatut(statut);
+    }
+
     public Entretien save(Entretien entretien) {
         // Vérifier qu'un entretien n'existe pas déjà pour ce candidat et cette offre
         if (entretien.getIdEntretien() == null) { // Nouveau entretien
