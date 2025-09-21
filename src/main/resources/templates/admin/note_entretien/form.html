@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/entretiens/by-offre/{id}(id=${entretien.offre.idOffre})}" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="h4 mb-0">Évaluation d'Entretien</h2>
+            <p class="text-muted mb-0">
+                <strong th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">Candidat</strong>
+                - <span th:text="${entretien.offre.poste.nom}">Poste</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Informations de l'entretien -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-calendar-event me-2"></i>
+                Informations de l'Entretien
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Date :</strong> <span th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                    <p><strong>Durée :</strong> <span th:text="${entretien.dureeEntretien}">60</span> minutes</p>
+                    <p><strong>Statut :</strong> 
+                        <span class="badge" 
+                              th:classappend="${entretien.statut == 'terminé' ? 'bg-success' : (entretien.statut == 'confirmé' ? 'bg-info' : 'bg-warning')}"
+                              th:text="${entretien.statut}">Statut</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Lieu :</strong> <span th:text="${entretien.lieuEntretien ?: 'Non spécifié'}">Lieu</span></p>
+                    <p><strong>Email :</strong> <span th:text="${entretien.candidat.email}">Email</span></p>
+                    <p><strong>Téléphone :</strong> <span th:text="${entretien.candidat.tel}">Téléphone</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire d'évaluation -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Grille d'Évaluation
+            </h5>
+        </div>
+        <form method="post" th:action="@{/admin/notes-entretien/save/{id}(id=${entretien.idEntretien})}">
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(sections)}" class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Aucune section d'évaluation n'est configurée pour ce poste. 
+                    <a th:href="@{/admin/sections-notation/new}" class="alert-link">Créer des sections</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(sections)}">
+                    <div th:each="section, iterStat : ${sections}" class="section-evaluation mb-4">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary bg-opacity-10">
+                                <h6 class="card-title mb-0 text-primary">
+                                    <i class="bi bi-star me-2"></i>
+                                    <span th:text="${section.nomSection}">Section</span>
+                                    <span class="badge bg-primary ms-2" th:text="'Max: ' + ${section.noteMax}">Max: 20</span>
+                                </h6>
+                                <small class="text-muted" th:text="${section.description}">Description</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label th:for="'note_' + ${section.idSection}" class="form-label">
+                                            Note <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   th:id="'note_' + ${section.idSection}"
+                                                   th:name="'note_' + ${section.idSection}"
+                                                   th:value="${notesMap.get(section.idSection)?.noteObtenue}"
+                                                   min="0" 
+                                                   th:max="${section.noteMax}"
+                                                   step="0.5" 
+                                                   required>
+                                            <span class="input-group-text" th:text="'/' + ${section.noteMax}">/20</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <label th:for="'commentaire_' + ${section.idSection}" class="form-label">
+                                            Commentaire
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  th:id="'commentaire_' + ${section.idSection}"
+                                                  th:name="'commentaire_' + ${section.idSection}"
+                                                  rows="2"
+                                                  th:text="${notesMap.get(section.idSection)?.commentaire}"
+                                                  placeholder="Observations et commentaires sur cette section..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer" th:if="${!#lists.isEmpty(sections)}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <i class="bi bi-info-circle me-2"></i>
+                        L'entretien sera marqué comme "terminé" après sauvegarde
+                    </div>
+                    <div>
+                        <a th:href="@{/admin/entretiens/by-offre/{id}(id=${entretien.offre.idOffre})}" 
+                           class="btn btn-secondary me-2">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Enregistrer l'Évaluation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Aide sur la notation -->
+    <div class="card mt-4 border-info">
+        <div class="card-header bg-info bg-opacity-10">
+            <h6 class="card-title mb-0 text-info">
+                <i class="bi bi-lightbulb me-2"></i>
+                Guide d'Évaluation
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Échelle de Notation</h6>
+                    <ul class="small">
+                        <li><strong>Excellent (17-20) :</strong> Dépasse les attentes</li>
+                        <li><strong>Très bien (14-16) :</strong> Répond parfaitement aux attentes</li>
+                        <li><strong>Bien (11-13) :</strong> Répond aux attentes</li>
+                        <li><strong>Moyen (8-10) :</strong> Répond partiellement aux attentes</li>
+                        <li><strong>Faible (0-7) :</strong> Ne répond pas aux attentes</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Conseils</h6>
+                    <ul class="small">
+                        <li>Soyez objectif et factuel dans vos commentaires</li>
+                        <li>Utilisez des exemples concrets de l'entretien</li>
+                        <li>Notez les points forts et axes d'amélioration</li>
+                        <li>Les notes peuvent être décimales (ex: 15.5)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-evaluation {
+    transition: transform 0.2s;
+}
+.section-evaluation:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+</html>

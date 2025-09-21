@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Détail de l'entretien</title>
+    <style>
+        .stats-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .section-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+
+    <div class="container mt-4">
+        <!-- En-tête avec titre et actions -->
+        <div class="row align-items-center mb-4">
+            <div class="col">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-calendar-event me-2"></i>Détail de l'entretien
+                </h1>
+                <p class="text-muted mb-0">Informations détaillées et évaluation</p>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group">
+                    <a th:href="@{/note-entretien/form/{id}(id=${entretien.idEntretien})}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>Modifier la notation
+                    </a>
+                    <a th:href="@{/entretiens}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row">
+            <!-- Informations de l'entretien -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-person-circle me-2"></i>Informations de l'entretien
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Candidat</h6>
+                                <p class="fw-bold mb-3" th:text="${entretien.candidat?.prenom + ' ' + entretien.candidat?.nom}">
+                                    Nom du candidat
+                                </p>
+
+                                <h6 class="text-primary">Poste</h6>
+                                <p class="mb-3" th:text="${entretien.offre?.poste?.nom}">Nom du poste</p>
+
+                                <h6 class="text-primary">Date de l'entretien</h6>
+                                <p class="mb-3" th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy HH:mm')}">
+                                    Date de l'entretien
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Offre d'emploi</h6>
+                                <p class="mb-3" th:text="${entretien.offre?.mission}">Mission de l'offre</p>
+
+                                <h6 class="text-primary">Statut</h6>
+                                <span class="badge mb-3" 
+                                      th:classappend="${entretien.statut == 'TERMINE' ? 'bg-success' : (entretien.statut == 'EN_COURS' ? 'bg-warning' : 'bg-secondary')}"
+                                      th:text="${entretien.statut}">
+                                    Statut
+                                </span>
+
+                                <h6 class="text-primary">Lieu</h6>
+                                <p class="mb-3" th:text="${entretien.lieuEntretien ?: 'Non spécifié'}">Lieu</p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${entretien.commentaire}">
+                            <h6 class="text-primary">Description</h6>
+                            <p class="text-muted" th:text="${entretien.commentaire}">Description de l'entretien</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résumé de l'évaluation -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Évaluation globale
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div th:if="${moyenne != null}">
+                            <div class="display-4 fw-bold text-success mb-2" th:text="${#numbers.formatDecimal(moyenne, 1, 2)}">
+                                0.0
+                            </div>
+                            <p class="text-muted mb-0">Moyenne générale</p>
+                            <div class="progress mt-3" style="height: 10px;">
+                                <div class="progress-bar bg-success" 
+                                     th:style="'width: ' + ${(moyenne / 20.0 * 100)} + '%'">
+                                </div>
+                            </div>
+                            <small class="text-muted">sur 20.0</small>
+                        </div>
+                        <div th:unless="${moyenne != null}">
+                            <div class="text-muted">
+                                <i class="bi bi-exclamation-circle display-4 mb-3"></i>
+                                <p class="mb-0">Aucune évaluation</p>
+                                <small>L'entretien n'a pas encore été noté</small>
+                            </div>
+                            <a th:href="@{/note-entretien/form/{id}(id=${entretien.idEntretien})}" 
+                               class="btn btn-success btn-sm mt-3">
+                                <i class="bi bi-plus me-1"></i>Commencer l'évaluation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques rapides -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-clipboard-data me-1"></i>Statistiques
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Sections évaluées:</span>
+                            <span class="fw-bold" th:text="${notes?.size() ?: 0} + '/' + ${sections?.size() ?: 0}">0/0</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar" 
+                                 th:style="'width: ' + ${sections?.size() > 0 ? (notes?.size() / sections.size() * 100) : 0} + '%'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détail des évaluations par section -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list-check me-2"></i>Évaluation détaillée par section
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${sections != null and !sections.isEmpty()}">
+                    <div class="row">
+                        <div th:each="section : ${sections}" class="col-lg-6 mb-4">
+                            <div class="section-card h-100 bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="card-title mb-1" th:text="${section.nomSection}">
+                                                Nom de la section
+                                            </h6>
+                                            <small class="text-muted" 
+                                                   th:text="'Note maximum: ' + ${section.noteMax}">
+                                                Note maximum: 20
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div th:if="${notesMap?.get(section.idSection) != null}">
+                                                <span class="h5 text-success fw-bold" 
+                                                      th:text="${#numbers.formatDecimal(notesMap[section.idSection].noteObtenue, 1, 1)}">
+                                                    0.0
+                                                </span>
+                                                <span class="text-muted" th:text="'/' + ${section.noteMax}">
+                                                    /20
+                                                </span>
+                                            </div>
+                                            <div th:unless="${notesMap?.get(section.idSection) != null}">
+                                                <span class="text-muted">Non évalué</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${section.description}" class="mb-3">
+                                        <small class="text-muted" th:text="${section.description}">
+                                            Description de la section
+                                        </small>
+                                    </div>
+
+                                    <div th:if="${notesMap?.get(section.idSection) != null}">
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-success" 
+                                                 th:style="'width: ' + ${(notesMap[section.idSection].noteObtenue / section.noteMax * 100)} + '%'">
+                                            </div>
+                                        </div>
+                                        
+                                        <div th:if="${notesMap[section.idSection].commentaire}" class="mt-3">
+                                            <h6 class="text-primary mb-1">Commentaire:</h6>
+                                            <p class="small text-muted mb-0" 
+                                               th:text="${notesMap[section.idSection].commentaire}">
+                                                Commentaire de l'évaluation
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div th:unless="${notesMap?.get(section.idSection) != null}">
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-light" style="width: 100%"></div>
+                                        </div>
+                                        <small class="text-muted">Cette section n'a pas encore été évaluée</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:unless="${sections != null and !sections.isEmpty()}" class="text-center py-5">
+                    <i class="bi bi-exclamation-circle display-1 text-muted"></i>
+                    <h5 class="text-muted mt-3">Aucune section de notation configurée</h5>
+                    <p class="text-muted">
+                        Aucune section de notation n'a été configurée pour le poste 
+                        "<span th:text="${entretien.offre?.poste?.nom}">Nom du poste</span>".
+                    </p>
+                    <a href="/admin/sections-notation/new" class="btn btn-primary">
+                        <i class="bi bi-plus me-1"></i>Configurer les sections
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </div> <!-- End of content fragment -->
+</body>
+</html>

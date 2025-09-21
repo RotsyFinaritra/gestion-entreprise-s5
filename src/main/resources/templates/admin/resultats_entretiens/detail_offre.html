@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title th:text="'Résultats - ' + ${offre.poste.nom} + ' (Offre #' + ${offre.idOffre} + ')'">Résultats de l'offre</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .offre-header {
+                background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .candidat-card {
+                border: none;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                margin-bottom: 1rem;
+            }
+
+            .candidat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            }
+
+            .rang-badge {
+                font-size: 1.1rem;
+                font-weight: bold;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .rang-1 {
+                background: linear-gradient(135deg, #ffd700, #ffed4e);
+                color: #8b4513;
+            }
+
+            .rang-2 {
+                background: linear-gradient(135deg, #c0c0c0, #e5e5e5);
+                color: #555;
+            }
+
+            .rang-3 {
+                background: linear-gradient(135deg, #cd7f32, #daa520);
+                color: white;
+            }
+
+            .rang-autre {
+                background: linear-gradient(135deg, #6c757d, #adb5bd);
+                color: white;
+            }
+
+            .note-badge {
+                font-size: 1.1rem;
+                font-weight: bold;
+                padding: 0.5rem 1rem;
+                border-radius: 25px;
+            }
+
+            .note-excellent {
+                background: #28a745;
+                color: white;
+            }
+
+            .note-bon {
+                background: #17a2b8;
+                color: white;
+            }
+
+            .note-moyen {
+                background: #ffc107;
+                color: black;
+            }
+
+            .note-faible {
+                background: #dc3545;
+                color: white;
+            }
+
+            .stats-summary {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-box {
+                background: white;
+                border: 2px solid #f8f9fa;
+                border-radius: 10px;
+                padding: 1.5rem;
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+
+            .stat-box:hover {
+                border-color: #dee2e6;
+                transform: translateY(-2px);
+            }
+
+            .candidat-card.selectionne {
+                border: 2px solid #28a745;
+                background-color: #f8fff9;
+            }
+
+            .selection-active .candidat-card {
+                cursor: pointer;
+            }
+        </style>
+
+        <script>
+            let modeSelection = false;
+            let candidatsSelectionnes = [];
+            let maxSelections = /*[[${offre.nbrPersonne}]]*/ 1;
+            let idOffre_bla = /*[[${offre.idOffre}]]*/ 0;
+            
+            // Backup: récupérer l'ID depuis l'URL si Thymeleaf échoue
+            if (!idOffre_bla || idOffre_bla === 0) {
+                const urlParts = window.location.pathname.split('/');
+                const urlOffreId = urlParts[urlParts.length - 1];
+                if (!isNaN(urlOffreId)) {
+                    idOffre_bla = parseInt(urlOffreId);
+                }
+            }
+            
+            // Debug temporaire - afficher les valeurs
+            console.log("DEBUG Template - ID Offre:", /*[[${offre.idOffre}]]*/ 0);
+            console.log("DEBUG Template - Nombre requis:", /*[[${offre.nbrPersonne}]]*/ 1);
+            console.log("DEBUG Template - maxSelections:", maxSelections);
+            console.log("DEBUG Template - idOffre_bla:", idOffre_bla);
+            console.log("DEBUG Template - URL:", window.location.pathname);
+
+            function activerModeSelection() {
+                modeSelection = true;
+                document.body.classList.add('selection-active');
+                document.getElementById('zoneSelection').style.display = 'block';
+                document.getElementById('btnSelectionner').style.display = 'none';
+
+                // Afficher les cases à cocher
+                document.querySelectorAll('.selection-checkbox').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+
+            function annulerSelection() {
+                modeSelection = false;
+                candidatsSelectionnes = [];
+                document.body.classList.remove('selection-active');
+                document.getElementById('zoneSelection').style.display = 'none';
+                document.getElementById('btnSelectionner').style.display = 'inline-block';
+
+                // Cacher les cases à cocher et décocher
+                document.querySelectorAll('.selection-checkbox').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.candidat-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.querySelectorAll('.candidat-card').forEach(card => {
+                    card.classList.remove('selectionne');
+                });
+
+                mettreAJourCompteur();
+            }
+
+            function gererSelectionCandidat(checkbox) {
+                const entretienId = checkbox.dataset.entretienId;
+                const candidatNom = checkbox.dataset.candidatNom;
+                const card = checkbox.closest('.candidat-card');
+
+                if (checkbox.checked) {
+                    if (candidatsSelectionnes.length >= maxSelections) {
+                        checkbox.checked = false;
+                        alert(`Vous ne pouvez sélectionner que ${maxSelections} candidat(s) maximum.`);
+                        return;
+                    }
+                    candidatsSelectionnes.push({ entretienId, candidatNom });
+                    card.classList.add('selectionne');
+                } else {
+                    candidatsSelectionnes = candidatsSelectionnes.filter(c => c.entretienId !== entretienId);
+                    card.classList.remove('selectionne');
+                }
+
+                mettreAJourCompteur();
+            }
+
+            function mettreAJourCompteur() {
+                document.getElementById('nbSelectionnes').textContent = candidatsSelectionnes.length;
+
+                const btnValider = document.getElementById('btnValiderSelection');
+                if (candidatsSelectionnes.length === maxSelections) {
+                    btnValider.disabled = false;
+                    btnValider.classList.remove('btn-secondary');
+                    btnValider.classList.add('btn-success');
+                } else {
+                    btnValider.disabled = true;
+                    btnValider.classList.remove('btn-success');
+                    btnValider.classList.add('btn-secondary');
+                }
+            }
+
+            function validerSelection() {
+                if (candidatsSelectionnes.length !== maxSelections) {
+                    alert(`Vous devez sélectionner exactement ${maxSelections} candidat(s).`);
+                    return;
+                }
+
+                const confirmation = confirm(
+                    `Êtes-vous sûr de vouloir engager à l'essai les candidats suivants ?\n\n` +
+                    candidatsSelectionnes.map(c => `• ${c.candidatNom}`).join('\n') +
+                    `\n\nCette action changera leur statut à "Engagement à l'essai".`
+                );
+
+                if (confirmation) {
+                    // Envoyer les données au serveur
+                    const offreId = idOffre_bla;  // Utiliser la variable définie au début
+                    const entretiensIds = candidatsSelectionnes.map(c => parseInt(c.entretienId));
+                    
+                    console.log("DEBUG - offreId:", offreId);
+                    console.log("DEBUG - entretiensIds:", entretiensIds);                    fetch(`/admin/engagements/valider-selection/${offreId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ entretiensIds })
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                return response.text().then(text => {
+                                    throw new Error(`Erreur ${response.status}: ${text}`);
+                                });
+                            }
+                        })
+                        .then(message => {
+                            alert('Candidats engagés à l\'essai avec succès !');
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Erreur détaillée:', error);
+                            alert('Erreur lors de l\'engagement: ' + error.message);
+                        });
+                }
+            }
+        </script>
+
+        <!-- En-tête de l'offre -->
+        <div class="offre-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb mb-0 text-white">
+                            <li class="breadcrumb-item">
+                                <a href="/admin/resultats-entretiens"
+                                    class="text-white text-decoration-none opacity-75">
+                                    <i class="bi bi-arrow-left me-1"></i>Résultats
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">
+                                <span th:text="${offre.poste.nom} + ' (Offre #' + ${offre.idOffre} + ')'">
+                                    Nom du poste (Offre #1)
+                                </span>
+                            </li>
+                        </ol>
+                    </nav>
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-briefcase-fill me-3"></i>
+                        <span th:text="${offre.poste.nom}">Nom du poste</span>
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-file-text me-2"></i>
+                        Offre #<span th:text="${offre.idOffre}">1</span> -
+                        <span th:text="${totalCandidats}">0</span> candidat(s) évalué(s)
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="text-end">
+                        <div class="mb-1">
+                            <small class="opacity-75 d-block">Moyenne de l'offre</small>
+                            <span class="h2 mb-0"
+                                th:text="${#numbers.formatDecimal(moyenneOffre, 1, 2)} + '/20'">0.0/20</span>
+                        </div>
+                        <div class="progress bg-white bg-opacity-25" style="height: 6px; width: 120px;">
+                            <div class="progress-bar bg-white"
+                                th:style="'width: ' + ${(moyenneOffre / 20.0 * 100)} + '%'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques résumées -->
+        <div class="stats-summary">
+            <div class="stat-box">
+                <i class="bi bi-trophy-fill text-warning mb-2" style="font-size: 2rem;"></i>
+                <h3 class="h4 mb-1 text-warning" th:text="${#numbers.formatDecimal(meilleurScore, 1, 2)}">0.0</h3>
+                <small class="text-muted">Meilleure note</small>
+            </div>
+            <div class="stat-box">
+                <i class="bi bi-graph-down text-danger mb-2" style="font-size: 2rem;"></i>
+                <h3 class="h4 mb-1 text-danger" th:text="${#numbers.formatDecimal(scoreMin, 1, 2)}">0.0</h3>
+                <small class="text-muted">Note la plus faible</small>
+            </div>
+            <div class="stat-box">
+                <i class="bi bi-people-fill text-success mb-2" style="font-size: 2rem;"></i>
+                <h3 class="h4 mb-1 text-success" th:text="${admissibles}">0</h3>
+                <small class="text-muted">Admissibles (≥10)</small>
+            </div>
+            <div class="stat-box">
+                <i class="bi bi-star-fill text-info mb-2" style="font-size: 2rem;"></i>
+                <h3 class="h4 mb-1 text-info" th:text="${excellence}">0</h3>
+                <small class="text-muted">Excellence (≥16)</small>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="mb-0">
+                    <i class="bi bi-list-ol me-2"></i>Classement des candidats
+                </h3>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Cette offre demande <strong th:text="${offre.nbrPersonne}">0</strong> personne(s)
+                </small>
+            </div>
+            <div class="btn-group">
+                <button id="btnSelectionner" class="btn btn-success btn-sm" onclick="activerModeSelection()">
+                    <i class="bi bi-check-square me-1"></i>Sélectionner pour engagement
+                </button>
+                <button class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-download me-1"></i>Exporter PDF
+                </button>
+                <button class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-file-earmark-excel me-1"></i>Exporter Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Zone de sélection (cachée par défaut) -->
+        <div id="zoneSelection" class="alert alert-info" style="display: none;">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-1">
+                        <i class="bi bi-hand-index me-2"></i>Mode sélection activé
+                    </h5>
+                    <p class="mb-0">
+                        Sélectionnez <strong id="nbPersonnesRequises" th:text="${offre.nbrPersonne}">0</strong>
+                        candidat(s) pour l'engagement à l'essai.
+                        <span class="badge bg-primary ms-2">
+                            <span id="nbSelectionnes">0</span>/<span th:text="${offre.nbrPersonne}">0</span>
+                            sélectionnés
+                        </span>
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-warning btn-sm me-2" onclick="annulerSelection()">
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                    </button>
+                    <button id="btnValiderSelection" class="btn btn-success btn-sm" onclick="validerSelection()"
+                        disabled>
+                        <i class="bi bi-check-circle me-1"></i>Valider la sélection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des candidats -->
+        <div th:if="${entretiensOffre.isEmpty()}" class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-1 text-muted mb-3"></i>
+            <h4>Aucun candidat évalué</h4>
+            <p class="text-muted">
+                Il n'y a encore aucun candidat évalué pour cette offre.
+            </p>
+        </div>
+
+        <div th:unless="${entretiensOffre.isEmpty()}" class="row">
+            <div th:each="entretien, iterStat : ${entretiensOffre}" class="col-lg-12">
+                <div class="candidat-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="rang-badge" th:classappend="${iterStat.index == 0 ? 'rang-1' : 
+                                                    (iterStat.index == 1 ? 'rang-2' : 
+                                                    (iterStat.index == 2 ? 'rang-3' : 'rang-autre'))}"
+                                    th:text="${iterStat.index + 1}">
+                                    1
+                                </div>
+                            </div>
+                            <div class="col-auto selection-checkbox" style="display: none;">
+                                <div class="form-check">
+                                    <input class="form-check-input candidat-checkbox" type="checkbox"
+                                        th:id="'candidat_' + ${entretien.idEntretien}"
+                                        th:data-entretien-id="${entretien.idEntretien}"
+                                        th:data-candidat-nom="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}"
+                                        onchange="gererSelectionCandidat(this)">
+                                    <label class="form-check-label" th:for="'candidat_' + ${entretien.idEntretien}">
+                                        <small class="text-success fw-bold">Sélectionner</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h5 class="mb-0 me-3"
+                                        th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                        Nom du candidat
+                                    </h5>
+                                    <span class="note-badge"
+                                        th:classappend="${moyennesEntretiens.get(entretien.idEntretien) >= 16 ? 'note-excellent' : 
+                                                          (moyennesEntretiens.get(entretien.idEntretien) >= 12 ? 'note-bon' : 
+                                                          (moyennesEntretiens.get(entretien.idEntretien) >= 8 ? 'note-moyen' : 'note-faible'))}"
+                                        th:text="${#numbers.formatDecimal(moyennesEntretiens.get(entretien.idEntretien), 1, 2)} + '/20'">
+                                        0.0/20
+                                    </span>
+                                </div>
+                                <div class="row text-muted small">
+                                    <div class="col-md-4">
+                                        <i class="bi bi-envelope me-1"></i>
+                                        <span th:text="${entretien.candidat.email}">email@exemple.com</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        <span
+                                            th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy HH:mm')}">
+                                            Date de l'entretien
+                                        </span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        <span th:text="${entretien.lieuEntretien ?: 'Lieu non spécifié'}">
+                                            Lieu
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div class="progress mb-1" style="width: 100px; height: 6px;">
+                                            <div class="progress-bar bg-success"
+                                                th:style="'width: ' + ${(moyennesEntretiens.get(entretien.idEntretien) / 20.0 * 100)} + '%'">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted text-center d-block">
+                                            <span
+                                                th:text="${#numbers.formatDecimal((moyennesEntretiens.get(entretien.idEntretien) / 20.0 * 100), 0, 0)}">0</span>%
+                                        </small>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item"
+                                                    th:href="@{/entretiens/{id}(id=${entretien.idEntretien})}">
+                                                    <i class="bi bi-eye me-1"></i>Voir détails
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                    th:href="@{/note-entretien/form/{id}(id=${entretien.idEntretien})}">
+                                                    <i class="bi bi-pencil me-1"></i>Modifier notes
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-muted" href="#">
+                                                    <i class="bi bi-download me-1"></i>Exporter fiche
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

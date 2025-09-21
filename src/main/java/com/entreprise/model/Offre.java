@@ -42,7 +42,7 @@ public class Offre {
     @Column(name = "age_max")
     private Integer ageMax;
 
-    @Column(name = "nbrPersonne")
+    @Column(name = "nbr_personne")
     private Integer nbrPersonne;
 
     @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title th:text="'Engagement Essai - ' + ${offre.poste.nom}">Engagement Essai</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <style>
+            .offre-header {
+                background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+                color: white;
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .candidat-card {
+                border: none;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                margin-bottom: 1.5rem;
+                overflow: hidden;
+            }
+
+            .candidat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            }
+
+            .candidat-avatar {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 4px solid #fff;
+            }
+
+            .badge-essai {
+                background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+                color: black;
+                font-weight: bold;
+                padding: 0.5rem 1rem;
+                border-radius: 25px;
+            }
+
+            .action-buttons .btn {
+                margin: 0.25rem;
+                border-radius: 25px;
+                transition: all 0.3s ease;
+            }
+
+            .info-section {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 1.5rem;
+                border-left: 5px solid #17a2b8;
+            }
+
+            .progress-bar-essai {
+                background: linear-gradient(45deg, #17a2b8, #20c997);
+            }
+        </style>
+
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/admin">
+                        <i class="bi bi-house"></i> Admin
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/admin/engagements-essai">
+                        <i class="bi bi-person-check"></i> Engagements à l'essai
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span th:text="${offre.poste.nom}">Poste</span>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- En-tête de l'offre -->
+        <div class="offre-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-briefcase-fill me-2"></i>
+                        <span th:text="${offre.poste.nom}">Nom du poste</span>
+                    </h1>
+                    <div class="row g-3 mt-2">
+                        <div class="col-auto">
+                            <small class="d-flex align-items-center opacity-75">
+                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                <span th:text="${offre.local.nom}">Local</span>
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <small class="d-flex align-items-center opacity-75">
+                                <i class="bi bi-people-fill me-1"></i>
+                                <span th:text="${candidatsEngages != null ? candidatsEngages.size() : 0} + ' / ' + ${offre.nbrPersonne}">0/0</span>
+                                candidat(s) engagé(s)
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <small class="d-flex align-items-center opacity-75">
+                                <i class="bi bi-calendar-week me-1"></i>
+                                Période d'essai : 3 mois
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto text-end">
+                    <span class="badge-essai mb-2 d-block">
+                        <i class="bi bi-clock-history me-1"></i>En cours d'essai
+                    </span>
+                    <div class="progress" style="width: 200px; height: 8px;">
+                        <div class="progress-bar progress-bar-essai" role="progressbar" 
+                             th:style="'width: ' + ${(candidatsEngages != null ? candidatsEngages.size() : 0) * 100.0 / offre.nbrPersonne} + '%'"
+                             th:aria-valuenow="${candidatsEngages != null ? candidatsEngages.size() : 0}" 
+                             th:aria-valuemax="${offre.nbrPersonne}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations sur l'offre -->
+        <div class="info-section mb-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Informations sur l'offre
+                    </h5>
+                    <p class="mb-3" th:text="${offre.mission}">Mission de l'offre...</p>
+                    <div class="row g-3">
+                        <div class="col-sm-4">
+                            <small class="text-muted d-block">Date de fin</small>
+                            <strong th:text="${offre.dateFin != null ? #temporals.format(offre.dateFin, 'dd/MM/yyyy') : 'Non spécifiée'}">Date</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <small class="text-muted d-block">Âge requis</small>
+                            <strong>
+                                <span th:text="${offre.ageMin ?: '-'}">-</span> - 
+                                <span th:text="${offre.ageMax ?: '-'}">-</span> ans
+                            </strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <small class="text-muted d-block">Date de création</small>
+                            <strong th:text="${offre.dateCreation != null ? #temporals.format(offre.dateCreation, 'dd/MM/yyyy') : 'Non spécifiée'}">Date</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2">Actions globales</h6>
+                        <button class="btn btn-primary mb-2 w-100" onclick="genererTousContrats()">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Générer tous les contrats
+                        </button>
+                        <button class="btn btn-outline-primary w-100" onclick="envoyerTousContrats()">
+                            <i class="bi bi-send me-1"></i>Envoyer tous par email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des candidats engagés -->
+        <div th:if="${candidatsEngages == null || candidatsEngages.isEmpty()}" class="alert alert-warning text-center py-4">
+            <i class="bi bi-exclamation-triangle display-4 text-warning mb-3"></i>
+            <h5>Aucun candidat engagé pour cette offre</h5>
+            <p class="text-muted">
+                Il n'y a encore aucun candidat engagé à l'essai pour cette offre.
+            </p>
+            <a th:href="@{/admin/resultats-entretiens/offre/{id}(id=${offre.idOffre})}" 
+               class="btn btn-primary">
+                <i class="bi bi-arrow-left me-1"></i>Retour aux résultats
+            </a>
+        </div>
+
+        <div th:unless="${candidatsEngages == null || candidatsEngages.isEmpty()}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">
+                    <i class="bi bi-people-fill me-2"></i>
+                    Candidats à l'essai (<span th:text="${candidatsEngages != null ? candidatsEngages.size() : 0}">0</span>)
+                </h3>
+                <a th:href="@{/admin/resultats-entretiens/offre/{id}(id=${offre.idOffre})}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Retour aux résultats
+                </a>
+            </div>
+
+            <div class="row">
+                <div th:each="entretien : ${candidatsEngages}" class="col-lg-6">
+                    <div class="candidat-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <!-- Photo du candidat -->
+                                <div class="flex-shrink-0 me-3">
+                                    <img th:if="${entretien.candidat.image}" 
+                                         th:src="@{'/uploads/' + ${entretien.candidat.image}}"
+                                         class="candidat-avatar" alt="Photo candidat">
+                                    <div th:unless="${entretien.candidat.image}" 
+                                         class="candidat-avatar bg-secondary d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-person-fill text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Informations candidat -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="card-title mb-1">
+                                                <span th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                                    Candidat
+                                                </span>
+                                            </h5>
+                                            <small class="text-muted">
+                                                <i class="bi bi-envelope me-1"></i>
+                                                <span th:text="${entretien.candidat.email}">email@exemple.com</span>
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock-history me-1"></i>Essai
+                                        </span>
+                                    </div>
+
+                                    <!-- Informations entretien -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Note entretien</small>
+                                            <div class="d-flex align-items-center">
+                                                <strong class="me-2" th:text="${notesMoyennes[entretien.idEntretien] != null ? #numbers.formatDecimal(notesMoyennes[entretien.idEntretien], 1, 1) + '/20' : 'Non noté'}">0/20</strong>
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" 
+                                                         th:style="'width: ' + ${notesMoyennes[entretien.idEntretien] != null ? notesMoyennes[entretien.idEntretien] * 5 : 0} + '%'"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Date entretien</small>
+                                            <strong th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy')}">
+                                                Date
+                                            </strong>
+                                        </div>
+                                    </div>
+
+                                    <!-- Informations candidat supplémentaires -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Téléphone</small>
+                                            <span th:text="${entretien.candidat.tel ?: 'Non renseigné'}">Téléphone</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Genre</small>
+                                            <span th:text="${entretien.candidat.genre?.nom ?: 'Non spécifié'}">Genre</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions pour ce candidat -->
+                                    <div class="action-buttons text-center">
+                                        <button class="btn btn-success btn-sm" 
+                                                th:onclick="'genererContrat(' + ${entretien.idEntretien} + ')'">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i>Contrat PDF
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" 
+                                                th:onclick="'envoyerContrat(' + ${entretien.idEntretien} + ')'">
+                                            <i class="bi bi-send me-1"></i>Envoyer email
+                                        </button>
+                                        <a th:href="@{/entretiens/{id}(id=${entretien.idEntretien})}" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-eye me-1"></i>Détails
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function genererContrat(entretienId) {
+                window.open(`/admin/engagements/contrat-pdf/${entretienId}`, '_blank');
+            }
+
+            function envoyerContrat(entretienId) {
+                if (confirm('Êtes-vous sûr de vouloir envoyer le contrat d\'essai par email ?')) {
+                    fetch(`/admin/engagements/envoyer-contrat/${entretienId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.text())
+                    .then(message => {
+                        alert(message);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi du contrat.');
+                    });
+                }
+            }
+
+            function genererTousContrats() {
+                const offreId = /*[[${offre.idOffre}]]*/ 1;
+                window.open(`/admin/engagements/contrats-offre-pdf/${offreId}`, '_blank');
+            }
+
+            function envoyerTousContrats() {
+                if (confirm('Êtes-vous sûr de vouloir envoyer tous les contrats par email ?')) {
+                    const offreId = /*[[${offre.idOffre}]]*/ 1;
+                    fetch(`/admin/engagements/envoyer-contrats-offre/${offreId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.text())
+                    .then(message => {
+                        alert(message);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi des contrats.');
+                    });
+                }
+            }
+        </script>
+
+    </div>
+</body>
+
+</html>

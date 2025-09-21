@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title>Noter l'Entretien</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .notation-header {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .note-input {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .note-input:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+        
+        .note-max {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 15px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .candidate-info {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-save:hover {
+            background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .moyenne-actuelle {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            font-weight: 600;
+            border-radius: 15px;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin" class="text-decoration-none">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/entretiens" class="text-decoration-none">Entretiens</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Noter l'entretien</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="notation-header text-center">
+            <h1><i class="fas fa-star me-3"></i>Notation d'Entretien</h1>
+            <p class="lead mb-0">Évaluation du candidat par sections</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${warning}">Attention</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="container-fluid">
+            <!-- Informations candidat et entretien -->
+            <div class="candidate-info">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <h5 class="mb-1">
+                            <i class="fas fa-user me-2"></i>
+                            <span th:text="${entretien.candidat.prenom} + ' ' + ${entretien.candidat.nom}">Nom Candidat</span>
+                        </h5>
+                        <p class="text-muted mb-1" th:text="${entretien.candidat.email}">email@example.com</p>
+                        <small class="text-muted" th:text="'Poste: ' + ${entretien.offre.poste.nom}">Poste</small>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="fw-bold">Date de l'entretien</div>
+                        <div th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy à HH:mm')}">
+                            01/01/2024 à 10:00
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="fw-bold">Durée</div>
+                        <div th:text="${entretien.dureeEntretien} + ' minutes'">30 minutes</div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <div th:if="${moyenneActuelle != null && moyenneActuelle > 0}">
+                            <span class="moyenne-actuelle">
+                                Moyenne: <span th:text="${#numbers.formatDecimal(moyenneActuelle, 1, 2)} + '/20'">15.5/20</span>
+                            </span>
+                        </div>
+                        <div th:unless="${moyenneActuelle != null && moyenneActuelle > 0}">
+                            <span class="badge bg-light text-dark">Pas encore évalué</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de notation -->
+            <form th:action="@{'/note-entretien/save/' + ${entretien.idEntretien}}" method="post" id="notationForm">
+                <div class="row">
+                    <div th:each="section, iterStat : ${sections}" class="col-md-6 mb-4">
+                        <div class="section-card card h-100">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold" th:text="${section.nomSection}">Section</h6>
+                                    <span class="note-max" th:text="'Max: ' + ${section.noteMax} + ' pts'">Max: 20 pts</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small" th:text="${section.description}">Description</p>
+                            </div>
+                            <div class="card-body">
+                                <!-- Note -->
+                                <div class="mb-3">
+                                    <label th:for="'note_' + ${section.idSection}" class="form-label fw-bold">
+                                        Note obtenue <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control note-input" 
+                                           th:id="'note_' + ${section.idSection}"
+                                           th:name="'note_' + ${section.idSection}"
+                                           th:value="${notesExistantes.containsKey(section.idSection) ? notesExistantes.get(section.idSection).noteObtenue : ''}"
+                                           th:max="${section.noteMax}"
+                                           min="0" 
+                                           step="0.5"
+                                           th:placeholder="'Note sur ' + ${section.noteMax}"
+                                           required>
+                                    <div class="form-text">
+                                        Note sur <span th:text="${section.noteMax}">20</span> points (décimales autorisées)
+                                    </div>
+                                </div>
+                                
+                                <!-- Commentaire -->
+                                <div class="mb-3">
+                                    <label th:for="'commentaire_' + ${section.idSection}" class="form-label fw-bold">
+                                        Commentaire
+                                    </label>
+                                    <textarea class="form-control" 
+                                              th:id="'commentaire_' + ${section.idSection}"
+                                              th:name="'commentaire_' + ${section.idSection}"
+                                              rows="3"
+                                              th:placeholder="'Commentaires sur ' + ${section.nomSection} + '...'"
+                                              th:text="${notesExistantes.containsKey(section.idSection) ? notesExistantes.get(section.idSection).commentaire : ''}"></textarea>
+                                    <div class="form-text">Observations et détails de l'évaluation (optionnel)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="text-center mt-4 mb-5">
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="submit" class="btn btn-save btn-lg">
+                            <i class="fas fa-save me-2"></i>Enregistrer la notation
+                        </button>
+                        <a th:href="@{'/entretiens/' + ${entretien.idEntretien}}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-eye me-2"></i>Voir l'entretien
+                        </a>
+                        <a href="/entretiens" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-list me-2"></i>Liste des entretiens
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            // Calcul automatique de la moyenne
+            function calculateMoyenne() {
+                const inputs = document.querySelectorAll('.note-input');
+                let total = 0;
+                let count = 0;
+                let maxTotal = 0;
+
+                inputs.forEach(function(input) {
+                    const value = parseFloat(input.value);
+                    const max = parseFloat(input.max);
+                    
+                    if (!isNaN(value) && value >= 0) {
+                        total += value;
+                        maxTotal += max;
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    const moyenne = (total / maxTotal) * 20;
+                    const moyenneElement = document.getElementById('moyenne-preview');
+                    if (moyenneElement) {
+                        moyenneElement.textContent = moyenne.toFixed(2) + '/20';
+                        moyenneElement.parentElement.style.display = 'block';
+                    }
+                } else {
+                    const moyenneElement = document.getElementById('moyenne-preview');
+                    if (moyenneElement) {
+                        moyenneElement.parentElement.style.display = 'none';
+                    }
+                }
+            }
+
+            // Ajouter les event listeners
+            document.addEventListener('DOMContentLoaded', function() {
+                const inputs = document.querySelectorAll('.note-input');
+                inputs.forEach(function(input) {
+                    input.addEventListener('input', calculateMoyenne);
+                });
+
+                // Validation du formulaire
+                document.getElementById('notationForm').addEventListener('submit', function(e) {
+                    const inputs = document.querySelectorAll('.note-input');
+                    let hasNote = false;
+
+                    inputs.forEach(function(input) {
+                        const value = parseFloat(input.value);
+                        if (!isNaN(value) && value >= 0) {
+                            hasNote = true;
+                        }
+                    });
+
+                    if (!hasNote) {
+                        e.preventDefault();
+                        alert('Veuillez saisir au moins une note avant de sauvegarder.');
+                        return false;
+                    }
+
+                    return confirm('Êtes-vous sûr de vouloir enregistrer cette notation ?');
+                });
+
+                // Calcul initial si des notes existent déjà
+                calculateMoyenne();
+            });
+
+            // Ajouter aperçu moyenne dynamique
+            document.addEventListener('DOMContentLoaded', function() {
+                const candidateInfo = document.querySelector('.candidate-info .row');
+                const moyenneCol = candidateInfo.querySelector('.col-md-3:last-child');
+                
+                if (moyenneCol) {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.style.display = 'none';
+                    previewDiv.innerHTML = '<div class="fw-bold">Aperçu moyenne</div><span class="badge bg-info" id="moyenne-preview">0/20</span>';
+                    moyenneCol.appendChild(previewDiv);
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>
