@@ -68,7 +68,7 @@ public class UserService {
     public boolean isAdmin(jakarta.servlet.http.HttpSession session) {
         String username = (String) session.getAttribute("username");
         String role = (String) session.getAttribute("role");
-        return username != null && "admin".equalsIgnoreCase(role);
+        return username != null && ("admin".equalsIgnoreCase(role) || "RH".equalsIgnoreCase(role));
     }
     
     // === MÉTHODES SPÉCIFIQUES AUX DÉPARTEMENTS ===

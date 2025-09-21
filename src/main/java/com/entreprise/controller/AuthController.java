@@ -44,7 +44,15 @@ public class AuthController {
                 session.setAttribute("role", user.getRole());
                 
                 redirectAttributes.addFlashAttribute("success", "Connexion réussie ! Bienvenue " + user.getUsername());
-                return "redirect:/";
+                
+                // Redirection selon le rôle
+                if ("DEPARTEMENT".equalsIgnoreCase(user.getRole())) {
+                    return "redirect:/departement/dashboard";
+                } else if ("RH".equalsIgnoreCase(user.getRole()) || "admin".equalsIgnoreCase(user.getRole())) {
+                    return "redirect:/";
+                } else {
+                    return "redirect:/client"; // Pour les autres rôles
+                }
             }
         }
         

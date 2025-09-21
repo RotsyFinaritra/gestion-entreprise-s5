@@ -67,7 +67,7 @@ public class DepartementController {
             
             model.addAttribute("departement", departement);
             model.addAttribute("postes", postes);
-            model.addAttribute("pageTitle", "Mes Postes");
+            model.addAttribute("pageTitle", "Mes Postes - " + departement.getNomDepartement());
             model.addAttribute("pageDescription", "Liste des postes de votre département");
             model.addAttribute("activeSection", "postes");
             
@@ -94,7 +94,7 @@ public class DepartementController {
             
             model.addAttribute("poste", nouveauPoste);
             model.addAttribute("departement", departement);
-            model.addAttribute("pageTitle", "Nouveau Poste");
+            model.addAttribute("pageTitle", "Nouveau Poste - " + departement.getNomDepartement());
             model.addAttribute("pageDescription", "Créer un nouveau poste pour votre département");
             model.addAttribute("activeSection", "postes");
             
@@ -155,7 +155,7 @@ public class DepartementController {
             
             model.addAttribute("poste", poste);
             model.addAttribute("departement", departement);
-            model.addAttribute("pageTitle", "Modifier Poste");
+            model.addAttribute("pageTitle", "Modifier Poste - " + poste.getNom());
             model.addAttribute("pageDescription", "Modifier le poste : " + poste.getNom());
             model.addAttribute("activeSection", "postes");
             

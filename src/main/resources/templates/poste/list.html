@@ -34,6 +34,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Nom du Poste</th>
+                                <th>Département</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -42,6 +43,17 @@
                                 <td th:text="${poste.idPoste}">1</td>
                                 <td>
                                     <strong th:text="${poste.nom}">Développeur Web</strong>
+                                </td>
+                                <td>
+                                    <span th:if="${poste.departement != null}" 
+                                          th:text="${poste.departement.nomDepartement}" 
+                                          class="badge bg-info">
+                                        Informatique
+                                    </span>
+                                    <span th:unless="${poste.departement != null}" 
+                                          class="text-muted">
+                                        Non assigné
+                                    </span>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
