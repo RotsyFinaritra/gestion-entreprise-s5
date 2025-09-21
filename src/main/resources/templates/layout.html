@@ -180,6 +180,23 @@
                             <i class="bi bi-chat-dots me-2"></i>
                             Réponses
                         </a>
+                        
+                        <!-- Section RH -->
+                        <hr class="text-white my-3">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="bi bi-people-fill me-2"></i>
+                            Ressources Humaines
+                        </h6>
+                        <a class="nav-link mb-2" th:href="@{/rh/demandes}"
+                            th:classappend="${activeSection == 'rh-demandes' ? 'active' : ''}">
+                            <i class="bi bi-clipboard-check me-2"></i>
+                            Demandes d'offres
+                        </a>
+                        <a class="nav-link mb-2" th:href="@{/rh/dashboard}"
+                            th:classappend="${activeSection == 'rh-dashboard' ? 'active' : ''}">
+                            <i class="bi bi-speedometer2 me-2"></i>
+                            Tableau de bord RH
+                        </a>
                     </nav>
                 </div>
             </div>

@@ -40,6 +40,7 @@ public class PosteController {
         }
         
         model.addAttribute("poste", new Poste());
+        model.addAttribute("departements", userService.findAllDepartements()); // Ajouter la liste des départements
         model.addAttribute("activeSection", "postes");
         return "poste/form";
     }
@@ -54,6 +55,7 @@ public class PosteController {
         return posteService.findById(id)
             .map(poste -> {
                 model.addAttribute("poste", poste);
+                model.addAttribute("departements", userService.findAllDepartements()); // Ajouter la liste des départements
                 model.addAttribute("activeSection", "postes");
                 return "poste/form";
             })

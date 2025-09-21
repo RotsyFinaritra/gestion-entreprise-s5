@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head>
+    <title th:text="${pageTitle}">Gestion des demandes - RH</title>
+</head>
+<body>
+        <main th:fragment="content" class="container-fluid px-4">
+        <style>
+            .card-stat {
+                border-left: 4px solid;
+                transition: transform 0.2s;
+            }
+            .card-stat:hover {
+                transform: translateY(-2px);
+            }
+            .card-stat.warning {
+                border-left-color: #ffc107;
+            }
+            .card-stat.success {
+                border-left-color: #28a745;
+            }
+            .card-stat.danger {
+                border-left-color: #dc3545;
+            }
+            .priority-badge.HAUTE {
+                background-color: #ff6b6b;
+            }
+            .priority-badge.URGENTE {
+                background-color: #dc3545;
+                animation: pulse 1.5s infinite;
+            }
+            .priority-badge.NORMALE {
+                background-color: #28a745;
+            }
+            .priority-badge.BASSE {
+                background-color: #6c757d;
+            }
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.7; }
+                100% { opacity: 1; }
+            }
+            .table-actions {
+                min-width: 120px;
+            }
+            .btn-group-sm .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.875rem;
+            }
+        </style>
+
+        <!-- Messages de feedback -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <div class="container-fluid mt-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0">
+                            <i class="bi bi-clipboard-check text-primary"></i>
+                            Gestion des demandes d'offres
+                        </h1>
+                        <p class="text-muted mb-0">Traitement des demandes envoyées par les départements</p>
+                    </div>
+                    <a href="/rh/dashboard" class="btn btn-outline-primary">
+                        <i class="bi bi-speedometer2"></i>
+                        Tableau de bord
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages de feedback -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card card-stat warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">En attente</h6>
+                                <h2 class="mb-0" th:text="${nbEnAttente ?: 0}">0</h2>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-clock-history text-warning fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-stat success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Acceptées</h6>
+                                <h2 class="mb-0" th:text="${nbAcceptees ?: 0}">0</h2>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-check-circle text-success fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-stat danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Refusées</h6>
+                                <h2 class="mb-0" th:text="${nbRefusees ?: 0}">0</h2>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-x-circle text-danger fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="statut" class="form-label">Filtrer par statut</label>
+                        <select name="statut" id="statut" class="form-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="EN_ATTENTE" th:selected="${statutFiltre == 'EN_ATTENTE'}">En attente</option>
+                            <option value="ACCEPTE" th:selected="${statutFiltre == 'ACCEPTE'}">Acceptées</option>
+                            <option value="REFUSE" th:selected="${statutFiltre == 'REFUSE'}">Refusées</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i>
+                            Filtrer
+                        </button>
+                        <a href="/rh/demandes" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Liste des demandes -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-task"></i>
+                    Liste des demandes 
+                    <span class="badge bg-secondary" th:text="${#lists.size(demandes)}">0</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${#lists.isEmpty(demandes)}" class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">Aucune demande trouvée</h5>
+                    <p class="text-muted mb-0">Aucune demande ne correspond aux critères sélectionnés.</p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(demandes)}" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Département</th>
+                                <th>Poste</th>
+                                <th>Titre de l'offre</th>
+                                <th>Priorité</th>
+                                <th>Statut</th>
+                                <th>Date création</th>
+                                <th>Date traitement</th>
+                                <th class="table-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="demande : ${demandes}">
+                                <td>
+                                    <strong th:text="${demande.idDemandeOffre}">#001</strong>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-building me-2 text-muted"></i>
+                                        <span th:text="${demande.nomDepartement}">Département IT</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-briefcase me-2 text-muted"></i>
+                                        <span th:text="${demande.nomPoste}">Développeur Java</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong th:text="${demande.titreOffre}">Développeur Java Senior</strong>
+                                    <div class="small text-muted" th:text="${#strings.abbreviate(demande.descriptionPoste, 50)}">
+                                        Description courte...
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge priority-badge" 
+                                          th:classappend="${demande.priorite}" 
+                                          th:text="${demande.priorite}">NORMALE</span>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${'bg-' + demande.couleurStatut}" 
+                                          th:text="${demande.libelleStatut}">En attente</span>
+                                </td>
+                                <td>
+                                    <small th:text="${demande.formattedDateCreation}">01/01/2024 10:30</small>
+                                </td>
+                                <td>
+                                    <small th:if="${demande.dateTraitement != null}" 
+                                           th:text="${demande.formattedDateTraitement}">01/01/2024 15:45</small>
+                                    <span th:if="${demande.dateTraitement == null}" class="text-muted">-</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/rh/demandes/{id}(id=${demande.idDemandeOffre})}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Voir les détails">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        
+                                        <div th:if="${demande.enAttente}" class="btn-group btn-group-sm" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-success btn-sm" 
+                                                    th:onclick="'accepterDemande(' + ${demande.idDemandeOffre} + ')'"
+                                                    title="Accepter la demande">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm" 
+                                                    th:onclick="'refuserDemande(' + ${demande.idDemandeOffre} + ')'"
+                                                    title="Refuser la demande">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'acceptation -->
+    <div class="modal fade" id="modalAccepter" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formAccepter" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Accepter la demande
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir accepter cette demande d'offre ?</p>
+                        <p class="text-success"><strong>Une offre d'emploi sera automatiquement créée.</strong></p>
+                        
+                        <div class="mb-3">
+                            <label for="commentaireAcceptation" class="form-label">Commentaire (optionnel)</label>
+                            <textarea name="commentaire" id="commentaireAcceptation" 
+                                      class="form-control" rows="3"
+                                      placeholder="Commentaire sur l'acceptation de la demande..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i>
+                            Accepter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de refus -->
+    <div class="modal fade" id="modalRefuser" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formRefuser" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-x-circle text-danger"></i>
+                            Refuser la demande
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir refuser cette demande d'offre ?</p>
+                        
+                        <div class="mb-3">
+                            <label for="commentaireRefus" class="form-label">
+                                Motif du refus <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="commentaire" id="commentaireRefus" 
+                                      class="form-control" rows="3" required
+                                      placeholder="Veuillez expliquer pourquoi cette demande est refusée..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-lg"></i>
+                            Refuser
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>
