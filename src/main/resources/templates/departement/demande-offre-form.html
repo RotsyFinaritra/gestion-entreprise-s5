@@ -77,11 +77,11 @@
                                 </div>
                             </div>
 
-                            <!-- Description du poste -->
+                            <!-- Description du poste (missions) -->
                             <div class="mb-3">
                                 <label for="descriptionPoste" class="form-label">
                                     <i class="bi bi-text-paragraph me-1"></i>
-                                    Description du poste <span class="text-danger">*</span>
+                                    Description du poste et missions <span class="text-danger">*</span>
                                 </label>
                                 <textarea class="form-control" 
                                           id="descriptionPoste" 
@@ -90,33 +90,50 @@
                                           placeholder="Décrivez les missions principales, responsabilités et objectifs du poste..."
                                           required></textarea>
                                 <div class="form-text">
-                                    Description détaillée des missions et responsabilités
+                                    Description détaillée des missions et responsabilités (sera utilisée dans l'offre)
                                 </div>
                             </div>
 
-                            <!-- Type de contrat -->
+                            <!-- Description de l'entreprise -->
+                            <div class="mb-3">
+                                <label for="descriptionEntreprise" class="form-label">
+                                    <i class="bi bi-building me-1"></i>
+                                    Description de l'entreprise
+                                </label>
+                                <textarea class="form-control" 
+                                          id="descriptionEntreprise" 
+                                          th:field="*{descriptionEntreprise}"
+                                          rows="3"
+                                          placeholder="Présentez votre entreprise, son secteur d'activité, ses valeurs..."></textarea>
+                                <div class="form-text">
+                                    Présentation qui apparaîtra dans l'offre d'emploi
+                                </div>
+                            </div>
+
+                            <!-- Type de contrat et niveau d'expérience -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="typeContrat" class="form-label">
                                         <i class="bi bi-file-text me-1"></i>
-                                        Type de contrat
+                                        Type de contrat <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select" id="typeContrat" th:field="*{typeContrat}">
-                                        <option value="">-- Non spécifié --</option>
+                                    <select class="form-select" id="typeContrat" th:field="*{typeContrat}" required>
+                                        <option value="">-- Sélectionner --</option>
                                         <option value="CDI">CDI</option>
                                         <option value="CDD">CDD</option>
                                         <option value="STAGE">Stage</option>
                                         <option value="ALTERNANCE">Alternance</option>
                                         <option value="FREELANCE">Freelance</option>
+                                        <option value="INTERIM">Intérim</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="niveauExperience" class="form-label">
                                         <i class="bi bi-star me-1"></i>
-                                        Niveau d'expérience
+                                        Niveau d'expérience <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select" id="niveauExperience" th:field="*{niveauExperience}">
-                                        <option value="">-- Non spécifié --</option>
+                                    <select class="form-select" id="niveauExperience" th:field="*{niveauExperience}" required>
+                                        <option value="">-- Sélectionner --</option>
                                         <option value="DEBUTANT">Débutant (0-2 ans)</option>
                                         <option value="JUNIOR">Junior (2-5 ans)</option>
                                         <option value="SENIOR">Senior (5-10 ans)</option>
@@ -137,7 +154,8 @@
                                            id="salaireMin" 
                                            th:field="*{salaireMin}"
                                            placeholder="Ex: 35000"
-                                           min="0">
+                                           min="0"
+                                           step="100">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="salaireMax" class="form-label">
@@ -149,7 +167,8 @@
                                            id="salaireMax" 
                                            th:field="*{salaireMax}"
                                            placeholder="Ex: 45000"
-                                           min="0">
+                                           min="0"
+                                           step="100">
                                 </div>
                             </div>
 
@@ -157,18 +176,19 @@
                             <div class="mb-3">
                                 <label for="local" class="form-label">
                                     <i class="bi bi-geo-alt me-1"></i>
-                                    Localisation
+                                    Localisation <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" 
                                         id="local" 
-                                        th:field="*{local}">
-                                    <option value="">Sélectionner un local...</option>
+                                        th:field="*{local.idLocal}" 
+                                        required>
+                                    <option value="">-- Sélectionner un local --</option>
                                     <option th:each="local : ${locaux}" 
                                             th:value="${local.idLocal}" 
                                             th:text="${local.nom}">Local name</option>
                                 </select>
                                 <div class="form-text">
-                                    Lieu de travail principal
+                                    Lieu de travail principal (obligatoire pour l'offre)
                                 </div>
                             </div>
 
@@ -176,18 +196,19 @@
                             <div class="mb-3">
                                 <label for="formation" class="form-label">
                                     <i class="bi bi-mortarboard me-1"></i>
-                                    Formation requise
+                                    Formation requise <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" 
                                         id="formation" 
-                                        th:field="*{formation}">
-                                    <option value="">Sélectionner une formation...</option>
+                                        th:field="*{formation.idFormation}"
+                                        required>
+                                    <option value="">-- Sélectionner une formation --</option>
                                     <option th:each="formation : ${formations}" 
                                             th:value="${formation.idFormation}" 
                                             th:text="${formation.nom}">Formation name</option>
                                 </select>
                                 <div class="form-text">
-                                    Formation ou diplôme exigé pour le poste
+                                    Formation ou diplôme exigé pour le poste (obligatoire pour l'offre)
                                 </div>
                             </div>
 
@@ -196,7 +217,7 @@
                                 <div class="col-md-6">
                                     <label for="ageMin" class="form-label">
                                         <i class="bi bi-person me-1"></i>
-                                        Âge minimum
+                                        Âge minimum <span class="text-danger">*</span>
                                     </label>
                                     <input type="number" 
                                            class="form-control" 
@@ -204,12 +225,13 @@
                                            th:field="*{ageMin}"
                                            placeholder="Ex: 25"
                                            min="16"
-                                           max="65">
+                                           max="65"
+                                           required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="ageMax" class="form-label">
                                         <i class="bi bi-person me-1"></i>
-                                        Âge maximum
+                                        Âge maximum <span class="text-danger">*</span>
                                     </label>
                                     <input type="number" 
                                            class="form-control" 
@@ -217,7 +239,8 @@
                                            th:field="*{ageMax}"
                                            placeholder="Ex: 45"
                                            min="16"
-                                           max="65">
+                                           max="65"
+                                           required>
                                 </div>
                             </div>
 
@@ -225,7 +248,7 @@
                             <div class="mb-3">
                                 <label for="nbrPersonne" class="form-label">
                                     <i class="bi bi-people me-1"></i>
-                                    Nombre de personnes à recruter
+                                    Nombre de personnes à recruter <span class="text-danger">*</span>
                                 </label>
                                 <input type="number" 
                                        class="form-control" 
@@ -233,9 +256,10 @@
                                        th:field="*{nbrPersonne}"
                                        placeholder="Ex: 2"
                                        min="1"
-                                       max="50">
+                                       max="50"
+                                       required>
                                 <div class="form-text">
-                                    Nombre de postes à pourvoir pour cette demande
+                                    Nombre de postes à pourvoir pour cette offre
                                 </div>
                             </div>
 
@@ -249,8 +273,36 @@
                                           id="avantages" 
                                           th:field="*{avantages}"
                                           rows="3"
-                                          placeholder="Ex: Tickets restaurant, mutuelle, formations, télétravail..."></textarea>
+                                          placeholder="Ex: Tickets restaurant, mutuelle, formations, télétravail, RTT supplémentaires..."></textarea>
+                                <div class="form-text">
+                                    Avantages qui apparaîtront dans l'offre d'emploi
+                                </div>
                             </div>
+
+                            <!-- Date limite de candidature -->
+                            <div class="mb-4">
+                                <label for="dateLimiteCandidature" class="form-label">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Date limite de candidature
+                                </label>
+                                <input type="datetime-local" 
+                                       class="form-control" 
+                                       id="dateLimiteCandidature" 
+                                       th:field="*{dateLimiteCandidature}">
+                                <div class="form-text">
+                                    Date limite pour recevoir les candidatures (optionnel)
+                                </div>
+                            </div>
+
+                            <!-- Séparateur -->
+                            <hr class="my-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-clipboard-check me-2"></i>
+                                Informations de la demande
+                            </h5>
+                            <p class="text-muted small mb-4">
+                                Ces informations sont pour le traitement interne de la demande par les RH.
+                            </p>
 
                             <!-- Priorité -->
                             <div class="mb-3">
@@ -318,7 +370,7 @@
                     <div class="card-header">
                         <h6 class="card-title mb-0">
                             <i class="bi bi-info-circle me-2"></i>
-                            Processus de demande
+                            Processus de validation
                         </h6>
                     </div>
                     <div class="card-body">
@@ -327,21 +379,21 @@
                                 <div class="timeline-marker bg-primary"></div>
                                 <div class="timeline-content">
                                     <h6 class="timeline-title">1. Soumission</h6>
-                                    <p class="timeline-text">Vous envoyez votre demande aux RH</p>
+                                    <p class="timeline-text">Vous remplissez et envoyez cette demande avec tous les détails de l'offre</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-marker bg-warning"></div>
                                 <div class="timeline-content">
-                                    <h6 class="timeline-title">2. Évaluation</h6>
-                                    <p class="timeline-text">L'équipe RH examine votre demande</p>
+                                    <h6 class="timeline-title">2. Validation RH</h6>
+                                    <p class="timeline-text">L'équipe RH examine et valide votre demande</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-marker bg-success"></div>
                                 <div class="timeline-content">
                                     <h6 class="timeline-title">3. Publication</h6>
-                                    <p class="timeline-text">Si acceptée, l'offre est publiée</p>
+                                    <p class="timeline-text">L'offre est automatiquement créée et publiée</p>
                                 </div>
                             </div>
                         </div>
@@ -352,28 +404,51 @@
                     <div class="card-header">
                         <h6 class="card-title mb-0">
                             <i class="bi bi-lightbulb me-2"></i>
-                            Conseils
+                            Conseils pour l'offre
                         </h6>
                     </div>
                     <div class="card-body">
                         <ul class="list-unstyled small">
                             <li class="mb-2">
                                 <i class="bi bi-check text-success me-2"></i>
-                                Soyez précis dans la description du poste
+                                <strong>Titre attractif :</strong> Utilisez des mots-clés pertinents
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-check text-success me-2"></i>
-                                Justifiez clairement le besoin de recrutement
+                                <strong>Description complète :</strong> Détaillez missions et objectifs
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-check text-success me-2"></i>
-                                Indiquez une fourchette salariale réaliste
+                                <strong>Exigences claires :</strong> Formation et expérience requises
                             </li>
                             <li class="mb-2">
                                 <i class="bi bi-check text-success me-2"></i>
-                                Mentionnez les avantages attractifs
+                                <strong>Avantages :</strong> Mentionnez ce qui rend le poste attractif
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check text-success me-2"></i>
+                                <strong>Justification solide :</strong> Expliquez le besoin de recrutement
                             </li>
                         </ul>
+                    </div>
+                </div>
+
+                <div class="card mt-3 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            Important
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small mb-2">
+                            <i class="bi bi-info-circle text-info me-2"></i>
+                            Cette demande contient toutes les informations nécessaires pour créer l'offre d'emploi.
+                        </p>
+                        <p class="small mb-0">
+                            <i class="bi bi-shield-check text-success me-2"></i>
+                            Une fois validée par les RH, l'offre sera automatiquement publiée avec ces informations.
+                        </p>
                     </div>
                 </div>
             </div>

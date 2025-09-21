@@ -6,12 +6,14 @@ import com.entreprise.model.Formation;
 import com.entreprise.model.Competance;
 import com.entreprise.model.Poste;
 import com.entreprise.model.User;
+import com.entreprise.model.StatutDemande;
 import com.entreprise.service.DemandeOffreService;
 import com.entreprise.service.LocalService;
 import com.entreprise.service.FormationService;
 import com.entreprise.service.CompetanceService;
 import com.entreprise.service.PosteService;
 import com.entreprise.service.UserService;
+import com.entreprise.service.StatutDemandeService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +46,9 @@ public class DepartementController {
     
     @Autowired
     private CompetanceService competanceService;
+
+    @Autowired
+    private StatutDemandeService statutDemandeService;
 
     // Tableau de bord du département
     @GetMapping("/dashboard")
@@ -382,7 +388,11 @@ public class DepartementController {
      * Sauvegarde une nouvelle demande d'offre
      */
     @PostMapping("/demandes/sauvegarder")
-    public String sauvegarderDemande(@ModelAttribute DemandeOffre demandeOffre, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String sauvegarderDemande(
+            @ModelAttribute DemandeOffre demandeOffre, 
+            HttpSession session, 
+            RedirectAttributes redirectAttributes) {
+        
         if (!userService.isDepartement(session)) {
             redirectAttributes.addFlashAttribute("error", "Accès refusé.");
             return "redirect:/login";
@@ -391,13 +401,91 @@ public class DepartementController {
         Optional<User> currentUser = userService.getCurrentUser(session);
         if (currentUser.isPresent()) {
             User departement = currentUser.get();
-            demandeOffre.setDepartement(departement);
             
             try {
+                // Configurer les informations de base de la demande
+                demandeOffre.setDepartement(departement);
+                demandeOffre.setDateCreation(LocalDateTime.now());
+                demandeOffre.setDateModification(LocalDateTime.now());
+                
+                // Définir le statut initial si pas déjà défini
+                if (demandeOffre.getStatutDemande() == null) {
+                    // Récupérer le statut "EN_ATTENTE" depuis le service
+                    StatutDemande statutEnAttente = statutDemandeService.getStatutEnAttente();
+                    if (statutEnAttente != null) {
+                        demandeOffre.setStatutDemande(statutEnAttente);
+                    }
+                }
+
+                // Récupérer et associer le poste sélectionné
+                if (demandeOffre.getPoste() != null && demandeOffre.getPoste().getIdPoste() != null) {
+                    Optional<Poste> posteOpt = posteService.findById(demandeOffre.getPoste().getIdPoste());
+                    if (posteOpt.isPresent()) {
+                        demandeOffre.setPoste(posteOpt.get());
+                    } else {
+                        redirectAttributes.addFlashAttribute("error", "Poste sélectionné introuvable");
+                        return "redirect:/departement/demandes/nouvelle";
+                    }
+                }
+
+                // Récupérer et associer le local sélectionné si spécifié
+                if (demandeOffre.getLocal() != null && demandeOffre.getLocal().getIdLocal() != null) {
+                    Optional<Local> localOpt = localService.findById(demandeOffre.getLocal().getIdLocal());
+                    if (localOpt.isPresent()) {
+                        demandeOffre.setLocal(localOpt.get());
+                    } else {
+                        redirectAttributes.addFlashAttribute("error", "Local sélectionné introuvable");
+                        return "redirect:/departement/demandes/nouvelle";
+                    }
+                } else {
+                    demandeOffre.setLocal(null);
+                }
+
+                // Récupérer et associer la formation sélectionnée si spécifiée
+                if (demandeOffre.getFormation() != null && demandeOffre.getFormation().getIdFormation() != null) {
+                    Optional<Formation> formationOpt = formationService.findById(demandeOffre.getFormation().getIdFormation());
+                    if (formationOpt.isPresent()) {
+                        demandeOffre.setFormation(formationOpt.get());
+                    } else {
+                        redirectAttributes.addFlashAttribute("error", "Formation sélectionnée introuvable");
+                        return "redirect:/departement/demandes/nouvelle";
+                    }
+                } else {
+                    demandeOffre.setFormation(null);
+                }
+
+                // Valider les données obligatoires
+                if (demandeOffre.getTitreOffre() == null || demandeOffre.getTitreOffre().trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Le titre de l'offre est obligatoire");
+                    return "redirect:/departement/demandes/nouvelle";
+                }
+
+                if (demandeOffre.getDescriptionPoste() == null || demandeOffre.getDescriptionPoste().trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "La description du poste est obligatoire");
+                    return "redirect:/departement/demandes/nouvelle";
+                }
+
+                if (demandeOffre.getTypeContrat() == null || demandeOffre.getTypeContrat().trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Le type de contrat est obligatoire");
+                    return "redirect:/departement/demandes/nouvelle";
+                }
+
+                if (demandeOffre.getNiveauExperience() == null || demandeOffre.getNiveauExperience().trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "Le niveau d'expérience est obligatoire");
+                    return "redirect:/departement/demandes/nouvelle";
+                }
+
+                // Sauvegarder la demande
                 demandeOffreService.save(demandeOffre);
-                redirectAttributes.addFlashAttribute("success", 
-                    "Demande d'offre envoyée avec succès ! Elle sera traitée par l'équipe RH.");
+                
+                String messageSucces = String.format(
+                    "Demande d'offre \"%s\" envoyée avec succès ! Elle sera traitée par l'équipe RH.", 
+                    demandeOffre.getTitreOffre()
+                );
+                
+                redirectAttributes.addFlashAttribute("success", messageSucces);
                 return "redirect:/departement/demandes";
+                
             } catch (Exception e) {
                 redirectAttributes.addFlashAttribute("error", 
                     "Erreur lors de l'envoi de la demande : " + e.getMessage());

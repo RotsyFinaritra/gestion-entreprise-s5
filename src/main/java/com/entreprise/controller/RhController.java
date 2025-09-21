@@ -226,25 +226,50 @@ public class RhController {
         try {
             Offre offre = new Offre();
             
-            // Copier les informations de base de la demande vers l'offre
+            // Copier toutes les informations de la demande vers l'offre
+            // Informations de base
+            offre.setPoste(demande.getPoste());
+            offre.setFormation(demande.getFormation());
+            offre.setLocal(demande.getLocal());
+            
+            // Description et missions (correspond au champ mission dans Offre)
             offre.setMission(demande.getDescriptionPoste());
+            
+            // Dates
             offre.setDateCreation(LocalDateTime.now().toLocalDate());
             offre.setDatePublication(LocalDateTime.now().toLocalDate());
             
-            // Associer le poste si disponible
-            if (demande.getPoste() != null) {
-                offre.setPoste(demande.getPoste());
+            // Si une date limite est spécifiée, calculer la date de fin
+            if (demande.getDateLimiteCandidature() != null) {
+                offre.setDateFin(demande.getDateLimiteCandidature().toLocalDate());
+            } else {
+                // Date de fin par défaut : 1 mois après la publication
+                offre.setDateFin(LocalDateTime.now().plusMonths(1).toLocalDate());
             }
             
-            // Associer la demande d'offre
+            // Critères d'âge
+            offre.setAgeMin(demande.getAgeMin());
+            offre.setAgeMax(demande.getAgeMax());
+            
+            // Nombre de personnes à recruter
+            offre.setNbrPersonne(demande.getNbrPersonne());
+            
+            // Associer la demande d'offre à l'offre créée
             offre.setDemandeOffre(demande);
 
             // Sauvegarder l'offre
             offreService.save(offre);
+            
+            // Mettre à jour la demande avec la référence vers l'offre créée
+            demande.setOffre(offre);
+            demandeOffreService.save(demande);
+            
+            System.out.println("Offre d'emploi créée avec succès pour la demande #" + demande.getIdDemandeOffre());
 
         } catch (Exception e) {
             // Log l'erreur mais ne pas faire échouer l'acceptation de la demande
             System.err.println("Erreur lors de la création automatique de l'offre : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
