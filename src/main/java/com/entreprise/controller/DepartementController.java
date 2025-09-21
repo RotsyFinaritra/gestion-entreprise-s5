@@ -3,11 +3,13 @@ package com.entreprise.controller;
 import com.entreprise.model.DemandeOffre;
 import com.entreprise.model.Local;
 import com.entreprise.model.Formation;
+import com.entreprise.model.Competance;
 import com.entreprise.model.Poste;
 import com.entreprise.model.User;
 import com.entreprise.service.DemandeOffreService;
 import com.entreprise.service.LocalService;
 import com.entreprise.service.FormationService;
+import com.entreprise.service.CompetanceService;
 import com.entreprise.service.PosteService;
 import com.entreprise.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -38,6 +40,9 @@ public class DepartementController {
     
     @Autowired
     private FormationService formationService;
+    
+    @Autowired
+    private CompetanceService competanceService;
 
     // Tableau de bord du département
     @GetMapping("/dashboard")
@@ -113,6 +118,10 @@ public class DepartementController {
             model.addAttribute("pageDescription", "Créer un nouveau poste pour votre département");
             model.addAttribute("activeSection", "postes");
             
+            // Ajouter les listes de compétences et formations
+            model.addAttribute("competences", competanceService.findAll());
+            model.addAttribute("formations", formationService.findAll());
+            
             return "departement/poste-form";
         } else {
             redirectAttributes.addFlashAttribute("error", "Session invalide.");
@@ -122,7 +131,11 @@ public class DepartementController {
 
     // Sauvegarder un nouveau poste
     @PostMapping("/postes/sauvegarder")
-    public String sauvegarderPoste(@ModelAttribute Poste poste, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String sauvegarderPoste(@ModelAttribute Poste poste, 
+                                   @RequestParam(value = "competencesIds", required = false) List<Long> competencesIds,
+                                   @RequestParam(value = "formationsIds", required = false) List<Long> formationsIds,
+                                   HttpSession session, 
+                                   RedirectAttributes redirectAttributes) {
         if (!userService.isDepartement(session)) {
             redirectAttributes.addFlashAttribute("error", "Accès refusé.");
             return "redirect:/login";
@@ -134,7 +147,19 @@ public class DepartementController {
             poste.setDepartement(departement);
             
             try {
-                posteService.save(poste);
+                // Sauvegarder le poste
+                Poste savedPoste = posteService.save(poste);
+                
+                // Associer les compétences si elles sont sélectionnées
+                if (competencesIds != null && !competencesIds.isEmpty()) {
+                    posteService.associateCompetences(savedPoste.getIdPoste(), competencesIds);
+                }
+                
+                // Associer les formations si elles sont sélectionnées
+                if (formationsIds != null && !formationsIds.isEmpty()) {
+                    posteService.associateFormations(savedPoste.getIdPoste(), formationsIds);
+                }
+                
                 redirectAttributes.addFlashAttribute("success", "Poste créé avec succès !");
                 return "redirect:/departement/postes";
             } catch (Exception e) {
@@ -174,6 +199,21 @@ public class DepartementController {
             model.addAttribute("pageDescription", "Modifier le poste : " + poste.getNom());
             model.addAttribute("activeSection", "postes");
             
+            // Ajouter les listes de compétences et formations
+            model.addAttribute("competences", competanceService.findAll());
+            model.addAttribute("formations", formationService.findAll());
+            
+            // Ajouter les IDs des compétences et formations déjà associées
+            List<Long> competencesIds = poste.getPosteCompetances().stream()
+                .map(pc -> pc.getCompetance().getIdCompetance())
+                .collect(java.util.stream.Collectors.toList());
+            List<Long> formationsIds = poste.getPosteFormations().stream()
+                .map(pf -> pf.getFormation().getIdFormation())
+                .collect(java.util.stream.Collectors.toList());
+            
+            model.addAttribute("selectedCompetencesIds", competencesIds);
+            model.addAttribute("selectedFormationsIds", formationsIds);
+            
             return "departement/poste-form";
         } else {
             redirectAttributes.addFlashAttribute("error", "Poste non trouvé ou session invalide.");
@@ -183,7 +223,12 @@ public class DepartementController {
 
     // Mettre à jour un poste
     @PostMapping("/postes/modifier/{id}")
-    public String mettreAJourPoste(@PathVariable Long id, @ModelAttribute Poste poste, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String mettreAJourPoste(@PathVariable Long id, 
+                                   @ModelAttribute Poste poste,
+                                   @RequestParam(value = "competencesIds", required = false) List<Long> competencesIds,
+                                   @RequestParam(value = "formationsIds", required = false) List<Long> formationsIds,
+                                   HttpSession session, 
+                                   RedirectAttributes redirectAttributes) {
         if (!userService.isDepartement(session)) {
             redirectAttributes.addFlashAttribute("error", "Accès refusé.");
             return "redirect:/login";
@@ -196,7 +241,25 @@ public class DepartementController {
             poste.setDepartement(departement);
             
             try {
-                posteService.save(poste);
+                // Sauvegarder le poste
+                Poste savedPoste = posteService.save(poste);
+                
+                // Mettre à jour les associations de compétences
+                if (competencesIds != null && !competencesIds.isEmpty()) {
+                    posteService.associateCompetences(savedPoste.getIdPoste(), competencesIds);
+                } else {
+                    // Si aucune compétence sélectionnée, supprimer toutes les associations
+                    posteService.associateCompetences(savedPoste.getIdPoste(), new java.util.ArrayList<>());
+                }
+                
+                // Mettre à jour les associations de formations
+                if (formationsIds != null && !formationsIds.isEmpty()) {
+                    posteService.associateFormations(savedPoste.getIdPoste(), formationsIds);
+                } else {
+                    // Si aucune formation sélectionnée, supprimer toutes les associations
+                    posteService.associateFormations(savedPoste.getIdPoste(), new java.util.ArrayList<>());
+                }
+                
                 redirectAttributes.addFlashAttribute("success", "Poste modifié avec succès !");
                 return "redirect:/departement/postes";
             } catch (Exception e) {
@@ -380,5 +443,275 @@ public class DepartementController {
             redirectAttributes.addFlashAttribute("error", "Demande non trouvée.");
             return "redirect:/departement/demandes";
         }
+    }
+    
+    // ===============================
+    // GESTION DES COMPÉTENCES
+    // ===============================
+    
+    /**
+     * Liste des compétences du département
+     */
+    @GetMapping("/competences")
+    public String listCompetences(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            List<Competance> competences = competanceService.findAll();
+            
+            model.addAttribute("competences", competences);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Gestion des Compétences - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Gérer les compétences requises pour vos postes");
+            model.addAttribute("activeSection", "competences");
+            
+            return "departement/competences-list";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Formulaire de création d'une compétence
+     */
+    @GetMapping("/competences/nouvelle")
+    public String nouvelleCompetence(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            Competance competence = new Competance();
+            
+            model.addAttribute("competence", competence);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Nouvelle Compétence - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Ajouter une nouvelle compétence");
+            model.addAttribute("activeSection", "competences");
+            
+            return "departement/competence-form";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Sauvegarde d'une compétence
+     */
+    @PostMapping("/competences/sauvegarder")
+    public String sauvegarderCompetence(@ModelAttribute Competance competence, 
+                                      HttpSession session, 
+                                      RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+        
+        try {
+            competanceService.save(competence);
+            redirectAttributes.addFlashAttribute("success", "Compétence enregistrée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/competences";
+    }
+    
+    /**
+     * Modifier une compétence
+     */
+    @GetMapping("/competences/modifier/{id}")
+    public String modifierCompetence(@PathVariable Long id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            Optional<Competance> competenceOpt = competanceService.findById(id);
+            
+            if (competenceOpt.isPresent()) {
+                model.addAttribute("competence", competenceOpt.get());
+                model.addAttribute("departement", departement);
+                model.addAttribute("pageTitle", "Modifier Compétence - " + competenceOpt.get().getNom());
+                model.addAttribute("pageDescription", "Modifier les informations de la compétence");
+                model.addAttribute("activeSection", "competences");
+                
+                return "departement/competence-form";
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Compétence non trouvée.");
+                return "redirect:/departement/competences";
+            }
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Supprimer une compétence
+     */
+    @GetMapping("/competences/supprimer/{id}")
+    public String supprimerCompetence(@PathVariable Long id, RedirectAttributes redirectAttributes, HttpSession session) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+        
+        try {
+            competanceService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Compétence supprimée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Impossible de supprimer cette compétence : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/competences";
+    }
+    
+    // ===============================
+    // GESTION DES FORMATIONS
+    // ===============================
+    
+    /**
+     * Liste des formations du département
+     */
+    @GetMapping("/formations")
+    public String listFormations(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            List<Formation> formations = formationService.findAll();
+            
+            model.addAttribute("formations", formations);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Gestion des Formations - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Gérer les formations requises pour vos postes");
+            model.addAttribute("activeSection", "formations");
+            
+            return "departement/formations-list";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Formulaire de création d'une formation
+     */
+    @GetMapping("/formations/nouvelle")
+    public String nouvelleFormation(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            Formation formation = new Formation();
+            
+            model.addAttribute("formation", formation);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Nouvelle Formation - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Ajouter une nouvelle formation");
+            model.addAttribute("activeSection", "formations");
+            
+            return "departement/formation-form";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Sauvegarde d'une formation
+     */
+    @PostMapping("/formations/sauvegarder")
+    public String sauvegarderFormation(@ModelAttribute Formation formation, 
+                                     HttpSession session, 
+                                     RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+        
+        try {
+            formationService.save(formation);
+            redirectAttributes.addFlashAttribute("success", "Formation enregistrée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/formations";
+    }
+    
+    /**
+     * Modifier une formation
+     */
+    @GetMapping("/formations/modifier/{id}")
+    public String modifierFormation(@PathVariable Long id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            Optional<Formation> formationOpt = formationService.findById(id);
+            
+            if (formationOpt.isPresent()) {
+                model.addAttribute("formation", formationOpt.get());
+                model.addAttribute("departement", departement);
+                model.addAttribute("pageTitle", "Modifier Formation - " + formationOpt.get().getNom());
+                model.addAttribute("pageDescription", "Modifier les informations de la formation");
+                model.addAttribute("activeSection", "formations");
+                
+                return "departement/formation-form";
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Formation non trouvée.");
+                return "redirect:/departement/formations";
+            }
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Supprimer une formation
+     */
+    @GetMapping("/formations/supprimer/{id}")
+    public String supprimerFormation(@PathVariable Long id, RedirectAttributes redirectAttributes, HttpSession session) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+        
+        try {
+            formationService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Formation supprimée avec succès !");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Impossible de supprimer cette formation : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/formations";
     }
 }

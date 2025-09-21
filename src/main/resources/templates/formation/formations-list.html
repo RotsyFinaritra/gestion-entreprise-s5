@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Gestion des Formations</title>
+</head>
+
+<body th:replace="~{departement-layout :: layout('formations', ~{::main})}">
+    <main>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Gestion des Formations</h1>
+            <a href="/departement/formations/nouvelle" class="btn btn-primary">
+                <i class="bi bi-plus me-2"></i>Nouvelle Formation
+            </a>
+        </div>
+
+        <!-- Alertes -->
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Carte principale -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(formations)}" class="text-center py-5 text-muted">
+                    <i class="bi bi-mortarboard display-1 mb-3"></i>
+                    <h5>Aucune formation enregistrée</h5>
+                    <p>Commencez par ajouter une nouvelle formation.</p>
+                    <a href="/departement/formations/nouvelle" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Nouvelle Formation
+                    </a>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(formations)}">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Nom</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Durée</th>
+                                    <th scope="col" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="formation : ${formations}">
+                                    <td>
+                                        <span class="badge bg-light text-dark" th:text="${formation.id}"></span>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${formation.nom}"></strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted" 
+                                              th:text="${formation.description != null ? formation.description : 'Aucune description'}"
+                                              th:title="${formation.description}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${formation.duree != null}" 
+                                              class="badge bg-info text-dark"
+                                              th:text="${formation.duree} + ' heures'"></span>
+                                        <span th:unless="${formation.duree != null}" 
+                                              class="text-muted">Non spécifiée</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/departement/formations/modifier/{id}(id=${formation.id})}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger btn-sm" 
+                                                    title="Supprimer"
+                                                    data-bs-toggle="modal" 
+                                                    th:data-bs-target="'#deleteModal' + ${formation.id}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal de confirmation de suppression -->
+                                        <div class="modal fade" th:id="'deleteModal' + ${formation.id}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirmer la suppression</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Êtes-vous sûr de vouloir supprimer la formation 
+                                                           <strong th:text="${formation.nom}"></strong> ?</p>
+                                                        <div class="alert alert-warning">
+                                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                                            Cette action est irréversible.
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            Annuler
+                                                        </button>
+                                                        <a th:href="@{/departement/formations/supprimer/{id}(id=${formation.id})}" 
+                                                           class="btn btn-danger">
+                                                            Supprimer
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

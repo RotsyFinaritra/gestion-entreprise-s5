@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout('Formation', ~{::content})}">
+
+<head>
+    <title th:text="${formation.idFormation != null ? 'Modifier la Formation' : 'Nouvelle Formation'}">Formation</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1" th:text="${formation.idFormation != null ? 'Modifier la Formation' : 'Nouvelle Formation'}">
+                    Formation
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="/departement/formations" class="text-decoration-none">Formations</a>
+                        </li>
+                        <li class="breadcrumb-item active" 
+                            th:text="${formation.idFormation != null ? 'Modifier' : 'Nouvelle'}">
+                            Nouvelle
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <a href="/departement/formations" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Retour
+            </a>
+        </div>
+
+        <!-- Alertes -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-mortarboard me-2"></i>
+                            <span th:text="${formation.idFormation != null ? 'Informations de la Formation' : 'Nouvelle Formation'}">
+                                Informations de la Formation
+                            </span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/departement/formations/sauvegarder}" 
+                              th:object="${formation}" 
+                              method="post" 
+                              novalidate>
+                            
+                            <!-- ID caché pour les modifications -->
+                            <input type="hidden" th:field="*{idFormation}" />
+                            
+                            <!-- Nom de la formation -->
+                            <div class="mb-4">
+                                <label for="nom" class="form-label">
+                                    Nom de la formation <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       th:field="*{nom}"
+                                       th:classappend="${#fields.hasErrors('nom')} ? 'is-invalid' : ''"
+                                       id="nom" 
+                                       placeholder="Ex: Formation Java, Management d'équipe..."
+                                       required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}">
+                                    Erreur nom
+                                </div>
+                                <div class="form-text">
+                                    Saisissez le nom de la formation (obligatoire)
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="/departement/formations" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${formation.idFormation != null ? 'Modifier' : 'Créer'}">Créer</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

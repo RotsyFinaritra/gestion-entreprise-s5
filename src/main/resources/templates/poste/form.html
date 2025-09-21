@@ -67,6 +67,76 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-gear me-1"></i>
+                                    Compétences requises
+                                </label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <div th:if="${#lists.isEmpty(competences)}" class="text-muted text-center py-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Aucune compétence disponible. 
+                                        <a href="/departement/competences/nouvelle" target="_blank" class="text-decoration-none">
+                                            Créer une compétence
+                                        </a>
+                                    </div>
+                                    <div th:unless="${#lists.isEmpty(competences)}" class="row">
+                                        <div th:each="competence : ${competences}" class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       th:id="'competence_' + ${competence.id}"
+                                                       name="competencesIds"
+                                                       th:value="${competence.id}">
+                                                <label class="form-check-label" 
+                                                       th:for="'competence_' + ${competence.id}"
+                                                       th:text="${competence.nom}">
+                                                    Compétence
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">
+                                    Sélectionnez les compétences requises pour ce poste (optionnel)
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-mortarboard me-1"></i>
+                                    Formations requises
+                                </label>
+                                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <div th:if="${#lists.isEmpty(formations)}" class="text-muted text-center py-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Aucune formation disponible. 
+                                        <a href="/departement/formations/nouvelle" target="_blank" class="text-decoration-none">
+                                            Créer une formation
+                                        </a>
+                                    </div>
+                                    <div th:unless="${#lists.isEmpty(formations)}" class="row">
+                                        <div th:each="formation : ${formations}" class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="checkbox" 
+                                                       th:id="'formation_' + ${formation.id}"
+                                                       name="formationsIds"
+                                                       th:value="${formation.id}">
+                                                <label class="form-check-label" 
+                                                       th:for="'formation_' + ${formation.id}"
+                                                       th:text="${formation.nom}">
+                                                    Formation
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text">
+                                    Sélectionnez les formations requises pour ce poste (optionnel)
+                                </div>
+                            </div>
+
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                 <a href="/postes" class="btn btn-secondary me-md-2">
                                     <i class="bi bi-x-circle me-2"></i>

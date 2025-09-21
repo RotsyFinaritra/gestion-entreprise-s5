@@ -99,6 +99,20 @@
                         
                         <hr class="border-light my-3">
                         
+                        <div class="small text-white-50 mb-2 text-uppercase">Gestion</div>
+                        <a class="nav-link mb-2" th:href="@{/departement/competences}"
+                            th:classappend="${activeSection == 'competences' ? 'active' : ''}">
+                            <i class="bi bi-gear me-2"></i>
+                            Compétences
+                        </a>
+                        <a class="nav-link mb-2" th:href="@{/departement/formations}"
+                            th:classappend="${activeSection == 'formations' ? 'active' : ''}">
+                            <i class="bi bi-mortarboard me-2"></i>
+                            Formations
+                        </a>
+                        
+                        <hr class="border-light my-3">
+                        
                         <div class="small text-white-50 mb-2 text-uppercase">Recrutement</div>
                         <a class="nav-link mb-2" href="#" 
                             th:classappend="${activeSection == 'profils-requis' ? 'active' : ''}">
