@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Nouvelle Demande d'Offre - Département</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Header de la section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Nouvelle Demande d'Offre</h1>
+                <p class="text-muted mb-0" th:text="|Département: ${departement.nomDepartement}|">
+                    Département: Informatique
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/departement/demandes}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Retour aux demandes
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-send me-2"></i>
+                            Demande d'offre d'emploi
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/departement/demandes/sauvegarder}" 
+                              th:object="${demandeOffre}" 
+                              method="post">
+                            
+                            <!-- Sélection du poste -->
+                            <div class="mb-4">
+                                <label for="poste" class="form-label">
+                                    <i class="bi bi-briefcase me-1"></i>
+                                    Poste concerné <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" 
+                                        id="poste" 
+                                        th:field="*{poste.idPoste}" 
+                                        required>
+                                    <option value="">-- Sélectionnez un poste --</option>
+                                    <option th:each="poste : ${postes}" 
+                                            th:value="${poste.idPoste}" 
+                                            th:text="${poste.nom}">
+                                        Poste
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    Choisissez le poste pour lequel vous voulez publier une offre
+                                </div>
+                            </div>
+
+                            <!-- Titre de l'offre -->
+                            <div class="mb-3">
+                                <label for="titreOffre" class="form-label">
+                                    <i class="bi bi-card-heading me-1"></i>
+                                    Titre de l'offre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="titreOffre" 
+                                       th:field="*{titreOffre}"
+                                       placeholder="Ex: Développeur Full Stack H/F - CDI"
+                                       required>
+                                <div class="form-text">
+                                    Titre attractif qui apparaîtra dans l'offre publique
+                                </div>
+                            </div>
+
+                            <!-- Description du poste -->
+                            <div class="mb-3">
+                                <label for="descriptionPoste" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description du poste <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" 
+                                          id="descriptionPoste" 
+                                          th:field="*{descriptionPoste}"
+                                          rows="5"
+                                          placeholder="Décrivez les missions principales, responsabilités et objectifs du poste..."
+                                          required></textarea>
+                                <div class="form-text">
+                                    Description détaillée des missions et responsabilités
+                                </div>
+                            </div>
+
+                            <!-- Type de contrat -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="typeContrat" class="form-label">
+                                        <i class="bi bi-file-text me-1"></i>
+                                        Type de contrat
+                                    </label>
+                                    <select class="form-select" id="typeContrat" th:field="*{typeContrat}">
+                                        <option value="">-- Non spécifié --</option>
+                                        <option value="CDI">CDI</option>
+                                        <option value="CDD">CDD</option>
+                                        <option value="STAGE">Stage</option>
+                                        <option value="ALTERNANCE">Alternance</option>
+                                        <option value="FREELANCE">Freelance</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="niveauExperience" class="form-label">
+                                        <i class="bi bi-star me-1"></i>
+                                        Niveau d'expérience
+                                    </label>
+                                    <select class="form-select" id="niveauExperience" th:field="*{niveauExperience}">
+                                        <option value="">-- Non spécifié --</option>
+                                        <option value="DEBUTANT">Débutant (0-2 ans)</option>
+                                        <option value="JUNIOR">Junior (2-5 ans)</option>
+                                        <option value="SENIOR">Senior (5-10 ans)</option>
+                                        <option value="EXPERT">Expert (10+ ans)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Fourchette salariale -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="salaireMin" class="form-label">
+                                        <i class="bi bi-currency-euro me-1"></i>
+                                        Salaire minimum (€/an)
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="salaireMin" 
+                                           th:field="*{salaireMin}"
+                                           placeholder="Ex: 35000"
+                                           min="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="salaireMax" class="form-label">
+                                        <i class="bi bi-currency-euro me-1"></i>
+                                        Salaire maximum (€/an)
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="salaireMax" 
+                                           th:field="*{salaireMax}"
+                                           placeholder="Ex: 45000"
+                                           min="0">
+                                </div>
+                            </div>
+
+                            <!-- Localisation -->
+                            <div class="mb-3">
+                                <label for="local" class="form-label">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    Localisation
+                                </label>
+                                <select class="form-select" 
+                                        id="local" 
+                                        th:field="*{local}">
+                                    <option value="">Sélectionner un local...</option>
+                                    <option th:each="local : ${locaux}" 
+                                            th:value="${local.idLocal}" 
+                                            th:text="${local.nom}">Local name</option>
+                                </select>
+                                <div class="form-text">
+                                    Lieu de travail principal
+                                </div>
+                            </div>
+
+                            <!-- Formation requise -->
+                            <div class="mb-3">
+                                <label for="formation" class="form-label">
+                                    <i class="bi bi-mortarboard me-1"></i>
+                                    Formation requise
+                                </label>
+                                <select class="form-select" 
+                                        id="formation" 
+                                        th:field="*{formation}">
+                                    <option value="">Sélectionner une formation...</option>
+                                    <option th:each="formation : ${formations}" 
+                                            th:value="${formation.idFormation}" 
+                                            th:text="${formation.nom}">Formation name</option>
+                                </select>
+                                <div class="form-text">
+                                    Formation ou diplôme exigé pour le poste
+                                </div>
+                            </div>
+
+                            <!-- Âge requis -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="ageMin" class="form-label">
+                                        <i class="bi bi-person me-1"></i>
+                                        Âge minimum
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="ageMin" 
+                                           th:field="*{ageMin}"
+                                           placeholder="Ex: 25"
+                                           min="16"
+                                           max="65">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="ageMax" class="form-label">
+                                        <i class="bi bi-person me-1"></i>
+                                        Âge maximum
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="ageMax" 
+                                           th:field="*{ageMax}"
+                                           placeholder="Ex: 45"
+                                           min="16"
+                                           max="65">
+                                </div>
+                            </div>
+
+                            <!-- Nombre de personnes à recruter -->
+                            <div class="mb-3">
+                                <label for="nbrPersonne" class="form-label">
+                                    <i class="bi bi-people me-1"></i>
+                                    Nombre de personnes à recruter
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="nbrPersonne" 
+                                       th:field="*{nbrPersonne}"
+                                       placeholder="Ex: 2"
+                                       min="1"
+                                       max="50">
+                                <div class="form-text">
+                                    Nombre de postes à pourvoir pour cette demande
+                                </div>
+                            </div>
+
+                            <!-- Avantages -->
+                            <div class="mb-3">
+                                <label for="avantages" class="form-label">
+                                    <i class="bi bi-gift me-1"></i>
+                                    Avantages et bénéfices
+                                </label>
+                                <textarea class="form-control" 
+                                          id="avantages" 
+                                          th:field="*{avantages}"
+                                          rows="3"
+                                          placeholder="Ex: Tickets restaurant, mutuelle, formations, télétravail..."></textarea>
+                            </div>
+
+                            <!-- Priorité -->
+                            <div class="mb-3">
+                                <label for="priorite" class="form-label">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Priorité de la demande
+                                </label>
+                                <select class="form-select" id="priorite" th:field="*{priorite}">
+                                    <option value="BASSE">Basse - Pas d'urgence particulière</option>
+                                    <option value="NORMALE" selected>Normale - Dans les délais habituels</option>
+                                    <option value="HAUTE">Haute - Besoin important</option>
+                                    <option value="URGENTE">Urgente - Besoin immédiat</option>
+                                </select>
+                            </div>
+
+                            <!-- Justification -->
+                            <div class="mb-4">
+                                <label for="justification" class="form-label">
+                                    <i class="bi bi-journal-text me-1"></i>
+                                    Justification de la demande <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" 
+                                          id="justification" 
+                                          th:field="*{justification}"
+                                          rows="4"
+                                          placeholder="Expliquez pourquoi ce recrutement est nécessaire : charge de travail, nouveau projet, remplacement..."
+                                          required></textarea>
+                                <div class="form-text">
+                                    Expliquez le contexte et la nécessité de ce recrutement
+                                </div>
+                            </div>
+
+                            <!-- Commentaires additionnels -->
+                            <div class="mb-4">
+                                <label for="commentaireDepartement" class="form-label">
+                                    <i class="bi bi-chat-dots me-1"></i>
+                                    Commentaires additionnels
+                                </label>
+                                <textarea class="form-control" 
+                                          id="commentaireDepartement" 
+                                          th:field="*{commentaireDepartement}"
+                                          rows="3"
+                                          placeholder="Informations complémentaires pour l'équipe RH..."></textarea>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/departement/demandes}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send me-2"></i>
+                                    Envoyer la demande aux RH
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar avec informations utiles -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Processus de demande
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">1. Soumission</h6>
+                                    <p class="timeline-text">Vous envoyez votre demande aux RH</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">2. Évaluation</h6>
+                                    <p class="timeline-text">L'équipe RH examine votre demande</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">3. Publication</h6>
+                                    <p class="timeline-text">Si acceptée, l'offre est publiée</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            Conseils
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled small">
+                            <li class="mb-2">
+                                <i class="bi bi-check text-success me-2"></i>
+                                Soyez précis dans la description du poste
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check text-success me-2"></i>
+                                Justifiez clairement le besoin de recrutement
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check text-success me-2"></i>
+                                Indiquez une fourchette salariale réaliste
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check text-success me-2"></i>
+                                Mentionnez les avantages attractifs
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -23px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        .timeline-title {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin: 0;
+        }
+    </style>
+</body>
+
+</html>

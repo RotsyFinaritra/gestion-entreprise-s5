@@ -47,6 +47,13 @@ public class Offre {
 
     @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Candidat> candidats;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_demande_offre")
+    private DemandeOffre demandeOffre; // Demande d'offre qui a généré cette offre
+    
+    @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<StatutOffre> statutsOffre; // Historique des changements de statut
 
     // Constructeurs
     public Offre() {}
@@ -146,5 +153,21 @@ public class Offre {
 
     public void setCandidats(List<Candidat> candidats) {
         this.candidats = candidats;
+    }
+    
+    public DemandeOffre getDemandeOffre() {
+        return demandeOffre;
+    }
+    
+    public void setDemandeOffre(DemandeOffre demandeOffre) {
+        this.demandeOffre = demandeOffre;
+    }
+    
+    public List<StatutOffre> getStatutsOffre() {
+        return statutsOffre;
+    }
+    
+    public void setStatutsOffre(List<StatutOffre> statutsOffre) {
+        this.statutsOffre = statutsOffre;
     }
 }

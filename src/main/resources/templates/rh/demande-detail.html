@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: html(title='Détails de la demande', content=~{::content})}">
+<head>
+    <title>Détails de la demande</title>
+</head>
+<body>
+
+<div th:fragment="content">
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Détails de la demande #<span th:text="${demande.idDemandeOffre}"></span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Informations générales -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-primary">Informations générales</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Titre de l'offre :</strong></td>
+                                        <td th:text="${demande.titreOffre}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Poste :</strong></td>
+                                        <td th:text="${demande.poste.nom}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Département :</strong></td>
+                                        <td th:text="${demande.departement.nomDepartement}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Type de contrat :</strong></td>
+                                        <td th:text="${demande.typeContrat}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Statut :</strong></td>
+                                        <td>
+                                            <span class="badge" th:style="'background-color: ' + ${demande.statutDemande.couleur}" 
+                                                  th:text="${demande.statutDemande.libelle}"></span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary">Dates importantes</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Date de création :</strong></td>
+                                        <td th:text="${#temporals.format(demande.dateCreation, 'dd/MM/yyyy HH:mm')}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.dateTraitement != null}">
+                                        <td><strong>Date de traitement :</strong></td>
+                                        <td th:text="${#temporals.format(demande.dateTraitement, 'dd/MM/yyyy HH:mm')}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.dateLimiteCandidature != null}">
+                                        <td><strong>Date limite candidature :</strong></td>
+                                        <td th:text="${#temporals.format(demande.dateLimiteCandidature, 'dd/MM/yyyy')}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.userTraitement != null}">
+                                        <td><strong>Traité par :</strong></td>
+                                        <td th:text="${demande.userTraitement.nomDepartement}"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Description du poste -->
+                        <div class="mb-4">
+                            <h5 class="text-primary">Description du poste</h5>
+                            <p th:text="${demande.descriptionPoste}" class="text-muted"></p>
+                        </div>
+
+                        <!-- Informations sur l'entreprise -->
+                        <div class="mb-4" th:if="${demande.descriptionEntreprise != null}">
+                            <h5 class="text-primary">Description de l'entreprise</h5>
+                            <p th:text="${demande.descriptionEntreprise}" class="text-muted"></p>
+                        </div>
+
+                        <!-- Détails du poste -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-primary">Détails du poste</h5>
+                                <table class="table table-borderless">
+                                    <tr th:if="${demande.salaireMin != null || demande.salaireMax != null}">
+                                        <td><strong>Salaire :</strong></td>
+                                        <td>
+                                            <span th:if="${demande.salaireMin != null}" th:text="${demande.salaireMin} + ' €'"></span>
+                                            <span th:if="${demande.salaireMin != null && demande.salaireMax != null}"> - </span>
+                                            <span th:if="${demande.salaireMax != null}" th:text="${demande.salaireMax} + ' €'"></span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${demande.niveauExperience != null}">
+                                        <td><strong>Niveau d'expérience :</strong></td>
+                                        <td th:text="${demande.niveauExperience}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.local != null}">
+                                        <td><strong>Localisation :</strong></td>
+                                        <td th:text="${demande.nomLocal}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.formation != null}">
+                                        <td><strong>Formation requise :</strong></td>
+                                        <td th:text="${demande.nomFormation}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.ageMin != null || demande.ageMax != null}">
+                                        <td><strong>Âge requis :</strong></td>
+                                        <td th:text="${demande.plagesAge}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.nbrPersonne != null}">
+                                        <td><strong>Nombre de personnes :</strong></td>
+                                        <td th:text="${demande.formattedNbrPersonne}"></td>
+                                    </tr>
+                                    <tr th:if="${demande.priorite != null}">
+                                        <td><strong>Priorité :</strong></td>
+                                        <td th:text="${demande.priorite}"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6" th:if="${demande.avantages != null}">
+                                <h5 class="text-primary">Avantages</h5>
+                                <p th:text="${demande.avantages}" class="text-muted"></p>
+                            </div>
+                        </div>
+
+                        <!-- Justification -->
+                        <div class="mb-4" th:if="${demande.justification != null}">
+                            <h5 class="text-primary">Justification de la demande</h5>
+                            <p th:text="${demande.justification}" class="text-muted"></p>
+                        </div>
+
+                        <!-- Commentaires -->
+                        <div class="row mb-4">
+                            <div class="col-md-6" th:if="${demande.commentaireDepartement != null}">
+                                <h5 class="text-primary">Commentaire du département</h5>
+                                <p th:text="${demande.commentaireDepartement}" class="text-muted"></p>
+                            </div>
+                            <div class="col-md-6" th:if="${demande.commentaireRh != null}">
+                                <h5 class="text-primary">Commentaire RH</h5>
+                                <p th:text="${demande.commentaireRh}" class="text-muted"></p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 mt-4">
+                            <a th:href="@{/rh/demandes}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Retour à la liste
+                            </a>
+                            
+                            <!-- Actions disponibles selon le statut -->
+                            <div th:if="${demande.statutDemande.libelle == 'EN_ATTENTE'}">
+                                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#accepterModal">
+                                    <i class="fas fa-check me-2"></i>
+                                    Accepter
+                                </button>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#refuserModal">
+                                    <i class="fas fa-times me-2"></i>
+                                    Refuser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour accepter -->
+    <div class="modal fade" id="accepterModal" tabindex="-1" aria-labelledby="accepterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="accepterModalLabel">Accepter la demande</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/rh/demandes/{id}/accepter(id=${demande.idDemandeOffre})}" method="post">
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir accepter cette demande d'offre ?</p>
+                        <div class="mb-3">
+                            <label for="commentaireAcceptation" class="form-label">Commentaire (optionnel)</label>
+                            <textarea class="form-control" id="commentaireAcceptation" name="commentaire" rows="3" 
+                                      placeholder="Ajoutez un commentaire..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Confirmer l'acceptation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour refuser -->
+    <div class="modal fade" id="refuserModal" tabindex="-1" aria-labelledby="refuserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="refuserModalLabel">Refuser la demande</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/rh/demandes/{id}/refuser(id=${demande.idDemandeOffre})}" method="post">
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir refuser cette demande d'offre ?</p>
+                        <div class="mb-3">
+                            <label for="commentaireRefus" class="form-label">Commentaire (obligatoire)</label>
+                            <textarea class="form-control" id="commentaireRefus" name="commentaire" rows="3" 
+                                      placeholder="Expliquez la raison du refus..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Confirmer le refus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

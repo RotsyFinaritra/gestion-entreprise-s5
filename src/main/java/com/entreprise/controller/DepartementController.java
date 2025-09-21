@@ -1,7 +1,13 @@
 package com.entreprise.controller;
 
+import com.entreprise.model.DemandeOffre;
+import com.entreprise.model.Local;
+import com.entreprise.model.Formation;
 import com.entreprise.model.Poste;
 import com.entreprise.model.User;
+import com.entreprise.service.DemandeOffreService;
+import com.entreprise.service.LocalService;
+import com.entreprise.service.FormationService;
 import com.entreprise.service.PosteService;
 import com.entreprise.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -23,6 +29,15 @@ public class DepartementController {
 
     @Autowired
     private PosteService posteService;
+    
+    @Autowired
+    private DemandeOffreService demandeOffreService;
+    
+    @Autowired
+    private LocalService localService;
+    
+    @Autowired
+    private FormationService formationService;
 
     // Tableau de bord du département
     @GetMapping("/dashboard")
@@ -225,6 +240,145 @@ public class DepartementController {
         } else {
             redirectAttributes.addFlashAttribute("error", "Poste non trouvé.");
             return "redirect:/departement/postes";
+        }
+    }
+    
+    // ===== GESTION DES DEMANDES D'OFFRES =====
+    
+    /**
+     * Affiche la liste des demandes d'offres du département
+     */
+    @GetMapping("/demandes")
+    public String listDemandes(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            List<DemandeOffre> demandes = demandeOffreService.findByDepartement(departement);
+            
+            model.addAttribute("departement", departement);
+            model.addAttribute("demandes", demandes);
+            model.addAttribute("pageTitle", "Demandes aux RH - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Liste de vos demandes d'offres d'emploi");
+            model.addAttribute("activeSection", "demandes-rh");
+            
+            return "departement/demandes";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Session invalide.");
+            return "redirect:/login";
+        }
+    }
+    
+    /**
+     * Affiche le formulaire de nouvelle demande d'offre
+     */
+    @GetMapping("/demandes/nouvelle")
+    public String nouvelleDemande(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            List<Poste> postes = posteService.findByDepartement(departement);
+            
+            if (postes.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Vous devez d'abord créer des postes avant de demander une offre.");
+                return "redirect:/departement/postes/nouveau";
+            }
+            
+            DemandeOffre nouvelleDemande = new DemandeOffre();
+            
+            // Récupérer tous les locaux et formations
+            List<Local> locaux = localService.findAll();
+            List<Formation> formations = formationService.findAll();
+            
+            model.addAttribute("demandeOffre", nouvelleDemande);
+            model.addAttribute("departement", departement);
+            model.addAttribute("postes", postes);
+            model.addAttribute("locaux", locaux);
+            model.addAttribute("formations", formations);
+            model.addAttribute("pageTitle", "Nouvelle Demande d'Offre - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Demander aux RH de publier une offre d'emploi");
+            model.addAttribute("activeSection", "demandes-rh");
+            
+            return "departement/demande-offre-form";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Session invalide.");
+            return "redirect:/login";
+        }
+    }
+    
+    /**
+     * Sauvegarde une nouvelle demande d'offre
+     */
+    @PostMapping("/demandes/sauvegarder")
+    public String sauvegarderDemande(@ModelAttribute DemandeOffre demandeOffre, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            demandeOffre.setDepartement(departement);
+            
+            try {
+                demandeOffreService.save(demandeOffre);
+                redirectAttributes.addFlashAttribute("success", 
+                    "Demande d'offre envoyée avec succès ! Elle sera traitée par l'équipe RH.");
+                return "redirect:/departement/demandes";
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Erreur lors de l'envoi de la demande : " + e.getMessage());
+                return "redirect:/departement/demandes/nouvelle";
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Session invalide.");
+            return "redirect:/login";
+        }
+    }
+    
+    /**
+     * Affiche les détails d'une demande
+     */
+    @GetMapping("/demandes/{id}")
+    public String detailsDemande(@PathVariable Long id, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        Optional<DemandeOffre> demandeOpt = demandeOffreService.findById(id);
+        
+        if (currentUser.isPresent() && demandeOpt.isPresent()) {
+            User departement = currentUser.get();
+            DemandeOffre demande = demandeOpt.get();
+            
+            // Vérifier que la demande appartient bien au département connecté
+            if (!demande.getDepartement().getIdUser().equals(departement.getIdUser())) {
+                redirectAttributes.addFlashAttribute("error", "Cette demande n'appartient pas à votre département.");
+                return "redirect:/departement/demandes";
+            }
+            
+            model.addAttribute("demande", demande);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Détails Demande - " + demande.getTitreOffre());
+            model.addAttribute("pageDescription", "Détails de votre demande d'offre");
+            model.addAttribute("activeSection", "demandes-rh");
+            
+            return "departement/demande-details";
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Demande non trouvée.");
+            return "redirect:/departement/demandes";
         }
     }
 }
