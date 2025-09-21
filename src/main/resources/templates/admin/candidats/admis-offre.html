@@ -359,6 +359,16 @@
                                                     programmé
                                                 </span>
                                             </p>
+                                            <div class="text-center mt-3">
+                                                <a th:href="@{'/note-entretien/form/' + ${entretien.idEntretien}}" 
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-star me-1"></i>Noter
+                                                </a>
+                                                <a th:href="@{'/admin/candidats/detail/' + ${entretien.candidat.idCandidat}}" 
+                                                   class="btn btn-outline-secondary btn-sm ms-1">
+                                                    <i class="fas fa-user me-1"></i>Profil
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -368,8 +378,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     <script>
         // Définir la date minimum à aujourd'hui
         document.addEventListener('DOMContentLoaded', function() {

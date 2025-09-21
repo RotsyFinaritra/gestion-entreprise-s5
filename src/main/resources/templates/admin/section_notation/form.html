@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/sections-notation/list}" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="h4 mb-0" th:text="${section.idSection != null ? 'Modifier Section' : 'Nouvelle Section'}">Nouvelle Section</h2>
+            <p class="text-muted mb-0">Configurer une section d'évaluation pour les entretiens</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-form me-2"></i>
+                Informations de la Section
+            </h5>
+        </div>
+        <form method="post" 
+              th:action="${section.idSection != null ? '/admin/sections-notation/update/' + section.idSection : '/admin/sections-notation/save'}"
+              th:object="${section}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="poste" class="form-label">Poste <span class="text-danger">*</span></label>
+                            <select class="form-select" id="poste" name="poste.idPoste" required>
+                                <option value="">Sélectionner un poste</option>
+                                <option th:each="poste : ${postes}" 
+                                        th:value="${poste.idPoste}" 
+                                        th:text="${poste.nom}"
+                                        th:selected="${section.poste != null && section.poste.idPoste == poste.idPoste}">
+                                    Poste
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="nomSection" class="form-label">Nom de la Section <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nomSection" name="nomSection" 
+                                   th:value="${section.nomSection}" required
+                                   placeholder="Ex: Compétences techniques">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"
+                              th:text="${section.description}"
+                              placeholder="Description détaillée de cette section d'évaluation..."></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="noteMax" class="form-label">Note Maximum <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="noteMax" name="noteMax" 
+                                   th:value="${section.noteMax}" required min="1" max="100" step="1"
+                                   placeholder="20">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="ordreAffichage" class="form-label">Ordre d'Affichage</label>
+                            <input type="number" class="form-control" id="ordreAffichage" name="ordreAffichage" 
+                                   th:value="${section.ordreAffichage}" min="1" step="1"
+                                   placeholder="1 (automatique si non renseigné)">
+                            <div class="form-text">Ordre d'affichage dans les formulaires d'évaluation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a th:href="@{/admin/sections-notation/list}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span th:text="${section.idSection != null ? 'Modifier' : 'Créer'}">Créer</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Aide -->
+    <div class="card mt-4 border-info">
+        <div class="card-header bg-info bg-opacity-10">
+            <h6 class="card-title mb-0 text-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Aide
+            </h6>
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li><strong>Poste :</strong> Sélectionnez le poste pour lequel cette section sera utilisée</li>
+                <li><strong>Note Maximum :</strong> Définit la note maximale pour cette section (généralement 20)</li>
+                <li><strong>Ordre d'Affichage :</strong> Contrôle l'ordre d'apparition dans le formulaire d'évaluation</li>
+                <li><strong>Description :</strong> Aide les évaluateurs à comprendre ce qu'ils doivent noter</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</html>
