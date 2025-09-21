@@ -160,6 +160,11 @@
                             <i class="bi bi-graph-up-arrow me-2"></i>
                             Résultats Entretiens
                         </a>
+                        <a class="nav-link mb-2" th:href="@{/admin/engagements}"
+                            th:classappend="${activeSection == 'engagements' ? 'active' : ''}">
+                            <i class="bi bi-person-check-fill me-2"></i>
+                            Engagements à l'essai
+                        </a>
                         <a class="nav-link mb-2" th:href="@{/entretiens}"
                             th:classappend="${activeSection == 'entretiens' ? 'active' : ''}">
                             <i class="bi bi-calendar-event me-2"></i>

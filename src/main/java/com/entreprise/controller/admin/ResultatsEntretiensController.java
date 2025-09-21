@@ -172,6 +172,12 @@ public class ResultatsEntretiensController {
             long excellence = moyennesEntretiens.values().stream().filter(note -> note >= 16.0).count();
 
             model.addAttribute("offre", offre);
+            
+            // Debug: Vérifier la valeur nbrPersonne dans le controller d'affichage
+            System.out.println("DEBUG Controller - Offre ID: " + offre.getIdOffre());
+            System.out.println("DEBUG Controller - nbrPersonne: " + offre.getNbrPersonne());
+            System.out.println("DEBUG Controller - Offre complète: " + offre.toString());
+            
             model.addAttribute("entretiensOffre", entretiensOrdonnes);
             model.addAttribute("moyennesEntretiens", moyennesEntretiens);
             model.addAttribute("moyenneOffre", moyenneOffre);
