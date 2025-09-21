@@ -14,6 +14,11 @@ public class Poste {
     @Column(name = "nom")
     private String nom;
 
+    // Relation ManyToOne avec le département (User)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_departement", referencedColumnName = "id_user")
+    private User departement;
+
     @OneToMany(mappedBy = "poste", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Experience> experiences;
 
@@ -35,6 +40,11 @@ public class Poste {
     public Poste(String nom) {
         this.nom = nom;
     }
+    
+    public Poste(String nom, User departement) {
+        this.nom = nom;
+        this.departement = departement;
+    }
 
     // Getters et Setters
     public Long getIdPoste() {
@@ -51,6 +61,14 @@ public class Poste {
 
     public void setNom(String nom) {
         this.nom = nom;
+    }
+
+    public User getDepartement() {
+        return departement;
+    }
+
+    public void setDepartement(User departement) {
+        this.departement = departement;
     }
 
     public List<Experience> getExperiences() {

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Mes Postes - Département</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Header de la section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Mes Postes</h1>
+                <p class="text-muted mb-0" th:text="|Département: ${departement.nomDepartement}|">
+                    Département: Informatique
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/departement/postes/nouveau}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouveau Poste
+                </a>
+            </div>
+        </div>
+
+        <!-- Liste des postes -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-briefcase me-2"></i>
+                    Liste des postes (<span th:text="${#lists.size(postes)}">0</span>)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(postes)}" class="text-center py-5">
+                    <i class="bi bi-briefcase display-1 text-muted"></i>
+                    <h4 class="text-muted mt-3">Aucun poste créé</h4>
+                    <p class="text-muted">Votre département n'a encore créé aucun poste.</p>
+                    <a th:href="@{/departement/postes/nouveau}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Créer votre premier poste
+                    </a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(postes)}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom du Poste</th>
+                                    <th>Profils définis</th>
+                                    <th>Offres publiées</th>
+                                    <th>Compétences requises</th>
+                                    <th>Formations requises</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="poste : ${postes}">
+                                    <td>
+                                        <strong th:text="${poste.nom}">Développeur Full Stack</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary" th:text="${#lists.size(poste.profils)}">0</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success" th:text="${#lists.size(poste.offres)}">0</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info" th:text="${#lists.size(poste.posteCompetances)}">0</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning" th:text="${#lists.size(poste.posteFormations)}">0</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/departement/postes/modifier/{id}(id=${poste.idPoste})}" 
+                                               class="btn btn-outline-primary" title="Modifier le poste">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a th:href="@{/departement/postes/{id}/profil-requis(id=${poste.idPoste})}" 
+                                               class="btn btn-outline-success" title="Créer un profil requis">
+                                                <i class="bi bi-person-plus"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    th:data-bs-target="|#detailsModal${poste.idPoste}|"
+                                                    title="Voir les détails">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Actions en bas -->
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                Total: <strong th:text="${#lists.size(postes)}">0</strong> poste(s)
+                            </span>
+                        </div>
+                        <div>
+                            <a th:href="@{/departement/dashboard}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Retour au tableau de bord
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modales de détails pour chaque poste -->
+        <div th:each="poste : ${postes}">
+            <div class="modal fade" th:id="|detailsModal${poste.idPoste}|" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" th:text="|Détails: ${poste.nom}|">Détails du poste</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Profils définis:</h6>
+                                    <div th:if="${#lists.isEmpty(poste.profils)}" class="text-muted">
+                                        Aucun profil défini
+                                    </div>
+                                    <ul th:if="${!#lists.isEmpty(poste.profils)}" class="list-unstyled">
+                                        <li th:each="profil : ${poste.profils}" class="mb-2">
+                                            <div class="card card-body bg-light">
+                                                <small th:text="${profil.description}">Description du profil</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Compétences requises:</h6>
+                                    <div th:if="${#lists.isEmpty(poste.posteCompetances)}" class="text-muted">
+                                        Aucune compétence définie
+                                    </div>
+                                    <div th:if="${!#lists.isEmpty(poste.posteCompetances)}">
+                                        <span th:each="posteComp : ${poste.posteCompetances}" 
+                                              class="badge bg-info me-1 mb-1"
+                                              th:text="${posteComp.competance.nom}">Compétence</span>
+                                    </div>
+                                    
+                                    <h6 class="fw-bold mt-3">Formations requises:</h6>
+                                    <div th:if="${#lists.isEmpty(poste.posteFormations)}" class="text-muted">
+                                        Aucune formation définie
+                                    </div>
+                                    <div th:if="${!#lists.isEmpty(poste.posteFormations)}">
+                                        <div th:each="posteForm : ${poste.posteFormations}" class="mb-2">
+                                            <span class="badge bg-warning me-1" th:text="${posteForm.formation.nom}">Formation</span>
+                                            <small class="text-muted" th:text="|Niveau: ${posteForm.niveau}|"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <a th:href="@{/departement/postes/modifier/{id}(id=${poste.idPoste})}" 
+                               class="btn btn-primary">Modifier</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

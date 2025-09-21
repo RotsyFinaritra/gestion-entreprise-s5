@@ -1,6 +1,7 @@
 package com.entreprise.service;
 
 import com.entreprise.model.Poste;
+import com.entreprise.model.User;
 import com.entreprise.repository.PosteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,14 @@ public class PosteService {
     
     public List<Poste> findAll() {
         return posteRepository.findAll();
+    }
+    
+    public List<Poste> findByDepartement(User departement) {
+        return posteRepository.findByDepartement(departement);
+    }
+    
+    public List<Poste> findByDepartementId(Long departementId) {
+        return posteRepository.findByDepartementIdUser(departementId);
     }
     
     public Optional<Poste> findById(Long id) {

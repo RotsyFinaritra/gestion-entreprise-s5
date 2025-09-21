@@ -70,4 +70,31 @@ public class UserService {
         String role = (String) session.getAttribute("role");
         return username != null && "admin".equalsIgnoreCase(role);
     }
+    
+    // === MÉTHODES SPÉCIFIQUES AUX DÉPARTEMENTS ===
+    
+    // Récupérer tous les départements
+    public List<User> findAllDepartements() {
+        return userRepository.findByRole("DEPARTEMENT");
+    }
+    
+    // Vérifier si l'utilisateur est un département
+    public boolean isDepartement(User user) {
+        return user != null && "DEPARTEMENT".equalsIgnoreCase(user.getRole());
+    }
+    
+    // Vérifier si l'utilisateur en session est un département
+    public boolean isDepartement(jakarta.servlet.http.HttpSession session) {
+        String role = (String) session.getAttribute("role");
+        return "DEPARTEMENT".equalsIgnoreCase(role);
+    }
+    
+    // Récupérer l'utilisateur connecté depuis la session
+    public Optional<User> getCurrentUser(jakarta.servlet.http.HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        if (username != null) {
+            return findByUsername(username);
+        }
+        return Optional.empty();
+    }
 }

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Formulaire Poste - Département</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Header de la section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0" th:text="${pageTitle}">Créer un Poste</h1>
+                <p class="text-muted mb-0" th:text="|Département: ${departement.nomDepartement}|">
+                    Département: Informatique
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/departement/postes}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-briefcase me-2"></i>
+                            Informations du poste
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/departement/postes/sauvegarder}" 
+                              th:object="${poste}" 
+                              method="post">
+                            
+                            <!-- ID caché pour les modifications -->
+                            <input type="hidden" th:field="*{idPoste}" />
+                            
+                            <!-- Nom du poste -->
+                            <div class="mb-3">
+                                <label for="nom" class="form-label">
+                                    <i class="bi bi-briefcase me-1"></i>
+                                    Nom du poste <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nom" 
+                                       th:field="*{nom}"
+                                       placeholder="Ex: Développeur Full Stack, Data Scientist..."
+                                       required>
+                                <div class="form-text">
+                                    Donnez un nom clair et précis au poste à créer
+                                </div>
+                            </div>
+
+                            <!-- Informations département (lecture seule) -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-building me-1"></i>
+                                    Département
+                                </label>
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <strong th:text="${departement.nomDepartement}">Département Informatique</strong>
+                                        <br>
+                                        <small class="text-muted" th:text="${departement.descriptionDepartement}">
+                                            Description du département
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description optionnelle -->
+                            <div class="mb-3">
+                                <label for="description" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description du poste (optionnel)
+                                </label>
+                                <textarea class="form-control" 
+                                          id="description" 
+                                          rows="4"
+                                          placeholder="Décrivez les principales missions et responsabilités...">
+                                </textarea>
+                                <div class="form-text">
+                                    Cette description pourra être utilisée lors de la publication d'offres
+                                </div>
+                            </div>
+
+                            <!-- Boutons d'action -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/departement/postes}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span th:text="${poste.idPoste != null ? 'Modifier le poste' : 'Créer le poste'}">
+                                        Créer le poste
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar avec informations utiles -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Informations
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                À savoir
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Une fois créé, vous pourrez définir les compétences requises</li>
+                                <li>Vous pourrez ajouter les formations nécessaires</li>
+                                <li>Des profils de recrutement pourront être créés et envoyés aux RH</li>
+                                <li>Les RH pourront publier des offres basées sur ce poste</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-3">
+                            <h6 class="fw-bold">Prochaines étapes:</h6>
+                            <ol class="small">
+                                <li>Créer le poste</li>
+                                <li>Définir les compétences requises</li>
+                                <li>Ajouter les formations nécessaires</li>
+                                <li>Créer un profil de recrutement</li>
+                                <li>Envoyer la demande aux RH</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Postes existants -->
+                <div class="card mt-3" th:if="${departement.postes != null and !#lists.isEmpty(departement.postes)}">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-list me-2"></i>
+                            Autres postes du département
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div th:each="autrePoste : ${departement.postes}" 
+                                 th:if="${autrePoste.idPoste != poste.idPoste}"
+                                 class="list-group-item px-0 py-2">
+                                <small th:text="${autrePoste.nom}">Autre poste</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
