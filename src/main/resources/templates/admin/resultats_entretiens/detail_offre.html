@@ -118,142 +118,7 @@
             }
         </style>
 
-        <script>
-            let modeSelection = false;
-            let candidatsSelectionnes = [];
-            let maxSelections = /*[[${offre.nbrPersonne}]]*/ 1;
-            let idOffre_bla = /*[[${offre.idOffre}]]*/ 0;
-            
-            // Backup: récupérer l'ID depuis l'URL si Thymeleaf échoue
-            if (!idOffre_bla || idOffre_bla === 0) {
-                const urlParts = window.location.pathname.split('/');
-                const urlOffreId = urlParts[urlParts.length - 1];
-                if (!isNaN(urlOffreId)) {
-                    idOffre_bla = parseInt(urlOffreId);
-                }
-            }
-            
-            // Debug temporaire - afficher les valeurs
-            console.log("DEBUG Template - ID Offre:", /*[[${offre.idOffre}]]*/ 0);
-            console.log("DEBUG Template - Nombre requis:", /*[[${offre.nbrPersonne}]]*/ 1);
-            console.log("DEBUG Template - maxSelections:", maxSelections);
-            console.log("DEBUG Template - idOffre_bla:", idOffre_bla);
-            console.log("DEBUG Template - URL:", window.location.pathname);
-
-            function activerModeSelection() {
-                modeSelection = true;
-                document.body.classList.add('selection-active');
-                document.getElementById('zoneSelection').style.display = 'block';
-                document.getElementById('btnSelectionner').style.display = 'none';
-
-                // Afficher les cases à cocher
-                document.querySelectorAll('.selection-checkbox').forEach(el => {
-                    el.style.display = 'block';
-                });
-            }
-
-            function annulerSelection() {
-                modeSelection = false;
-                candidatsSelectionnes = [];
-                document.body.classList.remove('selection-active');
-                document.getElementById('zoneSelection').style.display = 'none';
-                document.getElementById('btnSelectionner').style.display = 'inline-block';
-
-                // Cacher les cases à cocher et décocher
-                document.querySelectorAll('.selection-checkbox').forEach(el => {
-                    el.style.display = 'none';
-                });
-                document.querySelectorAll('.candidat-checkbox').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                document.querySelectorAll('.candidat-card').forEach(card => {
-                    card.classList.remove('selectionne');
-                });
-
-                mettreAJourCompteur();
-            }
-
-            function gererSelectionCandidat(checkbox) {
-                const entretienId = checkbox.dataset.entretienId;
-                const candidatNom = checkbox.dataset.candidatNom;
-                const card = checkbox.closest('.candidat-card');
-
-                if (checkbox.checked) {
-                    if (candidatsSelectionnes.length >= maxSelections) {
-                        checkbox.checked = false;
-                        alert(`Vous ne pouvez sélectionner que ${maxSelections} candidat(s) maximum.`);
-                        return;
-                    }
-                    candidatsSelectionnes.push({ entretienId, candidatNom });
-                    card.classList.add('selectionne');
-                } else {
-                    candidatsSelectionnes = candidatsSelectionnes.filter(c => c.entretienId !== entretienId);
-                    card.classList.remove('selectionne');
-                }
-
-                mettreAJourCompteur();
-            }
-
-            function mettreAJourCompteur() {
-                document.getElementById('nbSelectionnes').textContent = candidatsSelectionnes.length;
-
-                const btnValider = document.getElementById('btnValiderSelection');
-                if (candidatsSelectionnes.length === maxSelections) {
-                    btnValider.disabled = false;
-                    btnValider.classList.remove('btn-secondary');
-                    btnValider.classList.add('btn-success');
-                } else {
-                    btnValider.disabled = true;
-                    btnValider.classList.remove('btn-success');
-                    btnValider.classList.add('btn-secondary');
-                }
-            }
-
-            function validerSelection() {
-                if (candidatsSelectionnes.length !== maxSelections) {
-                    alert(`Vous devez sélectionner exactement ${maxSelections} candidat(s).`);
-                    return;
-                }
-
-                const confirmation = confirm(
-                    `Êtes-vous sûr de vouloir engager à l'essai les candidats suivants ?\n\n` +
-                    candidatsSelectionnes.map(c => `• ${c.candidatNom}`).join('\n') +
-                    `\n\nCette action changera leur statut à "Engagement à l'essai".`
-                );
-
-                if (confirmation) {
-                    // Envoyer les données au serveur
-                    const offreId = idOffre_bla;  // Utiliser la variable définie au début
-                    const entretiensIds = candidatsSelectionnes.map(c => parseInt(c.entretienId));
-                    
-                    console.log("DEBUG - offreId:", offreId);
-                    console.log("DEBUG - entretiensIds:", entretiensIds);                    fetch(`/admin/engagements/valider-selection/${offreId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ entretiensIds })
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                return response.text();
-                            } else {
-                                return response.text().then(text => {
-                                    throw new Error(`Erreur ${response.status}: ${text}`);
-                                });
-                            }
-                        })
-                        .then(message => {
-                            alert('Candidats engagés à l\'essai avec succès !');
-                            window.location.reload();
-                        })
-                        .catch(error => {
-                            console.error('Erreur détaillée:', error);
-                            alert('Erreur lors de l\'engagement: ' + error.message);
-                        });
-                }
-            }
-        </script>
+        
 
         <!-- En-tête de l'offre -->
         <div class="offre-header">
@@ -494,6 +359,150 @@
             </div>
         </div>
 
+        <script>
+            let modeSelection = false;
+            let candidatsSelectionnes = [];
+            // Récupérer dynamiquement le nombre de personnes requises depuis l'offre
+            let maxSelections = parseInt(document.getElementById('nbPersonnesRequises').innerHTML, 10);
+            // let maxSelections = /*[[${offre.nbrPersonne}]]*/ 1;
+            let idOffre_bla = /*[[${offre.idOffre}]]*/ 0;
+            
+            // Backup: récupérer l'ID depuis l'URL si Thymeleaf échoue
+            if (!idOffre_bla || idOffre_bla === 0) {
+                const urlParts = window.location.pathname.split('/');
+                const urlOffreId = urlParts[urlParts.length - 1];
+                if (!isNaN(urlOffreId)) {
+                    idOffre_bla = parseInt(urlOffreId);
+                }
+            }
+            
+            // Debug temporaire - afficher les valeurs
+            console.log("DEBUG Template - ID Offre:", /*[[${offre.idOffre}]]*/ 0);
+            console.log("DEBUG Template - Nombre requis:", /*[[${offre.nbrPersonne}]]*/ 1);
+            console.log("DEBUG Template - maxSelections:", maxSelections);
+            console.log("DEBUG Template - idOffre_bla:", idOffre_bla);
+            console.log("DEBUG Template - URL:", window.location.pathname);
+            
+            // Vérification de sécurité pour s'assurer que maxSelections est correctement défini
+            if (!maxSelections || maxSelections <= 0) {
+                console.warn("ATTENTION: maxSelections n'est pas correctement défini, utilisation de la valeur par défaut 1");
+                maxSelections = 1;
+            }
+
+            function activerModeSelection() {
+                modeSelection = true;
+                document.body.classList.add('selection-active');
+                document.getElementById('zoneSelection').style.display = 'block';
+                document.getElementById('btnSelectionner').style.display = 'none';
+
+                // Afficher les cases à cocher
+                document.querySelectorAll('.selection-checkbox').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+
+            function annulerSelection() {
+                modeSelection = false;
+                candidatsSelectionnes = [];
+                document.body.classList.remove('selection-active');
+                document.getElementById('zoneSelection').style.display = 'none';
+                document.getElementById('btnSelectionner').style.display = 'inline-block';
+
+                // Cacher les cases à cocher et décocher
+                document.querySelectorAll('.selection-checkbox').forEach(el => {
+                    el.style.display = 'none';
+                });
+                document.querySelectorAll('.candidat-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                document.querySelectorAll('.candidat-card').forEach(card => {
+                    card.classList.remove('selectionne');
+                });
+
+                mettreAJourCompteur();
+            }
+
+            function gererSelectionCandidat(checkbox) {
+                const entretienId = checkbox.dataset.entretienId;
+                const candidatNom = checkbox.dataset.candidatNom;
+                const card = checkbox.closest('.candidat-card');
+
+                if (checkbox.checked) {
+                    if (candidatsSelectionnes.length >= maxSelections) {
+                        checkbox.checked = false;
+                        alert(`Vous ne pouvez sélectionner que ${maxSelections} candidat(s) maximum.`);
+                        return;
+                    }
+                    candidatsSelectionnes.push({ entretienId, candidatNom });
+                    card.classList.add('selectionne');
+                } else {
+                    candidatsSelectionnes = candidatsSelectionnes.filter(c => c.entretienId !== entretienId);
+                    card.classList.remove('selectionne');
+                }
+
+                mettreAJourCompteur();
+            }
+
+            function mettreAJourCompteur() {
+                document.getElementById('nbSelectionnes').textContent = candidatsSelectionnes.length;
+
+                const btnValider = document.getElementById('btnValiderSelection');
+                if (candidatsSelectionnes.length === maxSelections) {
+                    btnValider.disabled = false;
+                    btnValider.classList.remove('btn-secondary');
+                    btnValider.classList.add('btn-success');
+                } else {
+                    btnValider.disabled = true;
+                    btnValider.classList.remove('btn-success');
+                    btnValider.classList.add('btn-secondary');
+                }
+            }
+
+            function validerSelection() {
+                if (candidatsSelectionnes.length !== maxSelections) {
+                    alert(`Vous devez sélectionner exactement ${maxSelections} candidat(s).`);
+                    return;
+                }
+
+                const confirmation = confirm(
+                    `Êtes-vous sûr de vouloir engager à l'essai les candidats suivants ?\n\n` +
+                    candidatsSelectionnes.map(c => `• ${c.candidatNom}`).join('\n') +
+                    `\n\nCette action changera leur statut à "Engagement à l'essai".`
+                );
+
+                if (confirmation) {
+                    // Envoyer les données au serveur
+                    const offreId = idOffre_bla;  // Utiliser la variable définie au début
+                    const entretiensIds = candidatsSelectionnes.map(c => parseInt(c.entretienId));
+                    
+                    console.log("DEBUG - offreId:", offreId);
+                    console.log("DEBUG - entretiensIds:", entretiensIds);                    fetch(`/admin/engagements/valider-selection/${offreId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ entretiensIds })
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                return response.text().then(text => {
+                                    throw new Error(`Erreur ${response.status}: ${text}`);
+                                });
+                            }
+                        })
+                        .then(message => {
+                            alert('Candidats engagés à l\'essai avec succès !');
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Erreur détaillée:', error);
+                            alert('Erreur lors de l\'engagement: ' + error.message);
+                        });
+                }
+            }
+        </script>
     </div>
 </body>
 
