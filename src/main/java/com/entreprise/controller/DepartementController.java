@@ -465,16 +465,6 @@ public class DepartementController {
                     return "redirect:/departement/demandes/nouvelle";
                 }
 
-                if (demandeOffre.getTypeContrat() == null || demandeOffre.getTypeContrat().trim().isEmpty()) {
-                    redirectAttributes.addFlashAttribute("error", "Le type de contrat est obligatoire");
-                    return "redirect:/departement/demandes/nouvelle";
-                }
-
-                if (demandeOffre.getNiveauExperience() == null || demandeOffre.getNiveauExperience().trim().isEmpty()) {
-                    redirectAttributes.addFlashAttribute("error", "Le niveau d'expérience est obligatoire");
-                    return "redirect:/departement/demandes/nouvelle";
-                }
-
                 // Sauvegarder la demande
                 demandeOffreService.save(demandeOffre);
                 

@@ -94,7 +94,7 @@
                                 </div>
                             </div>
 
-                            <!-- Description de l'entreprise -->
+                            <!-- Description de l'entreprise
                             <div class="mb-3">
                                 <label for="descriptionEntreprise" class="form-label">
                                     <i class="bi bi-building me-1"></i>
@@ -108,69 +108,10 @@
                                 <div class="form-text">
                                     Présentation qui apparaîtra dans l'offre d'emploi
                                 </div>
-                            </div>
+                            </div> -->
 
                             <!-- Type de contrat et niveau d'expérience -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="typeContrat" class="form-label">
-                                        <i class="bi bi-file-text me-1"></i>
-                                        Type de contrat <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-select" id="typeContrat" th:field="*{typeContrat}" required>
-                                        <option value="">-- Sélectionner --</option>
-                                        <option value="CDI">CDI</option>
-                                        <option value="CDD">CDD</option>
-                                        <option value="STAGE">Stage</option>
-                                        <option value="ALTERNANCE">Alternance</option>
-                                        <option value="FREELANCE">Freelance</option>
-                                        <option value="INTERIM">Intérim</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="niveauExperience" class="form-label">
-                                        <i class="bi bi-star me-1"></i>
-                                        Niveau d'expérience <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-select" id="niveauExperience" th:field="*{niveauExperience}" required>
-                                        <option value="">-- Sélectionner --</option>
-                                        <option value="DEBUTANT">Débutant (0-2 ans)</option>
-                                        <option value="JUNIOR">Junior (2-5 ans)</option>
-                                        <option value="SENIOR">Senior (5-10 ans)</option>
-                                        <option value="EXPERT">Expert (10+ ans)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Fourchette salariale -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="salaireMin" class="form-label">
-                                        <i class="bi bi-currency-euro me-1"></i>
-                                        Salaire minimum (€/an)
-                                    </label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="salaireMin" 
-                                           th:field="*{salaireMin}"
-                                           placeholder="Ex: 35000"
-                                           min="0"
-                                           step="100">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="salaireMax" class="form-label">
-                                        <i class="bi bi-currency-euro me-1"></i>
-                                        Salaire maximum (€/an)
-                                    </label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="salaireMax" 
-                                           th:field="*{salaireMax}"
-                                           placeholder="Ex: 45000"
-                                           min="0"
-                                           step="100">
-                                </div>
-                            </div>
+                            
 
                             <!-- Localisation -->
                             <div class="mb-3">
@@ -264,20 +205,7 @@
                             </div>
 
                             <!-- Avantages -->
-                            <div class="mb-3">
-                                <label for="avantages" class="form-label">
-                                    <i class="bi bi-gift me-1"></i>
-                                    Avantages et bénéfices
-                                </label>
-                                <textarea class="form-control" 
-                                          id="avantages" 
-                                          th:field="*{avantages}"
-                                          rows="3"
-                                          placeholder="Ex: Tickets restaurant, mutuelle, formations, télétravail, RTT supplémentaires..."></textarea>
-                                <div class="form-text">
-                                    Avantages qui apparaîtront dans l'offre d'emploi
-                                </div>
-                            </div>
+                            
 
                             <!-- Date limite de candidature -->
                             <div class="mb-4">
@@ -336,17 +264,7 @@
                             </div>
 
                             <!-- Commentaires additionnels -->
-                            <div class="mb-4">
-                                <label for="commentaireDepartement" class="form-label">
-                                    <i class="bi bi-chat-dots me-1"></i>
-                                    Commentaires additionnels
-                                </label>
-                                <textarea class="form-control" 
-                                          id="commentaireDepartement" 
-                                          th:field="*{commentaireDepartement}"
-                                          rows="3"
-                                          placeholder="Informations complémentaires pour l'équipe RH..."></textarea>
-                            </div>
+                            
 
                             <!-- Boutons d'action -->
                             <div class="d-flex justify-content-between">

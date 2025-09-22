@@ -50,17 +50,6 @@ public class DemandeOffre {
     @Column(name = "description_entreprise", columnDefinition = "TEXT")
     private String descriptionEntreprise;
     
-    @Column(name = "type_contrat", length = 50)
-    private String typeContrat; // CDI, CDD, Stage, etc.
-    
-    @Column(name = "niveau_experience", length = 100)
-    private String niveauExperience; // Junior, Senior, Expert, etc.
-    
-    @Column(name = "salaire_min")
-    private Double salaireMin;
-    
-    @Column(name = "salaire_max")
-    private Double salaireMax;
     
     @Column(name = "age_min")
     private Integer ageMin;
@@ -185,37 +174,8 @@ public class DemandeOffre {
         this.descriptionEntreprise = descriptionEntreprise;
     }
     
-    public String getTypeContrat() {
-        return typeContrat;
-    }
     
-    public void setTypeContrat(String typeContrat) {
-        this.typeContrat = typeContrat;
-    }
     
-    public String getNiveauExperience() {
-        return niveauExperience;
-    }
-    
-    public void setNiveauExperience(String niveauExperience) {
-        this.niveauExperience = niveauExperience;
-    }
-    
-    public Double getSalaireMin() {
-        return salaireMin;
-    }
-    
-    public void setSalaireMin(Double salaireMin) {
-        this.salaireMin = salaireMin;
-    }
-    
-    public Double getSalaireMax() {
-        return salaireMax;
-    }
-    
-    public void setSalaireMax(Double salaireMax) {
-        this.salaireMax = salaireMax;
-    }
     
     public Local getLocal() {
         return local;
@@ -368,17 +328,6 @@ public class DemandeOffre {
     
     public boolean isRefusee() {
         return statutDemande != null && statutDemande.isRefuse();
-    }
-    
-    public String getPlagesSalaire() {
-        if (salaireMin != null && salaireMax != null) {
-            return String.format("%.0f - %.0f €", salaireMin, salaireMax);
-        } else if (salaireMin != null) {
-            return String.format("À partir de %.0f €", salaireMin);
-        } else if (salaireMax != null) {
-            return String.format("Jusqu'à %.0f €", salaireMax);
-        }
-        return "Non spécifié";
     }
     
     public String getPlagesAge() {
