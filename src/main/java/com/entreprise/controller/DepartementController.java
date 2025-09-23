@@ -7,6 +7,9 @@ import com.entreprise.model.Competance;
 import com.entreprise.model.Poste;
 import com.entreprise.model.User;
 import com.entreprise.model.StatutDemande;
+import com.entreprise.model.Entretien;
+import com.entreprise.model.NoteEntretien;
+import com.entreprise.model.SectionNoteEntretien;
 import com.entreprise.service.DemandeOffreService;
 import com.entreprise.service.LocalService;
 import com.entreprise.service.FormationService;
@@ -14,6 +17,9 @@ import com.entreprise.service.CompetanceService;
 import com.entreprise.service.PosteService;
 import com.entreprise.service.UserService;
 import com.entreprise.service.StatutDemandeService;
+import com.entreprise.service.EntretienService;
+import com.entreprise.service.NoteEntretienService;
+import com.entreprise.service.SectionNoteEntretienService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -49,6 +55,27 @@ public class DepartementController {
 
     @Autowired
     private StatutDemandeService statutDemandeService;
+    
+    @Autowired
+    private EntretienService entretienService;
+    
+    @Autowired
+    private NoteEntretienService noteEntretienService;
+    
+    @Autowired
+    private SectionNoteEntretienService sectionNoteEntretienService;
+
+    /**
+     * Méthode utilitaire pour récupérer le département depuis la session
+     */
+    private User getDepartementFromSession(HttpSession session) {
+        if (!userService.isDepartement(session)) {
+            return null;
+        }
+        
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        return currentUser.orElse(null);
+    }
 
     // Tableau de bord du département
     @GetMapping("/dashboard")
@@ -122,11 +149,11 @@ public class DepartementController {
             model.addAttribute("departement", departement);
             model.addAttribute("pageTitle", "Nouveau Poste - " + departement.getNomDepartement());
             model.addAttribute("pageDescription", "Créer un nouveau poste pour votre département");
-            model.addAttribute("activeSection", "postes");
+            model.addAttribute("activeSection", "nouveau-poste");
             
-            // Ajouter les listes de compétences et formations
-            model.addAttribute("competences", competanceService.findAll());
-            model.addAttribute("formations", formationService.findAll());
+            // Ajouter les listes de compétences et formations du département
+            model.addAttribute("competences", competanceService.findByDepartement(departement));
+            model.addAttribute("formations", formationService.findByDepartement(departement));
             
             return "departement/poste-form";
         } else {
@@ -205,9 +232,9 @@ public class DepartementController {
             model.addAttribute("pageDescription", "Modifier le poste : " + poste.getNom());
             model.addAttribute("activeSection", "postes");
             
-            // Ajouter les listes de compétences et formations
-            model.addAttribute("competences", competanceService.findAll());
-            model.addAttribute("formations", formationService.findAll());
+            // Ajouter les listes de compétences et formations du département
+            model.addAttribute("competences", competanceService.findByDepartement(departement));
+            model.addAttribute("formations", formationService.findByDepartement(departement));
             
             // Ajouter les IDs des compétences et formations déjà associées
             List<Long> competencesIds = poste.getPosteCompetances().stream()
@@ -540,7 +567,7 @@ public class DepartementController {
         Optional<User> currentUser = userService.getCurrentUser(session);
         if (currentUser.isPresent()) {
             User departement = currentUser.get();
-            List<Competance> competences = competanceService.findAll();
+            List<Competance> competences = competanceService.findByDepartement(departement);
             
             model.addAttribute("competences", competences);
             model.addAttribute("departement", departement);
@@ -595,11 +622,19 @@ public class DepartementController {
             return "redirect:/login";
         }
         
-        try {
-            competanceService.save(competence);
-            redirectAttributes.addFlashAttribute("success", "Compétence enregistrée avec succès !");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            competence.setDepartement(departement);
+            
+            try {
+                competanceService.save(competence);
+                redirectAttributes.addFlashAttribute("success", "Compétence enregistrée avec succès !");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Session invalide.");
         }
         
         return "redirect:/departement/competences";
@@ -675,7 +710,7 @@ public class DepartementController {
         Optional<User> currentUser = userService.getCurrentUser(session);
         if (currentUser.isPresent()) {
             User departement = currentUser.get();
-            List<Formation> formations = formationService.findAll();
+            List<Formation> formations = formationService.findByDepartement(departement);
             
             model.addAttribute("formations", formations);
             model.addAttribute("departement", departement);
@@ -730,11 +765,19 @@ public class DepartementController {
             return "redirect:/login";
         }
         
-        try {
-            formationService.save(formation);
-            redirectAttributes.addFlashAttribute("success", "Formation enregistrée avec succès !");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            formation.setDepartement(departement);
+            
+            try {
+                formationService.save(formation);
+                redirectAttributes.addFlashAttribute("success", "Formation enregistrée avec succès !");
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error", "Erreur lors de l'enregistrement : " + e.getMessage());
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Session invalide.");
         }
         
         return "redirect:/departement/formations";
@@ -791,5 +834,546 @@ public class DepartementController {
         }
         
         return "redirect:/departement/formations";
+    }
+    
+    // ===============================
+    // GESTION DES NOTATIONS D'ENTRETIENS
+    // ===============================
+    
+    /**
+     * Liste des entretiens du département pour notation
+     */
+    @GetMapping("/entretiens")
+    public String listEntretiensDepartement(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        if (currentUser.isPresent()) {
+            User departement = currentUser.get();
+            
+            // Récupérer tous les entretiens pour les postes du département
+            List<Entretien> entretiensDepartement = entretienService.findByDepartement(departement);
+            
+            // Calculer les moyennes des notes pour chaque entretien
+            java.util.Map<Long, Double> moyennesNotes = new java.util.HashMap<>();
+            for (Entretien entretien : entretiensDepartement) {
+                Double moyenne = noteEntretienService.calculateMoyenneByEntretien(entretien.getIdEntretien());
+                moyennesNotes.put(entretien.getIdEntretien(), moyenne);
+            }
+            
+            model.addAttribute("entretiens", entretiensDepartement);
+            model.addAttribute("moyennesNotes", moyennesNotes);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Entretiens - " + departement.getNomDepartement());
+            model.addAttribute("pageDescription", "Noter les entretiens pour vos postes");
+            model.addAttribute("activeSection", "entretiens");
+            
+            return "departement/entretiens-list";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Erreur de session.");
+        return "redirect:/login";
+    }
+    
+    /**
+     * Formulaire de notation d'un entretien par le département
+     */
+    @GetMapping("/entretiens/noter/{entretienId}")
+    public String noterEntretien(@PathVariable Long entretienId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        Optional<Entretien> entretienOpt = entretienService.findById(entretienId);
+        
+        if (currentUser.isPresent() && entretienOpt.isPresent()) {
+            User departement = currentUser.get();
+            Entretien entretien = entretienOpt.get();
+            
+            // Vérifier que l'entretien concerne un poste du département
+            if (!entretien.getOffre().getPoste().getDepartement().getIdUser().equals(departement.getIdUser())) {
+                redirectAttributes.addFlashAttribute("error", "Vous ne pouvez noter que les entretiens pour vos postes.");
+                return "redirect:/departement/entretiens";
+            }
+            
+            // Récupérer les sections de notation pour le poste
+            List<SectionNoteEntretien> sections = sectionNoteEntretienService.findByPosteId(
+                entretien.getOffre().getPoste().getIdPoste()
+            );
+            
+            if (sections.isEmpty()) {
+                redirectAttributes.addFlashAttribute("warning", 
+                    "Aucune section de notation n'est configurée pour ce poste. Contactez l'administration.");
+                return "redirect:/departement/entretiens";
+            }
+            
+            // Récupérer les notes existantes
+            java.util.Map<Long, NoteEntretien> notesExistantes = noteEntretienService.getNotesMapByEntretien(entretienId);
+            Double moyenneActuelle = noteEntretienService.calculateMoyenneByEntretien(entretienId);
+            
+            model.addAttribute("entretien", entretien);
+            model.addAttribute("sections", sections);
+            model.addAttribute("notesExistantes", notesExistantes);
+            model.addAttribute("moyenneActuelle", moyenneActuelle);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Noter l'entretien");
+            model.addAttribute("pageDescription", "Évaluation de " + 
+                entretien.getCandidat().getPrenom() + " " + entretien.getCandidat().getNom());
+            model.addAttribute("activeSection", "entretiens");
+            
+            return "departement/entretien-notation";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Entretien non trouvé.");
+        return "redirect:/departement/entretiens";
+    }
+    
+    /**
+     * Sauvegarder les notes d'un entretien par le département
+     */
+    @PostMapping("/entretiens/sauvegarder-notes/{entretienId}")
+    public String sauvegarderNotesEntretien(@PathVariable Long entretienId,
+                                           @RequestParam java.util.Map<String, String> allParams,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        try {
+            Optional<User> currentUser = userService.getCurrentUser(session);
+            Optional<Entretien> entretienOpt = entretienService.findById(entretienId);
+            
+            if (currentUser.isEmpty() || entretienOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Données invalides.");
+                return "redirect:/departement/entretiens";
+            }
+            
+            User departement = currentUser.get();
+            Entretien entretien = entretienOpt.get();
+            
+            // Vérifier que l'entretien concerne un poste du département
+            if (!entretien.getOffre().getPoste().getDepartement().getIdUser().equals(departement.getIdUser())) {
+                redirectAttributes.addFlashAttribute("error", "Vous ne pouvez noter que les entretiens pour vos postes.");
+                return "redirect:/departement/entretiens";
+            }
+            
+            int notesTraitees = 0;
+            
+            // Traiter chaque note
+            for (java.util.Map.Entry<String, String> entry : allParams.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                
+                if (key.startsWith("note_") && !value.isEmpty()) {
+                    try {
+                        // Extraire l'ID de la section
+                        Long sectionId = Long.parseLong(key.substring(5)); // Enlever "note_"
+                        Double noteValue = Double.parseDouble(value);
+                        String commentaire = allParams.get("commentaire_" + sectionId);
+                        
+                        Optional<SectionNoteEntretien> sectionOpt = sectionNoteEntretienService.findById(sectionId);
+                        if (sectionOpt.isEmpty()) continue;
+                        
+                        SectionNoteEntretien section = sectionOpt.get();
+                        
+                        // Vérifier que la note ne dépasse pas le maximum
+                        if (noteValue > section.getNoteMax()) {
+                            redirectAttributes.addFlashAttribute("error", 
+                                "La note pour '" + section.getNomSection() + "' ne peut pas dépasser " + section.getNoteMax());
+                            return "redirect:/departement/entretiens/noter/" + entretienId;
+                        }
+                        
+                        if (noteValue < 0) {
+                            redirectAttributes.addFlashAttribute("error", 
+                                "La note pour '" + section.getNomSection() + "' ne peut pas être négative");
+                            return "redirect:/departement/entretiens/noter/" + entretienId;
+                        }
+
+                        // Créer ou mettre à jour la note
+                        NoteEntretien note = new NoteEntretien();
+                        note.setEntretien(entretien);
+                        note.setSection(section);
+                        note.setNoteObtenue(noteValue);
+                        note.setCommentaire(commentaire != null ? commentaire.trim() : "");
+                        
+                        noteEntretienService.save(note);
+                        notesTraitees++;
+
+                    } catch (NumberFormatException e) {
+                        redirectAttributes.addFlashAttribute("error", 
+                            "Note invalide. Veuillez saisir un nombre valide.");
+                        return "redirect:/departement/entretiens/noter/" + entretienId;
+                    }
+                }
+            }
+
+            if (notesTraitees > 0) {
+                // Mettre à jour le statut de l'entretien à "terminé" si ce n'est pas déjà fait
+                if (!"terminé".equals(entretien.getStatut())) {
+                    entretien.setStatut("terminé");
+                    entretienService.save(entretien);
+                }
+                
+                redirectAttributes.addFlashAttribute("success", 
+                    "Notation sauvegardée avec succès ! " + notesTraitees + " note(s) enregistrée(s).");
+            } else {
+                redirectAttributes.addFlashAttribute("warning", 
+                    "Aucune note n'a été saisie.");
+                return "redirect:/departement/entretiens/noter/" + entretienId;
+            }
+            
+            return "redirect:/departement/entretiens";
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors de la sauvegarde : " + e.getMessage());
+            return "redirect:/departement/entretiens/noter/" + entretienId;
+        }
+    }
+    
+    /**
+     * Détail d'un entretien avec les notes attribuées
+     */
+    @GetMapping("/entretiens/{entretienId}/detail")
+    public String detailEntretien(@PathVariable Long entretienId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!userService.isDepartement(session)) {
+            redirectAttributes.addFlashAttribute("error", "Accès refusé.");
+            return "redirect:/login";
+        }
+
+        Optional<User> currentUser = userService.getCurrentUser(session);
+        Optional<Entretien> entretienOpt = entretienService.findById(entretienId);
+        
+        if (currentUser.isPresent() && entretienOpt.isPresent()) {
+            User departement = currentUser.get();
+            Entretien entretien = entretienOpt.get();
+            
+            // Vérifier que l'entretien concerne un poste du département
+            if (!entretien.getOffre().getPoste().getDepartement().getIdUser().equals(departement.getIdUser())) {
+                redirectAttributes.addFlashAttribute("error", "Accès non autorisé à cet entretien.");
+                return "redirect:/departement/entretiens";
+            }
+            
+            // Récupérer les sections et notes
+            List<SectionNoteEntretien> sections = sectionNoteEntretienService.findByPosteId(
+                entretien.getOffre().getPoste().getIdPoste()
+            );
+            List<NoteEntretien> notes = noteEntretienService.findByEntretienId(entretienId);
+            java.util.Map<Long, NoteEntretien> notesMap = noteEntretienService.getNotesMapByEntretien(entretienId);
+            Double moyenne = noteEntretienService.calculateMoyenneByEntretien(entretienId);
+
+            model.addAttribute("entretien", entretien);
+            model.addAttribute("sections", sections);
+            model.addAttribute("notes", notes);
+            model.addAttribute("notesMap", notesMap);
+            model.addAttribute("moyenne", moyenne);
+            model.addAttribute("departement", departement);
+            model.addAttribute("pageTitle", "Détail entretien - " + entretien.getCandidat().getPrenom() + " " + entretien.getCandidat().getNom());
+            model.addAttribute("pageDescription", "Résultats de l'évaluation");
+            model.addAttribute("activeSection", "entretiens");
+            
+            return "departement/entretien-detail";
+        }
+        
+        redirectAttributes.addFlashAttribute("error", "Entretien non trouvé.");
+        return "redirect:/departement/entretiens";
+    }
+    
+    // ==================== GESTION DES SECTIONS D'ENTRETIEN ====================
+    
+    /**
+     * Afficher la liste des sections d'entretien du département
+     */
+    @GetMapping("/sections-entretien")
+    public String listSectionsEntretien(HttpSession session, Model model) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        List<SectionNoteEntretien> sections = sectionNoteEntretienService.findByDepartement(departement);
+        List<Poste> postes = posteService.findByDepartement(departement);
+        
+        model.addAttribute("sections", sections);
+        model.addAttribute("postes", postes);
+        model.addAttribute("pageTitle", "Sections d'Entretien");
+        model.addAttribute("pageDescription", "Gérer les critères d'évaluation des entretiens");
+        model.addAttribute("activeSection", "sections-entretien");
+        
+        return "departement/sections-entretien-list";
+    }
+    
+    /**
+     * Afficher le formulaire de création d'une section d'entretien
+     */
+    @GetMapping("/sections-entretien/nouveau")
+    public String nouveauSectionEntretien(@RequestParam(required = false) Long posteId, 
+                                         HttpSession session, Model model) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        List<Poste> postes = posteService.findByDepartement(departement);
+        SectionNoteEntretien section = new SectionNoteEntretien();
+        
+        // Si un poste est spécifié, le sélectionner par défaut
+        if (posteId != null) {
+            Optional<Poste> posteOpt = posteService.findById(posteId);
+            if (posteOpt.isPresent() && posteOpt.get().getDepartement().equals(departement)) {
+                section.setPoste(posteOpt.get());
+            }
+        }
+        
+        model.addAttribute("section", section);
+        model.addAttribute("postes", postes);
+        model.addAttribute("pageTitle", "Nouvelle Section d'Entretien");
+        model.addAttribute("pageDescription", "Ajouter un nouveau critère d'évaluation");
+        model.addAttribute("activeSection", "sections-entretien");
+        
+        return "departement/section-entretien-form";
+    }
+    
+    /**
+     * Traiter la création d'une section d'entretien
+     */
+    @PostMapping("/sections-entretien/nouveau")
+    public String creerSectionEntretien(@ModelAttribute SectionNoteEntretien section,
+                                       @RequestParam Long posteId,
+                                       HttpSession session, 
+                                       RedirectAttributes redirectAttributes) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            // Vérifier que le poste appartient au département
+            Optional<Poste> posteOpt = posteService.findById(posteId);
+            if (posteOpt.isEmpty() || !posteOpt.get().getDepartement().equals(departement)) {
+                redirectAttributes.addFlashAttribute("error", "Poste non trouvé ou non autorisé.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            Poste poste = posteOpt.get();
+            section.setPoste(poste);
+            
+            // Vérifier l'unicité du nom de section pour ce poste
+            if (sectionNoteEntretienService.existsByPosteAndNomSection(poste, section.getNomSection())) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Une section avec ce nom existe déjà pour ce poste.");
+                return "redirect:/departement/sections-entretien/nouveau?posteId=" + posteId;
+            }
+            
+            // Valider les données
+            if (section.getNomSection() == null || section.getNomSection().trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Le nom de la section est requis.");
+                return "redirect:/departement/sections-entretien/nouveau?posteId=" + posteId;
+            }
+            
+            if (section.getNoteMax() == null || section.getNoteMax() <= 0) {
+                redirectAttributes.addFlashAttribute("error", "La note maximale doit être positive.");
+                return "redirect:/departement/sections-entretien/nouveau?posteId=" + posteId;
+            }
+            
+            sectionNoteEntretienService.save(section);
+            redirectAttributes.addFlashAttribute("success", 
+                "Section d'entretien créée avec succès pour le poste " + poste.getNom());
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors de la création de la section : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/sections-entretien";
+    }
+    
+    /**
+     * Afficher le formulaire de modification d'une section d'entretien
+     */
+    @GetMapping("/sections-entretien/modifier/{id}")
+    public String modifierSectionEntretien(@PathVariable Long id, 
+                                          HttpSession session, Model model,
+                                          RedirectAttributes redirectAttributes) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        Optional<SectionNoteEntretien> sectionOpt = sectionNoteEntretienService.findById(id);
+        if (sectionOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Section non trouvée.");
+            return "redirect:/departement/sections-entretien";
+        }
+        
+        SectionNoteEntretien section = sectionOpt.get();
+        
+        // Vérifier que la section appartient au département
+        if (!section.getPoste().getDepartement().equals(departement)) {
+            redirectAttributes.addFlashAttribute("error", "Section non autorisée.");
+            return "redirect:/departement/sections-entretien";
+        }
+        
+        List<Poste> postes = posteService.findByDepartement(departement);
+        
+        model.addAttribute("section", section);
+        model.addAttribute("postes", postes);
+        model.addAttribute("pageTitle", "Modifier Section d'Entretien");
+        model.addAttribute("pageDescription", "Modifier les critères d'évaluation");
+        model.addAttribute("activeSection", "sections-entretien");
+        
+        return "departement/section-entretien-form";
+    }
+    
+    /**
+     * Traiter la modification d'une section d'entretien
+     */
+    @PostMapping("/sections-entretien/modifier/{id}")
+    public String sauvegarderSectionEntretien(@PathVariable Long id,
+                                             @ModelAttribute SectionNoteEntretien section,
+                                             @RequestParam Long posteId,
+                                             HttpSession session,
+                                             RedirectAttributes redirectAttributes) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            // Vérifier que la section existe et appartient au département
+            Optional<SectionNoteEntretien> existingSectionOpt = sectionNoteEntretienService.findById(id);
+            if (existingSectionOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Section non trouvée.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            SectionNoteEntretien existingSection = existingSectionOpt.get();
+            if (!existingSection.getPoste().getDepartement().equals(departement)) {
+                redirectAttributes.addFlashAttribute("error", "Section non autorisée.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            // Vérifier que le nouveau poste appartient au département
+            Optional<Poste> posteOpt = posteService.findById(posteId);
+            if (posteOpt.isEmpty() || !posteOpt.get().getDepartement().equals(departement)) {
+                redirectAttributes.addFlashAttribute("error", "Poste non trouvé ou non autorisé.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            Poste poste = posteOpt.get();
+            
+            // Vérifier l'unicité du nom de section pour ce poste (en excluant la section courante)
+            if (sectionNoteEntretienService.existsByPosteAndNomSectionAndNotId(poste, section.getNomSection(), id)) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Une autre section avec ce nom existe déjà pour ce poste.");
+                return "redirect:/departement/sections-entretien/modifier/" + id;
+            }
+            
+            // Valider les données
+            if (section.getNomSection() == null || section.getNomSection().trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Le nom de la section est requis.");
+                return "redirect:/departement/sections-entretien/modifier/" + id;
+            }
+            
+            if (section.getNoteMax() == null || section.getNoteMax() <= 0) {
+                redirectAttributes.addFlashAttribute("error", "La note maximale doit être positive.");
+                return "redirect:/departement/sections-entretien/modifier/" + id;
+            }
+            
+            // Mettre à jour les données
+            existingSection.setPoste(poste);
+            existingSection.setNomSection(section.getNomSection());
+            existingSection.setDescription(section.getDescription());
+            existingSection.setNoteMax(section.getNoteMax());
+            existingSection.setOrdreAffichage(section.getOrdreAffichage());
+            
+            sectionNoteEntretienService.save(existingSection);
+            redirectAttributes.addFlashAttribute("success", "Section d'entretien modifiée avec succès.");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors de la modification : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/sections-entretien";
+    }
+    
+    /**
+     * Supprimer une section d'entretien
+     */
+    @PostMapping("/sections-entretien/supprimer/{id}")
+    public String supprimerSectionEntretien(@PathVariable Long id,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            Optional<SectionNoteEntretien> sectionOpt = sectionNoteEntretienService.findById(id);
+            if (sectionOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Section non trouvée.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            SectionNoteEntretien section = sectionOpt.get();
+            
+            // Vérifier que la section appartient au département
+            if (!section.getPoste().getDepartement().equals(departement)) {
+                redirectAttributes.addFlashAttribute("error", "Section non autorisée.");
+                return "redirect:/departement/sections-entretien";
+            }
+            
+            String nomSection = section.getNomSection();
+            String nomPoste = section.getPoste().getNom();
+            
+            sectionNoteEntretienService.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", 
+                "Section '" + nomSection + "' supprimée du poste '" + nomPoste + "'.");
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors de la suppression : " + e.getMessage());
+        }
+        
+        return "redirect:/departement/sections-entretien";
+    }
+    
+    /**
+     * Afficher les sections d'entretien pour un poste spécifique
+     */
+    @GetMapping("/postes/{posteId}/sections-entretien")
+    public String sectionsEntretienPoste(@PathVariable Long posteId,
+                                        HttpSession session, Model model,
+                                        RedirectAttributes redirectAttributes) {
+        User departement = getDepartementFromSession(session);
+        if (departement == null) {
+            return "redirect:/login";
+        }
+
+        Optional<Poste> posteOpt = posteService.findById(posteId);
+        if (posteOpt.isEmpty() || !posteOpt.get().getDepartement().equals(departement)) {
+            redirectAttributes.addFlashAttribute("error", "Poste non trouvé ou non autorisé.");
+            return "redirect:/departement/sections-entretien";
+        }
+        
+        Poste poste = posteOpt.get();
+        List<SectionNoteEntretien> sections = sectionNoteEntretienService.findByPoste(poste);
+        
+        model.addAttribute("poste", poste);
+        model.addAttribute("sections", sections);
+        model.addAttribute("pageTitle", "Sections d'Entretien - " + poste.getNom());
+        model.addAttribute("pageDescription", "Critères d'évaluation pour le poste " + poste.getNom());
+        model.addAttribute("activeSection", "sections-entretien");
+        
+        return "departement/sections-entretien-poste";
     }
 }

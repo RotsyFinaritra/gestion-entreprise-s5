@@ -1,3 +1,4 @@
+-- Active: 1749052170815@@127.0.0.1@5432@entreprise
 -- Script de données pour PostgreSQL
 -- Données réelles pour le système de recrutement
 

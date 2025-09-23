@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Section d&apos;Entretien - Département</title>
+    <style>
+        .form-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #6f42c1;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .input-group-text {
+            background: #6f42c1;
+            color: white;
+            border: 2px solid #6f42c1;
+            font-weight: 500;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-help {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .preview-card {
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .preview-active {
+            border-color: #6f42c1;
+            background: #f8f9ff;
+        }
+        
+        .note-badge {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .ordre-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .character-counter {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+        
+        .over-limit {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/departement/dashboard" class="text-decoration-none">Département</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/departement/sections-entretien" class="text-decoration-none">Sections d&apos;Entretien</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" 
+                    th:text="${section.idSection != null ? 'Modifier' : 'Nouveau'}">
+                    Nouveau
+                </li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="form-header text-center">
+            <h1>
+                <i class="bi bi-list-check me-3"></i>
+                <span th:text="${section.idSection != null ? &quot;Modifier la Section&quot; : &quot;Nouvelle Section d'Entretien&quot;}">
+                    Nouvelle Section d&apos;Entretien
+                </span>
+            </h1>
+            <p class="lead mb-0">Définissez un critère d'évaluation pour vos entretiens</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="form-container">
+            <form th:action="${section.idSection != null ? '/departement/sections-entretien/modifier/' + section.idSection : '/departement/sections-entretien/nouveau'}" 
+                  method="post" th:object="${section}" id="sectionForm">
+                
+                <!-- Section Informations générales -->
+                <div class="form-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Informations Générales
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="poste" class="form-label required">Poste concerné</label>
+                                <select class="form-select" name="posteId" id="poste" required>
+                                    <option value="">Sélectionnez un poste...</option>
+                                    <option th:each="poste : ${postes}" 
+                                            th:value="${poste.idPoste}"
+                                            th:text="${poste.nom}"
+                                            th:selected="${section.poste != null and section.poste.idPoste == poste.idPoste}">
+                                        Nom du Poste
+                                    </option>
+                                </select>
+                                <div class="form-help">
+                                    Sélectionnez le poste pour lequel cette section d'évaluation s'applique
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nomSection" class="form-label required">Nom de la section</label>
+                                <input type="text" class="form-control" th:field="*{nomSection}" 
+                                       id="nomSection" required maxlength="100"
+                                       placeholder="Ex: Compétences techniques, Soft skills...">
+                                <div class="character-counter">
+                                    <span id="nomCounter">0</span>/100 caractères
+                                </div>
+                                <div class="form-help">
+                                    Donnez un nom clair et descriptif à votre section d'évaluation
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Configuration -->
+                <div class="form-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-sliders me-2"></i>
+                        Configuration de la Section
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="noteMax" class="form-label required">Note maximale</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" th:field="*{noteMax}" 
+                                           id="noteMax" required min="1" max="100" value="20">
+                                    <span class="input-group-text">points</span>
+                                </div>
+                                <div class="form-help">
+                                    Définissez le nombre maximum de points pour cette section (entre 1 et 100)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ordreAffichage" class="form-label">Ordre d'affichage</label>
+                                <input type="number" class="form-control" th:field="*{ordreAffichage}" 
+                                       id="ordreAffichage" min="1" placeholder="1">
+                                <div class="form-help">
+                                    Ordre d'apparition lors de l'évaluation (optionnel, sera calculé automatiquement)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Description -->
+                <div class="form-section">
+                    <h5 class="mb-3">
+                        <i class="bi bi-text-paragraph me-2"></i>
+                        Description et Instructions
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description de la section</label>
+                        <textarea class="form-control" th:field="*{description}" id="description" 
+                                  rows="4" maxlength="500"
+                                  placeholder="Décrivez ce qui sera évalué dans cette section, donnez des instructions aux évaluateurs..."></textarea>
+                        <div class="character-counter">
+                            <span id="descCounter">0</span>/500 caractères
+                        </div>
+                        <div class="form-help">
+                            Fournissez des instructions claires pour guider les évaluateurs (optionnel)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aperçu en temps réel -->
+                <div class="preview-card" id="previewCard">
+                    <h6 class="text-muted mb-3">
+                        <i class="bi bi-eye me-2"></i>
+                        Aperçu de la section
+                    </h6>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 id="previewNom" class="mb-1">Nom de la section</h6>
+                            <small class="text-muted" id="previewPoste">Sélectionnez un poste</small>
+                            <p class="small mt-2 mb-0" id="previewDescription">
+                                Description de la section d'évaluation
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="note-badge" id="previewNote">/ 20 pts</div>
+                            <div class="mt-1">
+                                <span class="badge bg-secondary" id="previewOrdre">#1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations sur l'ordre -->
+                <div class="ordre-info" th:if="${section.idSection == null}">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                    <strong>À propos de l'ordre d'affichage :</strong>
+                    Si vous ne spécifiez pas d'ordre, cette section sera automatiquement placée à la fin 
+                    de la liste pour le poste sélectionné.
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-save me-3">
+                        <i class="bi bi-check-lg me-2"></i>
+                        <span th:text="${section.idSection != null ? 'Modifier la Section' : 'Créer la Section'}">
+                            Créer la Section
+                        </span>
+                    </button>
+                    <a href="/departement/sections-entretien" class="btn btn-cancel">
+                        <i class="bi bi-x-lg me-2"></i>
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Éléments du formulaire
+                const nomInput = document.getElementById('nomSection');
+                const descInput = document.getElementById('description');
+                const posteSelect = document.getElementById('poste');
+                const noteInput = document.getElementById('noteMax');
+                const ordreInput = document.getElementById('ordreAffichage');
+                
+                // Éléments de l'aperçu
+                const previewNom = document.getElementById('previewNom');
+                const previewDesc = document.getElementById('previewDescription');
+                const previewPoste = document.getElementById('previewPoste');
+                const previewNote = document.getElementById('previewNote');
+                const previewOrdre = document.getElementById('previewOrdre');
+                const previewCard = document.getElementById('previewCard');
+                
+                // Compteurs de caractères
+                const nomCounter = document.getElementById('nomCounter');
+                const descCounter = document.getElementById('descCounter');
+                
+                // Fonction pour mettre à jour l'aperçu
+                function updatePreview() {
+                    const nom = nomInput.value.trim() || 'Nom de la section';
+                    const desc = descInput.value.trim() || 'Description de la section d\'évaluation';
+                    const posteText = posteSelect.options[posteSelect.selectedIndex].text;
+                    const note = noteInput.value || '20';
+                    const ordre = ordreInput.value || '1';
+                    
+                    previewNom.textContent = nom;
+                    previewDesc.textContent = desc;
+                    previewPoste.textContent = posteSelect.selectedIndex > 0 ? posteText : 'Sélectionnez un poste';
+                    previewNote.textContent = `/ ${note} pts`;
+                    previewOrdre.textContent = `#${ordre}`;
+                    
+                    // Animation de l'aperçu
+                    if (nom !== 'Nom de la section' || posteSelect.selectedIndex > 0) {
+                        previewCard.classList.add('preview-active');
+                    } else {
+                        previewCard.classList.remove('preview-active');
+                    }
+                }
+                
+                // Fonction pour mettre à jour les compteurs
+                function updateCounters() {
+                    const nomLength = nomInput.value.length;
+                    const descLength = descInput.value.length;
+                    
+                    nomCounter.textContent = nomLength;
+                    descCounter.textContent = descLength;
+                    
+                    // Gestion des limites
+                    if (nomLength > 90) {
+                        nomCounter.classList.add('over-limit');
+                    } else {
+                        nomCounter.classList.remove('over-limit');
+                    }
+                    
+                    if (descLength > 450) {
+                        descCounter.classList.add('over-limit');
+                    } else {
+                        descCounter.classList.remove('over-limit');
+                    }
+                }
+                
+                // Event listeners
+                nomInput.addEventListener('input', function() {
+                    updatePreview();
+                    updateCounters();
+                });
+                
+                descInput.addEventListener('input', function() {
+                    updatePreview();
+                    updateCounters();
+                });
+                
+                posteSelect.addEventListener('change', updatePreview);
+                noteInput.addEventListener('input', updatePreview);
+                ordreInput.addEventListener('input', updatePreview);
+                
+                // Validation du formulaire
+                document.getElementById('sectionForm').addEventListener('submit', function(e) {
+                    if (nomInput.value.trim() === '') {
+                        e.preventDefault();
+                        alert('Le nom de la section est requis.');
+                        nomInput.focus();
+                        return;
+                    }
+                    
+                    if (posteSelect.selectedIndex === 0) {
+                        e.preventDefault();
+                        alert('Veuillez sélectionner un poste.');
+                        posteSelect.focus();
+                        return;
+                    }
+                    
+                    const noteValue = parseInt(noteInput.value);
+                    if (isNaN(noteValue) || noteValue < 1 || noteValue > 100) {
+                        e.preventDefault();
+                        alert('La note maximale doit être comprise entre 1 et 100.');
+                        noteInput.focus();
+                        return;
+                    }
+                });
+                
+                // Initialisation
+                updatePreview();
+                updateCounters();
+            });
+        </script>
+    </div>
+</body>
+</html>

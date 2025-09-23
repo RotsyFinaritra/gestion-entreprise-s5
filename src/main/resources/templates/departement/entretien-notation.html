@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Noter l'Entretien - Département</title>
+    <style>
+        .notation-header {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .candidat-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+        }
+        
+        .candidat-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3f51b5, #2196f3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+        
+        .section-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .section-header {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            border-radius: 8px 8px 0 0;
+            padding: 1rem;
+        }
+        
+        .note-input {
+            font-size: 1.1rem;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .note-input:focus {
+            border-color: #4fc3f7;
+            box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25);
+        }
+        
+        .note-max {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+        }
+        
+        .moyenne-actuelle {
+            background: linear-gradient(45deg, #ff9800, #ffb74d);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .guide-notation {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-save {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .validation-feedback {
+            display: block;
+            font-size: 0.875em;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/departement/dashboard" class="text-decoration-none">Département</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/departement/entretiens" class="text-decoration-none">Entretiens</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Noter l'entretien</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="notation-header text-center">
+            <h1><i class="bi bi-star me-3"></i>Notation d'Entretien</h1>
+            <p class="lead mb-0">Évaluation du candidat par sections</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${warning}">Avertissement</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Informations candidat -->
+        <div class="candidat-card">
+            <div class="d-flex align-items-center">
+                <div class="candidat-avatar" 
+                     th:text="${#strings.substring(entretien.candidat.prenom, 0, 1) + #strings.substring(entretien.candidat.nom, 0, 1)}">
+                    AB
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="mb-1" th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                        Nom Candidat
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1">
+                                <i class="bi bi-envelope me-2 text-muted"></i>
+                                <span th:text="${entretien.candidat.email}">email@exemple.com</span>
+                            </p>
+                            <p class="mb-1">
+                                <i class="bi bi-briefcase me-2 text-muted"></i>
+                                <span th:text="${entretien.offre.poste.nom}">Poste</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1">
+                                <i class="bi bi-calendar3 me-2 text-muted"></i>
+                                <span th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy à HH:mm')}">
+                                    Date entretien
+                                </span>
+                            </p>
+                            <p class="mb-1">
+                                <i class="bi bi-clock me-2 text-muted"></i>
+                                <span th:text="${entretien.dureeEntretien + ' minutes'}">Durée</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Moyenne actuelle (si des notes existent) -->
+        <div th:if="${moyenneActuelle != null and moyenneActuelle > 0}" class="moyenne-actuelle">
+            <h5 class="mb-0">
+                <i class="bi bi-star-fill me-2"></i>
+                Moyenne actuelle : <span th:text="${#numbers.formatDecimal(moyenneActuelle, 1, 1) + '/20'}">15.5/20</span>
+            </h5>
+        </div>
+
+        <!-- Guide de notation -->
+        <div class="guide-notation">
+            <h6><i class="bi bi-info-circle me-2"></i>Guide de notation</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="small mb-0">
+                        <li><strong>Excellent (17-20) :</strong> Dépasse largement les attentes</li>
+                        <li><strong>Très bien (14-16) :</strong> Répond parfaitement aux attentes</li>
+                        <li><strong>Bien (11-13) :</strong> Répond aux attentes</li>
+                        <li><strong>Moyen (8-10) :</strong> Répond partiellement aux attentes</li>
+                        <li><strong>Faible (0-7) :</strong> Ne répond pas aux attentes</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="small mb-0">
+                        <li>Soyez objectif et factuel dans vos commentaires</li>
+                        <li>Utilisez des exemples concrets de l'entretien</li>
+                        <li>Notez les points forts et axes d'amélioration</li>
+                        <li>Les notes peuvent être décimales (ex: 15.5)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de notation -->
+        <form th:action="@{/departement/entretiens/sauvegarder-notes/{id}(id=${entretien.idEntretien})}" 
+              method="post" id="notationForm">
+              
+            <div class="row">
+                <div th:each="section, iterStat : ${sections}" class="col-md-6 mb-4">
+                    <div class="section-card card h-100">
+                        <div class="section-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold" th:text="${section.nomSection}">Section</h6>
+                                <span class="note-max" th:text="'Max: ' + ${section.noteMax} + ' pts'">Max: 20 pts</span>
+                            </div>
+                            <p class="mb-0 mt-2 text-muted small" th:text="${section.description}">Description</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Note -->
+                            <div class="mb-3">
+                                <label th:for="'note_' + ${section.idSection}" class="form-label fw-bold">
+                                    Note <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" 
+                                       class="form-control note-input" 
+                                       th:id="'note_' + ${section.idSection}"
+                                       th:name="'note_' + ${section.idSection}"
+                                       th:placeholder="'Note sur ' + ${section.noteMax}"
+                                       th:max="${section.noteMax}"
+                                       min="0"
+                                       step="0.5"
+                                       th:value="${notesExistantes != null and notesExistantes.get(section.idSection) != null ? notesExistantes.get(section.idSection).noteObtenue : ''}"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Veuillez saisir une note valide.
+                                </div>
+                            </div>
+
+                            <!-- Commentaire -->
+                            <div class="mb-3">
+                                <label th:for="'commentaire_' + ${section.idSection}" class="form-label">
+                                    Commentaire
+                                </label>
+                                <textarea class="form-control" 
+                                          th:id="'commentaire_' + ${section.idSection}"
+                                          th:name="'commentaire_' + ${section.idSection}"
+                                          rows="3"
+                                          placeholder="Observactions, points forts, axes d'amélioration..."
+                                          th:text="${notesExistantes != null and notesExistantes.get(section.idSection) != null ? notesExistantes.get(section.idSection).commentaire : ''}"></textarea>
+                            </div>
+
+                            <!-- Barre de progression pour visualiser la note -->
+                            <div class="progress" style="height: 4px;">
+                                <div class="progress-bar" 
+                                     th:id="'progress_' + ${section.idSection}"
+                                     th:style="'width: ' + (notesExistantes != null and notesExistantes.get(section.idSection) != null ? (notesExistantes.get(section.idSection).noteObtenue * 100 / section.noteMax) : 0) + '%'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-save me-3">
+                    <i class="bi bi-save me-2"></i>
+                    Enregistrer les Notes
+                </button>
+                <a th:href="@{/departement/entretiens}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Retour aux Entretiens
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Mise à jour dynamique des barres de progression
+        document.addEventListener('DOMContentLoaded', function() {
+            const noteInputs = document.querySelectorAll('.note-input');
+            
+            noteInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const sectionId = this.id.replace('note_', '');
+                    const progressBar = document.getElementById('progress_' + sectionId);
+                    const maxNote = parseFloat(this.max);
+                    const currentNote = parseFloat(this.value) || 0;
+                    const percentage = (currentNote / maxNote) * 100;
+                    
+                    progressBar.style.width = percentage + '%';
+                    
+                    // Validation
+                    if (currentNote > maxNote) {
+                        this.classList.add('is-invalid');
+                        this.nextElementSibling.textContent = `La note ne peut pas dépasser ${maxNote}`;
+                    } else if (currentNote < 0) {
+                        this.classList.add('is-invalid');
+                        this.nextElementSibling.textContent = 'La note ne peut pas être négative';
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            });
+
+            // Validation du formulaire
+            document.getElementById('notationForm').addEventListener('submit', function(e) {
+                const inputs = this.querySelectorAll('.note-input');
+                let valid = true;
+                let hasAtLeastOneNote = false;
+
+                inputs.forEach(input => {
+                    const value = parseFloat(input.value);
+                    const max = parseFloat(input.max);
+                    
+                    if (input.value.trim() !== '') {
+                        hasAtLeastOneNote = true;
+                        if (isNaN(value) || value < 0 || value > max) {
+                            valid = false;
+                            input.classList.add('is-invalid');
+                        }
+                    }
+                });
+
+                if (!hasAtLeastOneNote) {
+                    e.preventDefault();
+                    alert('Veuillez saisir au moins une note.');
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Veuillez corriger les erreurs dans le formulaire.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

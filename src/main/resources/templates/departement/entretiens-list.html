@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Entretiens - Département</title>
+    <style>
+        .entretien-header {
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .entretien-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .entretien-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .candidat-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .candidat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3f51b5, #2196f3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.75rem;
+        }
+        
+        .statut-badge {
+            font-size: 0.8em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+        }
+        
+        .statut-programme {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .statut-confirme {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .statut-termine {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .statut-annule {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .note-badge {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .stats-row {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- En-tête -->
+        <div class="entretien-header">
+            <h1><i class="bi bi-calendar2-week me-3"></i>Entretiens à Noter</h1>
+            <p class="lead mb-0" th:text="|Évaluez les candidats pour les postes de votre département|">
+                Évaluez les candidats pour vos postes
+            </p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${warning}">Avertissement</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="stats-row" th:if="${entretiens != null and !entretiens.isEmpty()}">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number text-primary" th:text="${entretiens.size()}">0</div>
+                        <small class="text-muted">Total Entretiens</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number text-warning" th:text="${#lists.size(entretiens.?[statut == 'programmé'])}">0</div>
+                        <small class="text-muted">Programmés</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number text-info" th:text="${#lists.size(entretiens.?[statut == 'confirmé'])}">0</div>
+                        <small class="text-muted">Confirmés</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number text-success" th:text="${#lists.size(entretiens.?[statut == 'terminé'])}">0</div>
+                        <small class="text-muted">Terminés</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des entretiens -->
+        <div th:if="${entretiens == null or entretiens.isEmpty()}" class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-calendar-x" style="font-size: 4rem; color: #6c757d;"></i>
+            </div>
+            <h4 class="text-muted">Aucun entretien à noter</h4>
+            <p class="text-muted">Il n'y a actuellement aucun entretien planifié pour vos postes.</p>
+        </div>
+
+        <div th:if="${entretiens != null and !entretiens.isEmpty()}">
+            <div class="row">
+                <div th:each="entretien : ${entretiens}" class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card entretien-card h-100">
+                        <div class="card-body">
+                            <!-- Candidat et statut -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="candidat-info flex-grow-1">
+                                    <div class="candidat-avatar" 
+                                         th:text="${#strings.substring(entretien.candidat.prenom, 0, 1) + #strings.substring(entretien.candidat.nom, 0, 1)}">
+                                        AB
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0" 
+                                            th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                            Nom Candidat
+                                        </h6>
+                                        <small class="text-muted" th:text="${entretien.candidat.email}">
+                                            email@exemple.com
+                                        </small>
+                                    </div>
+                                </div>
+                                <span class="statut-badge" 
+                                      th:classappend="${entretien.statut == 'programmé' ? 'statut-programme' : 
+                                                     (entretien.statut == 'confirmé' ? 'statut-confirme' : 
+                                                     (entretien.statut == 'terminé' ? 'statut-termine' : 'statut-annule'))}"
+                                      th:text="${entretien.statut}">
+                                    Statut
+                                </span>
+                            </div>
+
+                            <!-- Informations poste et date -->
+                            <div class="mb-3">
+                                <div class="mb-2">
+                                    <i class="bi bi-briefcase me-1 text-primary"></i>
+                                    <strong th:text="${entretien.offre.poste.nom}">Nom du Poste</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-calendar3 me-1 text-muted"></i>
+                                    <span th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy à HH:mm')}">
+                                        01/01/2024 à 10:00
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-clock me-1 text-muted"></i>
+                                    <span th:text="${entretien.dureeEntretien + ' minutes'}">60 minutes</span>
+                                </div>
+                                <div th:if="${entretien.lieuEntretien}" class="mb-2">
+                                    <i class="bi bi-geo-alt me-1 text-muted"></i>
+                                    <span th:text="${entretien.lieuEntretien}">Lieu</span>
+                                </div>
+                            </div>
+
+                            <!-- Note moyenne si disponible -->
+                            <div th:if="${moyennesNotes.get(entretien.idEntretien) != null and moyennesNotes.get(entretien.idEntretien) > 0}" 
+                                 class="mb-3">
+                                <span class="note-badge">
+                                    <i class="bi bi-star-fill me-1"></i>
+                                    <span th:text="${#numbers.formatDecimal(moyennesNotes.get(entretien.idEntretien), 1, 1) + '/20'}">
+                                        15.5/20
+                                    </span>
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="action-buttons">
+                                <!-- Noter l'entretien -->
+                                <a th:if="${entretien.statut != 'annulé'}" 
+                                   th:href="@{/departement/entretiens/noter/{id}(id=${entretien.idEntretien})}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-pencil-square me-1"></i>
+                                    Noter
+                                </a>
+                                
+                                <!-- Voir détails -->
+                                <a th:href="@{/departement/entretiens/{id}/detail(id=${entretien.idEntretien})}" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>
+                                    Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

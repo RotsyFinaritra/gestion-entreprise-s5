@@ -1,6 +1,7 @@
 package com.entreprise.service;
 
 import com.entreprise.model.Formation;
+import com.entreprise.model.User;
 import com.entreprise.repository.FormationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,14 @@ public class FormationService {
     
     public List<Formation> findAll() {
         return formationRepository.findAll();
+    }
+    
+    public List<Formation> findByDepartement(User departement) {
+        return formationRepository.findByDepartement(departement);
+    }
+    
+    public List<Formation> findByDepartementId(Long departementId) {
+        return formationRepository.findByDepartementIdUser(departementId);
     }
     
     public Optional<Formation> findById(Long id) {

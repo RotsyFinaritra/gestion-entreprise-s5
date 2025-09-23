@@ -14,6 +14,10 @@ public class Formation {
     @Column(name = "nom")
     private String nom;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_departement")
+    private User departement;
+
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PosteFormation> posteFormations;
 
@@ -42,6 +46,14 @@ public class Formation {
 
     public void setNom(String nom) {
         this.nom = nom;
+    }
+
+    public User getDepartement() {
+        return departement;
+    }
+
+    public void setDepartement(User departement) {
+        this.departement = departement;
     }
 
     public List<PosteFormation> getPosteFormations() {

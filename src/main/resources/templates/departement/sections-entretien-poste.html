@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Sections d'Entretien - Poste</title>
+    <style>
+        .poste-header {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .poste-info {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .section-timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #17a2b8, #6f42c1);
+        }
+        
+        .section-item {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            position: relative;
+            margin-left: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .section-number {
+            position: absolute;
+            left: -2.5rem;
+            top: 1.5rem;
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+            border: 3px solid white;
+        }
+        
+        .section-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .note-badge {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .description-box {
+            background: #f8f9fa;
+            border-left: 4px solid #17a2b8;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #17a2b8;
+        }
+        
+        .empty-sections {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #856404;
+            margin-bottom: 1rem;
+        }
+        
+        .action-buttons {
+            gap: 0.5rem;
+        }
+        
+        .progress-bar-custom {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .total-points {
+            background: linear-gradient(45deg, #6f42c1, #8e44ad);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/departement/dashboard" class="text-decoration-none">Département</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/departement/sections-entretien" class="text-decoration-none">Sections d'Entretien</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${poste.nom}">
+                    Poste
+                </li>
+            </ol>
+        </nav>
+
+        <!-- En-tête du poste -->
+        <div class="poste-header text-center">
+            <h1><i class="bi bi-briefcase me-3"></i><span th:text="${poste.nom}">Nom du Poste</span></h1>
+            <p class="lead mb-0">Critères d'évaluation pour ce poste</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Informations du poste -->
+        <div class="poste-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="mb-2"><span th:text="${poste.nom}">Nom du Poste</span></h4>
+                    <p class="text-muted mb-3" th:if="${poste.description}" th:text="${poste.description}">
+                        Description du poste
+                    </p>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-primary me-2" th:text="${poste.departement.username}">
+                            Département
+                        </span>
+                        <small class="text-muted">
+                            Poste créé le <span th:text="${#temporals.format(poste.dateCreation, 'dd/MM/yyyy')}">01/01/2024</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/departement/sections-entretien/nouveau(posteId=${poste.idPoste})}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Ajouter Section
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div th:if="${sections != null and !sections.isEmpty()}">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#lists.size(sections)}">0</div>
+                    <small class="text-muted">Sections Total</small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#aggregates.sum(sections.![noteMax])}">0</div>
+                    <small class="text-muted">Points Total</small>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(#aggregates.avg(sections.![noteMax]), 1, 1)}">0</div>
+                    <small class="text-muted">Points Moyen</small>
+                </div>
+            </div>
+            
+            <!-- Total des points -->
+            <div class="total-points">
+                <h3 class="mb-0">
+                    <i class="bi bi-trophy me-2"></i>
+                    Total : <span th:text="${#aggregates.sum(sections.![noteMax]) + ' points'}">100 points</span>
+                </h3>
+                <p class="mb-0 mt-2">
+                    Note maximale possible pour ce poste lors d'un entretien
+                </p>
+            </div>
+        </div>
+
+        <!-- Timeline des sections -->
+        <div th:if="${sections != null and !sections.isEmpty()}" class="section-timeline">
+            <div th:each="section, iterStat : ${sections}" class="section-item">
+                <div class="section-number" th:text="${section.ordreAffichage ?: (iterStat.index + 1)}">
+                    1
+                </div>
+                
+                <div class="section-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1" th:text="${section.nomSection}">Nom de la Section</h5>
+                            <small class="text-muted">Section d'évaluation</small>
+                        </div>
+                        <div class="note-badge" th:text="${section.noteMax + ' pts'}">20 pts</div>
+                    </div>
+                </div>
+                
+                <div class="p-3">
+                    <div th:if="${section.description != null and !#strings.isEmpty(section.description)}">
+                        <div class="description-box">
+                            <h6 class="small mb-2">
+                                <i class="bi bi-info-circle me-1"></i>Description :
+                            </h6>
+                            <p class="mb-0" th:text="${section.description}">
+                                Description de la section
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Barre de progression représentant le poids -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Poids dans l'évaluation</small>
+                            <small class="text-muted">
+                                <span th:text="${#numbers.formatDecimal((section.noteMax * 100.0) / #aggregates.sum(sections.![noteMax]), 1, 1)}">25</span>%
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar progress-bar-custom" 
+                                 th:style="'width: ' + ${#numbers.formatDecimal((section.noteMax * 100.0) / #aggregates.sum(sections.![noteMax]), 1, 1)} + '%'">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex action-buttons justify-content-end">
+                        <a th:href="@{/departement/sections-entretien/modifier/{id}(id=${section.idSection})}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                            Modifier
+                        </a>
+                        
+                        <form th:action="@{/departement/sections-entretien/supprimer/{id}(id=${section.idSection})}" 
+                              method="post" class="d-inline"
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette section ? Cette action est irréversible.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- État vide -->
+        <div th:if="${sections == null or sections.isEmpty()}" class="empty-sections">
+            <i class="bi bi-list-check empty-icon"></i>
+            <h4>Aucune section d'évaluation</h4>
+            <p class="mb-4">
+                Ce poste n'a pas encore de critères d'évaluation définis pour les entretiens.
+                Ajoutez des sections pour structurer l'évaluation des candidats.
+            </p>
+            <a th:href="@{/departement/sections-entretien/nouveau(posteId=${poste.idPoste})}" 
+               class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle me-2"></i>
+                Créer la première section
+            </a>
+        </div>
+
+        <!-- Actions principales -->
+        <div class="text-center mt-4">
+            <div class="btn-group">
+                <a th:href="@{/departement/sections-entretien/nouveau(posteId=${poste.idPoste})}" 
+                   class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouvelle Section
+                </a>
+                <a th:href="@{/departement/postes/modifier/{id}(id=${poste.idPoste})}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil me-2"></i>
+                    Modifier le Poste
+                </a>
+                <a href="/departement/sections-entretien" class="btn btn-outline-info">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Toutes les Sections
+                </a>
+            </div>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div th:if="${sections != null and !sections.isEmpty()}" class="mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        Conseils d'utilisation
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Les sections sont présentées dans l'ordre défini lors de l'évaluation</li>
+                        <li>La note totale de ce poste est de <strong th:text="${#aggregates.sum(sections.![noteMax])} + ' points'">100 points</strong></li>
+                        <li>Vous pouvez réorganiser les sections en modifiant leur ordre d'affichage</li>
+                        <li>Chaque section peut avoir une description pour guider l'évaluateur</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

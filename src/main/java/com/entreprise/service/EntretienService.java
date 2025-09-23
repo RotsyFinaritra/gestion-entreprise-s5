@@ -50,6 +50,10 @@ public class EntretienService {
     public List<Entretien> findByStatut(String statut) {
         return entretienRepository.findByStatut(statut);
     }
+    
+    public List<Entretien> findByDepartement(com.entreprise.model.User departement) {
+        return entretienRepository.findByDepartement(departement);
+    }
 
     public Entretien save(Entretien entretien) {
         // Vérifier qu'un entretien n'existe pas déjà pour ce candidat et cette offre

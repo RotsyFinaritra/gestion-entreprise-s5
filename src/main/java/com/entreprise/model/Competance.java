@@ -14,6 +14,10 @@ public class Competance {
     @Column(name = "nom")
     private String nom;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_departement")
+    private User departement;
+
     @OneToMany(mappedBy = "competance", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PosteCompetance> posteCompetances;
 
@@ -45,6 +49,14 @@ public class Competance {
 
     public void setNom(String nom) {
         this.nom = nom;
+    }
+
+    public User getDepartement() {
+        return departement;
+    }
+
+    public void setDepartement(User departement) {
+        this.departement = departement;
     }
 
     public List<PosteCompetance> getPosteCompetances() {

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Sections d'Entretien - Département</title>
+    <style>
+        .sections-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .section-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .poste-badge {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .note-badge {
+            background: linear-gradient(45deg, #28a745, #1e7e34);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .ordre-badge {
+            background: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        
+        .description-text {
+            color: #6c757d;
+            line-height: 1.6;
+            max-height: 3.6em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .stats-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            margin: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6f42c1;
+            display: block;
+        }
+        
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-group-custom .btn {
+            border-radius: 20px;
+            margin: 0 0.25rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .action-buttons {
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/departement/dashboard" class="text-decoration-none">Département</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Sections d'Entretien</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="sections-header text-center">
+            <h1><i class="bi bi-list-check me-3"></i>Sections d'Entretien</h1>
+            <p class="lead mb-0">Gérez les critères d'évaluation de vos entretiens</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Actions principales -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="btn-group-custom">
+                <a href="/departement/sections-entretien/nouveau" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouvelle Section
+                </a>
+            </div>
+            
+            <!-- Filtres -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-funnel me-2"></i>
+                    Filtrer par poste
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/departement/sections-entretien">Tous les postes</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li th:each="poste : ${postes}">
+                        <a class="dropdown-item" 
+                           th:href="@{/departement/postes/{id}/sections-entretien(id=${poste.idPoste})}"
+                           th:text="${poste.nom}">
+                            Nom du Poste
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-container" th:if="${sections != null and !sections.isEmpty()}">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number" th:text="${#lists.size(sections)}">0</span>
+                        <small class="text-muted">Sections Total</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number" th:text="${#lists.size(postes)}">0</span>
+                        <small class="text-muted">Postes Concernés</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number" th:text="${#aggregates.sum(sections.![noteMax])}">0</span>
+                        <small class="text-muted">Points Total</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number" th:text="${#numbers.formatDecimal(#aggregates.avg(sections.![noteMax]), 1, 1)}">0</span>
+                        <small class="text-muted">Points Moyen</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des sections -->
+        <div th:if="${sections != null and !sections.isEmpty()}">
+            <div class="row">
+                <div th:each="section : ${sections}" class="col-md-6 mb-4">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1" th:text="${section.nomSection}">Nom de la Section</h5>
+                                    <span class="poste-badge" th:text="${section.poste.nom}">Poste</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="note-badge" th:text="'/' + ${section.noteMax} + ' pts'">/ 20 pts</div>
+                                    <div class="mt-1">
+                                        <span class="ordre-badge" th:text="'#' + ${section.ordreAffichage}">
+                                            #1
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-3">
+                            <div th:if="${section.description != null and !#strings.isEmpty(section.description)}" class="mb-3">
+                                <p class="description-text" th:text="${section.description}">
+                                    Description de la section d'évaluation
+                                </p>
+                            </div>
+                            
+                            <div th:unless="${section.description != null and !#strings.isEmpty(section.description)}" class="mb-3">
+                                <p class="text-muted fst-italic">Aucune description fournie</p>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="d-flex action-buttons justify-content-end">
+                                <a th:href="@{/departement/sections-entretien/modifier/{id}(id=${section.idSection})}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                    Modifier
+                                </a>
+                                
+                                <form th:action="@{/departement/sections-entretien/supprimer/{id}(id=${section.idSection})}" 
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette section ? Cette action est irréversible.')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- État vide -->
+        <div th:if="${sections == null or sections.isEmpty()}" class="empty-state">
+            <i class="bi bi-list-check empty-icon"></i>
+            <h4 class="text-muted">Aucune section d'entretien</h4>
+            <p class="text-muted mb-4">
+                Vous n'avez pas encore défini de critères d'évaluation pour vos entretiens.
+                Commencez par créer une section d'entretien.
+            </p>
+            <a href="/departement/sections-entretien/nouveau" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle me-2"></i>
+                Créer la première section
+            </a>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="text-center mt-4" th:if="${sections != null and !sections.isEmpty()}">
+            <div class="btn-group-custom">
+                <a href="/departement/sections-entretien/nouveau" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Nouvelle Section
+                </a>
+                <a href="/departement/postes" class="btn btn-outline-secondary">
+                    <i class="bi bi-briefcase me-2"></i>
+                    Gérer les Postes
+                </a>
+                <a href="/departement/entretiens" class="btn btn-outline-info">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Voir les Entretiens
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

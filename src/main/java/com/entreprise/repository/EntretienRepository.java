@@ -50,4 +50,13 @@ public interface EntretienRepository extends JpaRepository<Entretien, Long> {
            "WHERE e.offre.idOffre = :offreId " +
            "ORDER BY e.dateHeureEntretien")
     List<Entretien> findByOffreWithCandidatAndOffre(@Param("offreId") Long offreId);
+    
+    // Trouver les entretiens par département
+    @Query("SELECT e FROM Entretien e " +
+           "LEFT JOIN FETCH e.candidat c " +
+           "LEFT JOIN FETCH e.offre o " +
+           "LEFT JOIN FETCH o.poste p " +
+           "WHERE p.departement = :departement " +
+           "ORDER BY e.dateHeureEntretien DESC")
+    List<Entretien> findByDepartement(@Param("departement") com.entreprise.model.User departement);
 }

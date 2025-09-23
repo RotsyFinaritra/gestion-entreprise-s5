@@ -1,6 +1,7 @@
 package com.entreprise.service;
 
 import com.entreprise.model.Competance;
+import com.entreprise.model.User;
 import com.entreprise.repository.CompetanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,14 @@ public class CompetanceService {
     
     public List<Competance> findAll() {
         return competanceRepository.findAll();
+    }
+    
+    public List<Competance> findByDepartement(User departement) {
+        return competanceRepository.findByDepartement(departement);
+    }
+    
+    public List<Competance> findByDepartementId(Long departementId) {
+        return competanceRepository.findByDepartementIdUser(departementId);
     }
     
     public Optional<Competance> findById(Long id) {

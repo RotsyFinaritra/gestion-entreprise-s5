@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{departement-layout :: layout(${pageTitle}, ~{::content})}">
+
+<head>
+    <title th:text="${pageTitle}">Détail Entretien - Département</title>
+    <style>
+        .entretien-header {
+            background: linear-gradient(135deg, #673ab7 0%, #9c27b0 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .candidat-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .candidat-header {
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            padding: 1.5rem;
+        }
+        
+        .candidat-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3f51b5, #2196f3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 1.5rem;
+        }
+        
+        .statut-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .statut-programme {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .statut-confirme {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .statut-termine {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .statut-annule {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .moyenne-globale {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .note-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .note-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4caf50;
+        }
+        
+        .note-max {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .progress-custom {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            transition: width 0.3s ease;
+        }
+        
+        .commentaire-box {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #007bff;
+        }
+        
+        .no-notes-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/departement/dashboard" class="text-decoration-none">Département</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/departement/entretiens" class="text-decoration-none">Entretiens</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Détail entretien</li>
+            </ol>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="entretien-header text-center">
+            <h1><i class="bi bi-person-badge me-3"></i>Détail de l'Entretien</h1>
+            <p class="lead mb-0">Résultats de l'évaluation du candidat</p>
+        </div>
+
+        <!-- Messages d'alerte -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}">Succès</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Erreur</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Informations candidat -->
+        <div class="candidat-card">
+            <div class="candidat-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="candidat-avatar" 
+                             th:text="${#strings.substring(entretien.candidat.prenom, 0, 1) + #strings.substring(entretien.candidat.nom, 0, 1)}">
+                            AB
+                        </div>
+                        <div>
+                            <h3 class="mb-1" th:text="${entretien.candidat.prenom + ' ' + entretien.candidat.nom}">
+                                Nom Candidat
+                            </h3>
+                            <p class="mb-0 text-muted" th:text="${entretien.candidat.email}">
+                                email@exemple.com
+                            </p>
+                        </div>
+                    </div>
+                    <span class="statut-badge" 
+                          th:classappend="${entretien.statut == 'programmé' ? 'statut-programme' : 
+                                         (entretien.statut == 'confirmé' ? 'statut-confirme' : 
+                                         (entretien.statut == 'terminé' ? 'statut-termine' : 'statut-annule'))}"
+                          th:text="${entretien.statut}">
+                        Statut
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Informations détaillées -->
+            <div class="info-grid p-3">
+                <div class="info-item">
+                    <i class="bi bi-briefcase info-icon"></i>
+                    <h6>Poste</h6>
+                    <p class="mb-0" th:text="${entretien.offre.poste.nom}">Nom du Poste</p>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-calendar3 info-icon"></i>
+                    <h6>Date et Heure</h6>
+                    <p class="mb-0" th:text="${#temporals.format(entretien.dateHeureEntretien, 'dd/MM/yyyy à HH:mm')}">
+                        Date entretien
+                    </p>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-clock info-icon"></i>
+                    <h6>Durée</h6>
+                    <p class="mb-0" th:text="${entretien.dureeEntretien + ' minutes'}">Durée</p>
+                </div>
+                <div class="info-item" th:if="${entretien.lieuEntretien}">
+                    <i class="bi bi-geo-alt info-icon"></i>
+                    <h6>Lieu</h6>
+                    <p class="mb-0" th:text="${entretien.lieuEntretien}">Lieu</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Moyenne globale -->
+        <div th:if="${moyenne != null and moyenne > 0}" class="moyenne-globale">
+            <h2 class="mb-0">
+                <i class="bi bi-star-fill me-2"></i>
+                Moyenne Générale: <span th:text="${#numbers.formatDecimal(moyenne, 1, 1) + '/20'}">15.5/20</span>
+            </h2>
+            <div class="progress-custom mt-3" style="width: 60%; margin: 0 auto;">
+                <div class="progress-bar-custom" th:style="'width: ' + (moyenne * 5) + '%'"></div>
+            </div>
+        </div>
+
+        <!-- Détails des notes par section -->
+        <div th:if="${sections != null and !sections.isEmpty()}">
+            <h4 class="mb-4"><i class="bi bi-list-check me-2"></i>Évaluation par Section</h4>
+            
+            <div th:if="${notes == null or notes.isEmpty()}" class="no-notes-card">
+                <i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: #856404;"></i>
+                <h5 class="mt-3">Aucune note attribuée</h5>
+                <p class="mb-3">Cet entretien n'a pas encore été noté.</p>
+                <a th:href="@{/departement/entretiens/noter/{id}(id=${entretien.idEntretien})}" 
+                   class="btn btn-warning">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Commencer la notation
+                </a>
+            </div>
+            
+            <div th:if="${notes != null and !notes.isEmpty()}">
+                <div class="row">
+                    <div th:each="section : ${sections}" class="col-md-6 mb-3">
+                        <div class="note-section">
+                            <div class="section-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0" th:text="${section.nomSection}">Section</h6>
+                                    <div th:if="${notesMap.get(section.idSection) != null}">
+                                        <span class="note-value" 
+                                              th:text="${#numbers.formatDecimal(notesMap.get(section.idSection).noteObtenue, 1, 1)}">
+                                            15.0
+                                        </span>
+                                        <span class="note-max" th:text="'/' + ${section.noteMax}">/ 20</span>
+                                    </div>
+                                    <div th:unless="${notesMap.get(section.idSection) != null}">
+                                        <span class="text-muted">Non noté</span>
+                                    </div>
+                                </div>
+                                <p class="small text-muted mt-1 mb-0" th:text="${section.description}">
+                                    Description de la section
+                                </p>
+                            </div>
+                            
+                            <div class="p-3" th:if="${notesMap.get(section.idSection) != null}">
+                                <!-- Barre de progression -->
+                                <div class="progress-custom mb-3">
+                                    <div class="progress-bar-custom" 
+                                         th:style="'width: ' + (notesMap.get(section.idSection).noteObtenue * 100 / section.noteMax) + '%'">
+                                    </div>
+                                </div>
+                                
+                                <!-- Commentaire s'il existe -->
+                                <div th:if="${notesMap.get(section.idSection).commentaire != null and !#strings.isEmpty(notesMap.get(section.idSection).commentaire)}" 
+                                     class="commentaire-box">
+                                    <h6 class="small mb-2"><i class="bi bi-chat-text me-1"></i>Commentaire :</h6>
+                                    <p class="small mb-0" th:text="${notesMap.get(section.idSection).commentaire}">
+                                        Commentaire de l'évaluateur
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 text-center text-muted" th:unless="${notesMap.get(section.idSection) != null}">
+                                <i class="bi bi-dash-circle me-1"></i>
+                                Cette section n'a pas été notée
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center mt-4">
+            <a th:href="@{/departement/entretiens/noter/{id}(id=${entretien.idEntretien})}" 
+               class="btn btn-primary me-3">
+                <i class="bi bi-pencil-square me-2"></i>
+                <span th:text="${notes != null and !notes.isEmpty() ? 'Modifier les Notes' : 'Commencer la Notation'}">
+                    Noter l'Entretien
+                </span>
+            </a>
+            <a th:href="@{/departement/entretiens}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour aux Entretiens
+            </a>
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div th:if="${entretien.commentaire}" class="mt-4">
+            <div class="commentaire-box">
+                <h6><i class="bi bi-journal-text me-2"></i>Commentaire général sur l'entretien :</h6>
+                <p class="mb-0" th:text="${entretien.commentaire}">Commentaire général</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
