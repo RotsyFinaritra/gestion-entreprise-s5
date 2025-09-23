@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+
+<head>
+    <title>Calendrier des Entretiens - Administration</title>
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- En-tête -->
+    <style>
+        .calendar-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card.secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Personnalisation FullCalendar */
+        .fc-toolbar-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .fc-button-primary {
+            background-color: #667eea !important;
+            border-color: #667eea !important;
+        }
+
+        .fc-button-primary:hover {
+            background-color: #5a6fd8 !important;
+            border-color: #5a6fd8 !important;
+        }
+
+        .fc-event {
+            cursor: pointer;
+        }
+
+        .fc-daygrid-event {
+            margin: 1px 0;
+        }
+
+        /* Modal personnalisé */
+        .modal-header.event-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .event-detail-row {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .event-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .event-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        .badge-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+    </style>
+        <div class="calendar-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h2 mb-1">
+                        <i class="bi bi-calendar-week me-3"></i>
+                        Calendrier des Entretiens
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Planification et suivi des entretiens candidats
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group">
+                        <button class="btn btn-light" onclick="refreshCalendar()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Actualiser
+                        </button>
+                        <a href="/admin/entretiens" class="btn btn-outline-light">
+                            <i class="bi bi-list me-1"></i>Liste des entretiens
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <i class="bi bi-calendar-check" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h3 id="statTermines">0</h3>
+                <p class="mb-0">Entretiens terminés</p>
+            </div>
+            <div class="stat-card info">
+                <i class="bi bi-calendar-event" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h3 id="statPlanifies">0</h3>
+                <p class="mb-0">Entretiens planifiés</p>
+            </div>
+            <div class="stat-card warning">
+                <i class="bi bi-calendar-x" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h3 id="statAnnules">0</h3>
+                <p class="mb-0">Entretiens annulés</p>
+            </div>
+            <div class="stat-card secondary">
+                <i class="bi bi-calendar-date" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <h3 id="statTotal">0</h3>
+                <p class="mb-0">Total entretiens</p>
+            </div>
+        </div>
+
+        <!-- Légende -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #007bff;"></div>
+                <span>Planifié</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffc107;"></div>
+                <span>En cours</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #28a745;"></div>
+                <span>Terminé</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <span>Annulé</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #fd7e14;"></div>
+                <span>Reporté</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6c757d;"></div>
+                <span>Autre</span>
+            </div>
+        </div>
+
+        <!-- Calendrier -->
+        <div class="calendar-container">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Modal de détails d'entretien -->
+        <div class="modal fade" id="entretienModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header event-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            Détails de l'entretien
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="entretienDetails">
+                            <!-- Les détails seront chargés ici via JavaScript -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a id="btnVoirEntretien" href="#" class="btn btn-primary">
+                            <i class="bi bi-eye me-1"></i>Voir détails complets
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+        <script>
+            let calendar;
+            let allEvents = [];
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeCalendar();
+                loadStatistics();
+            });
+
+            function initializeCalendar() {
+                const calendarEl = document.getElementById('calendar');
+                
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'fr',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    },
+                    buttonText: {
+                        today: 'Aujourd\'hui',
+                        month: 'Mois',
+                        week: 'Semaine',
+                        day: 'Jour',
+                        list: 'Liste'
+                    },
+                    events: {
+                        url: '/admin/calendrier-entretiens/api/events',
+                        method: 'GET',
+                        failure: function() {
+                            alert('Erreur lors du chargement des entretiens');
+                        }
+                    },
+                    eventClick: function(info) {
+                        showEntretienDetails(info.event.id);
+                    },
+                    eventDidMount: function(info) {
+                        // Tooltip avec informations de base
+                        info.el.setAttribute('title', 
+                            `${info.event.title}\n` +
+                            `Lieu: ${info.event.extendedProps.lieu}\n` +
+                            `Statut: ${info.event.extendedProps.statut}`
+                        );
+                    },
+                    eventsSet: function(events) {
+                        allEvents = events;
+                        updateStatistics(events);
+                    },
+                    height: 'auto',
+                    dayMaxEvents: 3,
+                    moreLinkClick: 'popover'
+                });
+
+                calendar.render();
+            }
+
+            function showEntretienDetails(entretienId) {
+                fetch(`/admin/calendrier-entretiens/api/entretien/${entretienId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const detailsHtml = `
+                            <div class="event-detail-row">
+                                <span class="event-label">Candidat:</span>
+                                <strong>${data.candidat}</strong>
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Email:</span>
+                                <a href="mailto:${data.email}">${data.email}</a>
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Poste:</span>
+                                ${data.poste}
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Offre:</span>
+                                ${data.offre}
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Date & Heure:</span>
+                                <strong>${data.dateHeure}</strong>
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Lieu:</span>
+                                ${data.lieu || 'Non spécifié'}
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-label">Statut:</span>
+                                <span class="badge badge-status ${getStatusBadgeClass(data.statut)}">${data.statut}</span>
+                            </div>
+                        `;
+                        
+                        document.getElementById('entretienDetails').innerHTML = detailsHtml;
+                        document.getElementById('btnVoirEntretien').href = `/entretiens/${data.id}`;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('entretienModal'));
+                        modal.show();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors du chargement des détails');
+                    });
+            }
+
+            function getStatusBadgeClass(statut) {
+                if (!statut) return 'bg-secondary';
+                
+                switch (statut.toLowerCase()) {
+                    case 'planifié':
+                    case 'planifie':
+                        return 'bg-primary';
+                    case 'en cours':
+                        return 'bg-warning';
+                    case 'terminé':
+                    case 'termine':
+                        return 'bg-success';
+                    case 'annulé':
+                    case 'annule':
+                        return 'bg-danger';
+                    case 'reporté':
+                    case 'reporte':
+                        return 'bg-warning';
+                    default:
+                        return 'bg-secondary';
+                }
+            }
+
+            function updateStatistics(events) {
+                const stats = {
+                    total: events.length,
+                    termines: 0,
+                    planifies: 0,
+                    annules: 0
+                };
+
+                events.forEach(event => {
+                    const statut = event.extendedProps.statut?.toLowerCase();
+                    switch (statut) {
+                        case 'terminé':
+                        case 'termine':
+                            stats.termines++;
+                            break;
+                        case 'planifié':
+                        case 'planifie':
+                            stats.planifies++;
+                            break;
+                        case 'annulé':
+                        case 'annule':
+                            stats.annules++;
+                            break;
+                    }
+                });
+
+                document.getElementById('statTotal').textContent = stats.total;
+                document.getElementById('statTermines').textContent = stats.termines;
+                document.getElementById('statPlanifies').textContent = stats.planifies;
+                document.getElementById('statAnnules').textContent = stats.annules;
+            }
+
+            function loadStatistics() {
+                // Les statistiques sont mises à jour automatiquement lors du chargement des événements
+            }
+
+            function refreshCalendar() {
+                if (calendar) {
+                    calendar.refetchEvents();
+                }
+            }
+        </script>
+    </div>
+</body>
+
+</html>

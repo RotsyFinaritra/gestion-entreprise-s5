@@ -22,7 +22,17 @@ public class StatusService {
     }
     
     public Optional<Status> findByNom(String nom) {
-        return statusRepository.findByNom(nom);
+        try {
+            return statusRepository.findByNom(nom);
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            // En cas de doublons, retourner le premier trouvé
+            List<Status> statusList = statusRepository.findAllByNom(nom);
+            return statusList.isEmpty() ? Optional.empty() : Optional.of(statusList.get(0));
+        }
+    }
+    
+    public List<Status> findAllByNom(String nom) {
+        return statusRepository.findAllByNom(nom);
     }
     
     public Status save(Status status) {

@@ -36,10 +36,6 @@
                                         <td th:text="${demande.departement.nomDepartement}"></td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Type de contrat :</strong></td>
-                                        <td th:text="${demande.typeContrat}"></td>
-                                    </tr>
-                                    <tr>
                                         <td><strong>Statut :</strong></td>
                                         <td>
                                             <span class="badge" th:style="'background-color: ' + ${demande.statutDemande.couleur}" 
@@ -63,10 +59,6 @@
                                         <td><strong>Date limite candidature :</strong></td>
                                         <td th:text="${#temporals.format(demande.dateLimiteCandidature, 'dd/MM/yyyy')}"></td>
                                     </tr>
-                                    <tr th:if="${demande.userTraitement != null}">
-                                        <td><strong>Traité par :</strong></td>
-                                        <td th:text="${demande.userTraitement.nomDepartement}"></td>
-                                    </tr>
                                 </table>
                             </div>
                         </div>
@@ -77,29 +69,11 @@
                             <p th:text="${demande.descriptionPoste}" class="text-muted"></p>
                         </div>
 
-                        <!-- Informations sur l'entreprise -->
-                        <div class="mb-4" th:if="${demande.descriptionEntreprise != null}">
-                            <h5 class="text-primary">Description de l'entreprise</h5>
-                            <p th:text="${demande.descriptionEntreprise}" class="text-muted"></p>
-                        </div>
-
                         <!-- Détails du poste -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <h5 class="text-primary">Détails du poste</h5>
                                 <table class="table table-borderless">
-                                    <tr th:if="${demande.salaireMin != null || demande.salaireMax != null}">
-                                        <td><strong>Salaire :</strong></td>
-                                        <td>
-                                            <span th:if="${demande.salaireMin != null}" th:text="${demande.salaireMin} + ' €'"></span>
-                                            <span th:if="${demande.salaireMin != null && demande.salaireMax != null}"> - </span>
-                                            <span th:if="${demande.salaireMax != null}" th:text="${demande.salaireMax} + ' €'"></span>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${demande.niveauExperience != null}">
-                                        <td><strong>Niveau d'expérience :</strong></td>
-                                        <td th:text="${demande.niveauExperience}"></td>
-                                    </tr>
                                     <tr th:if="${demande.local != null}">
                                         <td><strong>Localisation :</strong></td>
                                         <td th:text="${demande.nomLocal}"></td>
@@ -122,10 +96,6 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div class="col-md-6" th:if="${demande.avantages != null}">
-                                <h5 class="text-primary">Avantages</h5>
-                                <p th:text="${demande.avantages}" class="text-muted"></p>
-                            </div>
                         </div>
 
                         <!-- Justification -->
@@ -135,16 +105,6 @@
                         </div>
 
                         <!-- Commentaires -->
-                        <div class="row mb-4">
-                            <div class="col-md-6" th:if="${demande.commentaireDepartement != null}">
-                                <h5 class="text-primary">Commentaire du département</h5>
-                                <p th:text="${demande.commentaireDepartement}" class="text-muted"></p>
-                            </div>
-                            <div class="col-md-6" th:if="${demande.commentaireRh != null}">
-                                <h5 class="text-primary">Commentaire RH</h5>
-                                <p th:text="${demande.commentaireRh}" class="text-muted"></p>
-                            </div>
-                        </div>
 
                         <!-- Actions -->
                         <div class="d-flex gap-2 mt-4">
