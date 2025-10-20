@@ -279,7 +279,7 @@
                         </div>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar progress-bar-custom" 
-                                 th:style="'width: ' + ${#numbers.formatDecimal((section.noteMax * 100.0) / #aggregates.sum(sections.![noteMax]), 1, 1)} + '%'">
+                                 th:style="${'width: ' + (#numbers.formatDecimal((section.noteMax != null and #aggregates.sum(sections.![noteMax]) != null and #aggregates.sum(sections.![noteMax]) > 0) ? (section.noteMax * 100.0) / #aggregates.sum(sections.![noteMax]) : 0, 1, 1)) + '%'}">
                             </div>
                         </div>
                     </div>

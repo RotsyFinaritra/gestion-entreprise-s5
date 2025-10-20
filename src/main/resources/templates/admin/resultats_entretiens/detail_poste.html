@@ -110,7 +110,7 @@
                         </div>
                         <div class="progress bg-white bg-opacity-25" style="height: 6px; width: 120px;">
                             <div class="progress-bar bg-white" 
-                                 th:style="'width: ' + ${(moyennePoste / 20.0 * 100)} + '%'">
+                                 th:style="${'width: ' + ((moyennePoste != null) ? (moyennePoste / 20.0 * 100) : 0) + '%'}">
                             </div>
                         </div>
                     </div>
@@ -218,7 +218,7 @@
                                     <div class="me-3">
                                         <div class="progress mb-1" style="width: 100px; height: 6px;">
                                             <div class="progress-bar bg-success" 
-                                                 th:style="'width: ' + ${(moyennesEntretiens.get(entretien.idEntretien) / 20.0 * 100)} + '%'">
+                                                 th:style="${'width: ' + ((moyennesEntretiens.get(entretien.idEntretien) != null) ? (moyennesEntretiens.get(entretien.idEntretien) / 20.0 * 100) : 0) + '%'}">
                                             </div>
                                         </div>
                                         <small class="text-muted text-center d-block">

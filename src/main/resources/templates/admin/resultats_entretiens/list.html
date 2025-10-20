@@ -172,7 +172,7 @@
                         <div class="card-body pt-0">
                             <div class="progress mb-3" style="height: 8px;">
                                 <div class="progress-bar bg-success"
-                                    th:style="'width: ' + ${(moyennesParOffre.get(entry.key) / 20.0 * 100)} + '%'">
+                                    th:style="${'width: ' + ((moyennesParOffre.get(entry.key) != null ? (moyennesParOffre.get(entry.key) / 20.0 * 100) : 0)) + '%'}">
                                 </div>
                             </div>
 

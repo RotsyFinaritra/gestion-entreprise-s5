@@ -119,7 +119,7 @@
                     </span>
                     <div class="progress" style="width: 200px; height: 8px;">
                         <div class="progress-bar progress-bar-essai" role="progressbar" 
-                             th:style="'width: ' + ${(candidatsEngages != null ? candidatsEngages.size() : 0) * 100.0 / offre.nbrPersonne} + '%'"
+                             th:style="${'width: ' + ((candidatsEngages != null and offre.nbrPersonne != null and offre.nbrPersonne > 0) ? (candidatsEngages.size() * 100.0 / offre.nbrPersonne) : 0) + '%'}"
                              th:aria-valuenow="${candidatsEngages != null ? candidatsEngages.size() : 0}" 
                              th:aria-valuemax="${offre.nbrPersonne}">
                         </div>
@@ -236,7 +236,7 @@
                                                 <strong class="me-2" th:text="${notesMoyennes[entretien.idEntretien] != null ? #numbers.formatDecimal(notesMoyennes[entretien.idEntretien], 1, 1) + '/20' : 'Non noté'}">0/20</strong>
                                                 <div class="progress flex-grow-1" style="height: 6px;">
                                                     <div class="progress-bar bg-success" 
-                                                         th:style="'width: ' + ${notesMoyennes[entretien.idEntretien] != null ? notesMoyennes[entretien.idEntretien] * 5 : 0} + '%'"></div>
+                                                         th:style="${'width: ' + ((notesMoyennes[entretien.idEntretien] != null) ? notesMoyennes[entretien.idEntretien] * 5 : 0) + '%'}"></div>
                                                 </div>
                                             </div>
                                         </div>

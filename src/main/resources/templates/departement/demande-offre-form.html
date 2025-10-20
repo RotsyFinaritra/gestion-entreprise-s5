@@ -111,66 +111,8 @@
                             </div>
 
                             <!-- Type de contrat et niveau d'expérience -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="typeContrat" class="form-label">
-                                        <i class="bi bi-file-text me-1"></i>
-                                        Type de contrat <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-select" id="typeContrat" th:field="*{typeContrat}" required>
-                                        <option value="">-- Sélectionner --</option>
-                                        <option value="CDI">CDI</option>
-                                        <option value="CDD">CDD</option>
-                                        <option value="STAGE">Stage</option>
-                                        <option value="ALTERNANCE">Alternance</option>
-                                        <option value="FREELANCE">Freelance</option>
-                                        <option value="INTERIM">Intérim</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="niveauExperience" class="form-label">
-                                        <i class="bi bi-star me-1"></i>
-                                        Niveau d'expérience <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-select" id="niveauExperience" th:field="*{niveauExperience}" required>
-                                        <option value="">-- Sélectionner --</option>
-                                        <option value="DEBUTANT">Débutant (0-2 ans)</option>
-                                        <option value="JUNIOR">Junior (2-5 ans)</option>
-                                        <option value="SENIOR">Senior (5-10 ans)</option>
-                                        <option value="EXPERT">Expert (10+ ans)</option>
-                                    </select>
-                                </div>
-                            </div>
-
+                            
                             <!-- Fourchette salariale -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="salaireMin" class="form-label">
-                                        <i class="bi bi-currency-euro me-1"></i>
-                                        Salaire minimum (€/an)
-                                    </label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="salaireMin" 
-                                           th:field="*{salaireMin}"
-                                           placeholder="Ex: 35000"
-                                           min="0"
-                                           step="100">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="salaireMax" class="form-label">
-                                        <i class="bi bi-currency-euro me-1"></i>
-                                        Salaire maximum (€/an)
-                                    </label>
-                                    <input type="number" 
-                                           class="form-control" 
-                                           id="salaireMax" 
-                                           th:field="*{salaireMax}"
-                                           placeholder="Ex: 45000"
-                                           min="0"
-                                           step="100">
-                                </div>
-                            </div>
 
                             <!-- Localisation -->
                             <div class="mb-3">

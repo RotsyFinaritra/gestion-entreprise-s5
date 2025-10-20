@@ -221,7 +221,7 @@
                                                             ${candidatScore.scorePercentage >= 70} ? 'bg-info' : 
                                                             ${candidatScore.scorePercentage >= 60} ? 'bg-warning' : 'bg-danger'"
                                             role="progressbar"
-                                            th:style="'width: ' + ${candidatScore.scorePercentage} + '%'"
+                                            th:style="${'width: ' + (candidatScore.scorePercentage != null ? candidatScore.scorePercentage : 0) + '%'}"
                                             th:aria-valuenow="${candidatScore.scorePercentage}" aria-valuemin="0"
                                             aria-valuemax="100">
                                         </div>

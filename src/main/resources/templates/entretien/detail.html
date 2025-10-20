@@ -132,8 +132,8 @@
                             </div>
                             <p class="text-muted mb-0">Moyenne générale</p>
                             <div class="progress mt-3" style="height: 10px;">
-                                <div class="progress-bar bg-success" 
-                                     th:style="'width: ' + ${(moyenne / 20.0 * 100)} + '%'">
+                          <div class="progress-bar bg-success" 
+                              th:style="${'width: ' + ((moyenne != null ? (moyenne / 20.0 * 100) : 0)) + '%'}">
                                 </div>
                             </div>
                             <small class="text-muted">sur 20.0</small>
@@ -165,8 +165,8 @@
                             <span class="fw-bold" th:text="${notes?.size() ?: 0} + '/' + ${sections?.size() ?: 0}">0/0</span>
                         </div>
                         <div class="progress" style="height: 6px;">
-                            <div class="progress-bar" 
-                                 th:style="'width: ' + ${sections?.size() > 0 ? (notes?.size() / sections.size() * 100) : 0} + '%'">
+                       <div class="progress-bar" 
+                           th:style="${'width: ' + ((sections?.size() > 0) ? ((notes?.size() != null ? (notes.size() : 0) / sections.size() * 100) : 0) : 0) + '%'}">
                             </div>
                         </div>
                     </div>
@@ -222,7 +222,7 @@
                                     <div th:if="${notesMap?.get(section.idSection) != null}">
                                         <div class="progress mb-2" style="height: 8px;">
                                             <div class="progress-bar bg-success" 
-                                                 th:style="'width: ' + ${(notesMap[section.idSection].noteObtenue / section.noteMax * 100)} + '%'">
+                                                 th:style="${'width: ' + ((notesMap[section.idSection] != null and section.noteMax != null and section.noteMax > 0) ? (notesMap[section.idSection].noteObtenue / section.noteMax * 100) : 0) + '%'}">
                                             </div>
                                         </div>
                                         

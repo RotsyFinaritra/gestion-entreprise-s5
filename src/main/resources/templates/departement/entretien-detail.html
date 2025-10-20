@@ -248,7 +248,7 @@
                 Moyenne Générale: <span th:text="${#numbers.formatDecimal(moyenne, 1, 1) + '/20'}">15.5/20</span>
             </h2>
             <div class="progress-custom mt-3" style="width: 60%; margin: 0 auto;">
-                <div class="progress-bar-custom" th:style="'width: ' + (moyenne * 5) + '%'"></div>
+                <div class="progress-bar-custom" th:style="${'width: ' + ((moyenne != null) ? (moyenne * 5) : 0) + '%'}"></div>
             </div>
         </div>
 
@@ -294,7 +294,7 @@
                                 <!-- Barre de progression -->
                                 <div class="progress-custom mb-3">
                                     <div class="progress-bar-custom" 
-                                         th:style="'width: ' + (notesMap.get(section.idSection).noteObtenue * 100 / section.noteMax) + '%'">
+                                         th:style="${'width: ' + ((notesMap.get(section.idSection) != null and section.noteMax != null and section.noteMax > 0) ? (notesMap.get(section.idSection).noteObtenue * 100 / section.noteMax) : 0) + '%'}">
                                     </div>
                                 </div>
                                 

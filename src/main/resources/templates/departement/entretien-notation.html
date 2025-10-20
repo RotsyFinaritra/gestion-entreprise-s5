@@ -282,7 +282,7 @@
                             <div class="progress" style="height: 4px;">
                                 <div class="progress-bar" 
                                      th:id="'progress_' + ${section.idSection}"
-                                     th:style="'width: ' + (notesExistantes != null and notesExistantes.get(section.idSection) != null ? (notesExistantes.get(section.idSection).noteObtenue * 100 / section.noteMax) : 0) + '%'">
+                                     th:style="${'width: ' + ((notesExistantes != null and notesExistantes.get(section.idSection) != null and section.noteMax != null and section.noteMax > 0) ? (notesExistantes.get(section.idSection).noteObtenue * 100 / section.noteMax) : 0) + '%'}">
                                 </div>
                             </div>
                         </div>
